@@ -1,0 +1,7 @@
+theme: minima
+title: ifstate
+description: Manage host interface settings in a declarative manner
+github:
+  repository_url: https://github.com/liske/ifstate
+minima:
+    skin: solarized
