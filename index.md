@@ -17,8 +17,8 @@ When *IfState* was born there where already other projects for declarative inter
 ## Prerequisites
 
 *IfState* depends on Python3 and the following packages:
-- pyroute2
-- PyYAML
+- [pyroute2](https://pyroute2.org/)
+- [PyYAML](https://pyyaml.org/)
 
 
 ## Installation
