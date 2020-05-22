@@ -32,6 +32,7 @@ def main():
     ifs = IfState()
 
     if args.action == Actions.TEMPLATE:
+        from pprint import pprint
         print(yaml.dump(ifs.template()))
 
     if args.action in [Actions.CHECK, Actions.CONFIG]:

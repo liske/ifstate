@@ -15,7 +15,8 @@ class Link(ABC):
             if c.__name__ == cname:
                 return super().__new__(c)
 
-        raise LinkTypeUnknown()
+        return super().__new__(GenericLink)
+        #raise LinkTypeUnknown()
 
     def __init__(self, name, **kwargs):
         self.cap_create = True
@@ -26,7 +27,7 @@ class Link(ABC):
         self.attr_map = {
             'kind': ['IFLA_LINKINFO', 'IFLA_INFO_KIND'],
         }
-        self.attr_idx = []
+        self.attr_idx = ['link']
         self.idx = None
 
         if 'address' in self.settings:
@@ -50,17 +51,38 @@ class Link(ABC):
             return None
 
     def get_if_attr(self, key):
+        if key == "state":
+            return self.iface['state']
+
         if key in self.attr_map:
             return self._drill_attr(self.iface, self.attr_map[key])
 
-        return self.iface.get_attr(self.name2nla(key))
+        nla = self.name2nla(key)
+        ret = self.iface.get_attr(nla)
+        if not ret is None:
+            return ret
+
+        info = self.iface.get_attr('IFLA_LINKINFO')
+        if not info is None:
+            ret = info.get_attr(nla)
+            if not ret is None:
+                return ret
+
+            info = info.get_attr('IFLA_INFO_DATA')
+            if not info is None:
+                ret = info.get_attr(nla)
+                if not ret is None:
+                    return ret
+
+        return None
 
     def commit(self):
         logger.debug('%s starting commit', self.settings['ifname'])
 
         # lookup for attributes requiring a interface index
         for attr in self.attr_idx:
-            self.settings[attr] = next(iter(ipr.link_lookup(ifname=self.settings[attr])), self.settings[attr])
+            if attr in self.settings:
+                self.settings[attr] = next(iter(ipr.link_lookup(ifname=self.settings[attr])), self.settings[attr])
 
         if self.idx is not None:
             self.iface = next(iter(ipr.get_links(self.idx)), None)
@@ -76,6 +98,7 @@ class Link(ABC):
     def create(self):
         logger.debug('%s creating link', self.settings['ifname'])
 
+        logger.debug("ip link add: {}".format( " ".join("{}={}".format(k, v) for k,v in self.settings.items()) ))
         ipr.link('add', **(self.settings))
 
     def recreate(self):
@@ -125,3 +148,8 @@ class Link(ABC):
         if name.find(self._nla_prefix) == -1:
             name = "%s%s" % (self._nla_prefix, name)
         return name
+
+
+class GenericLink(Link):
+    def __init__(self, name, **kwargs):
+        super().__init__(name, **kwargs)

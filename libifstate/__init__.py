@@ -1,5 +1,5 @@
 from libifstate.exception import LinkDuplicate
-from libifstate.link import Link
+from libifstate.link.base import Link
 from libifstate.parser import Parser
 from libifstate.util import logger, ipr
 import re
@@ -59,18 +59,25 @@ class IfState():
             if not any(re.match(regex, name) for regex in Parser._default_ifstates['ignore']):
                 kind = 'physical'
 
+                ifs_link = {
+                        'ifname': name,
+                        'state': ipr_link['state']
+                }
+
                 info = ipr_link.get_attr('IFLA_LINKINFO')
                 if info is not None:
                     kind = info.get_attr('IFLA_INFO_KIND')
+                    ifs_link['kind'] = kind
 
-                ifs_link = {
-                        'ifname': name,
-                        'kind': kind,
-                }
-
-                # cname = "{}Link".format(kind.lower().capitalize())
-                # for c in Link.__subclasses__():
-                #     if c.__name__ == cname:
+                    data = info.get_attr('IFLA_INFO_DATA')
+                    # unsupported link type, fallback to raw encoding
+                    if type(data) == str:
+                        ifs_link["info_data"] = data
+                    else:
+                        for k, v in data['attrs']:
+                            ifs_link[ipr_link.nla2name(k)] = v
+                else:
+                    ifs_link['kind'] = kind
 
                 ifs_links.append(ifs_link)
 
