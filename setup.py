@@ -19,7 +19,7 @@ def requirements():
 
 setup(
     name="ifstate",
-    version='0.1',
+    version='0.2',
     description="Manage host interface settings in a declarative manner",
     author="Thomas Liske",
     author_email="thomas@fiasko-nw.net",
