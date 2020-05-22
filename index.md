@@ -34,7 +34,7 @@ This will also install all dependencies if not already statisfied.
 
 # Usage
 
-Be aware that using the `ifstatecli` command will by default **remove or shutdown any interface** which is not declared in the configuration. It ships with a build-in ignore list for some well-known interfaces which should not handled by *IfState*.
+Be aware that using the `ifstatecli` command will by default **shutdown and remove any interfaces** which are not declared in the configuration. It ships with a build-in ignore list for some well-known interfaces which should not handled by *IfState* (i.e. `docker0`, `veth`, ...).
 
 Example configuration:
 
@@ -58,10 +58,40 @@ interfaces:
      kind: dummy
 ```
 
-Run `ifstatecli`:
+Run the `ifstatecli` command:
 
 ```
 ifstatecli -c test.yml config
 WARNING:ifstate:eth1 is a orphan physical interface => shutdown
 WARNING:ifstate:eth1.20 is a orphan virtual interface => remove
 ```
+
+It is possible to create a configuration template from the currently available interfaces using the `ifstatecli describe` command:
+
+```
+interfaces:
+- link:
+    kind: physical
+    state: up
+  name: eth0
+- link:
+    kind: physical
+    state: up
+  name: wlan0
+- link:
+    kind: vlan
+    state: up
+    vlan_flags:
+      state:
+        flags: 1
+        mask: 4294967295
+    vlan_id: 10
+    vlan_protocol: 33024
+  name: eth0.10
+- link:
+    kind: dummy
+    state: down
+  name: LOOP
+```
+
+You should consider to remove options which have not been changed or should be ignored.
