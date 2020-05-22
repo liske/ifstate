@@ -12,18 +12,19 @@ class IfState():
     def update(self, ifstates):
         # add interfaces from config
         for ifstate in ifstates['interfaces']:
-            name = ifstate.pop('name')
+            name = ifstate['name']
             if name in self.links:
                 raise LinkDuplicate()
-            self.links[name] = Link(name, **ifstate)
+            if 'link' in ifstate:
+                self.links[name] = Link(name, **ifstate['link'])
 
         # add ignore list items
         self.ignore.update(ifstates['ignore'])
 
     def commit(self):
-        last = 0
         commited = []
         while len(commited) < len(self.links):
+            last = len(commited)
             for name, link in self.links.items():
                 dep = link.depends()
                 if dep is None or dep in commited:
