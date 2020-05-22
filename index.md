@@ -68,7 +68,7 @@ WARNING:ifstate:eth1.20 is a orphan virtual interface => remove
 
 It is possible to create a configuration template from the currently available interfaces using the `ifstatecli describe` command:
 
-```
+```yaml
 interfaces:
 - link:
     kind: physical
