@@ -20,7 +20,7 @@ def requirements():
 setup(
     name="ifstate",
     version='0.1',
-    description="manage host interface settings in a declarative manner",
+    description="Manage host interface settings in a declarative manner",
     author="Thomas Liske",
     author_email="thomas@fiasko-nw.net",
     long_description=readme(),
@@ -30,6 +30,6 @@ setup(
     packages=find_packages(),
     install_requires=requirements(),
     entry_points={
-        "console_scripts": ["ifstate = ifstate.ifstate:main"]
+        "console_scripts": ["ifstatecli = ifstate.ifstate:main"]
     },
 )
