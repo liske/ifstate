@@ -42,6 +42,7 @@ class IfState():
                 if info is not None:
                     kind = info.get_attr('IFLA_INFO_KIND')
                     logger.info('%s is a orphan %s interface => remove', name, kind or 'virtual')
+                    ipr.link('set', index=link.get('index'), state='down')
                     ipr.link('del', index=link.get('index'))
                 # shutdown physical interfaces
                 else:
