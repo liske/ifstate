@@ -12,7 +12,7 @@ import yaml
 class Actions():
     CHECK = "check"
     CONFIG = "config"
-    TEMPLATE = "template"
+    DESCRIBE = "describe"
 
 def main():
     parser = argparse.ArgumentParser()
@@ -31,9 +31,8 @@ def main():
 
     ifs = IfState()
 
-    if args.action == Actions.TEMPLATE:
-        from pprint import pprint
-        print(yaml.dump(ifs.template()))
+    if args.action == Actions.DESCRIBE:
+        print(yaml.dump(ifs.describe()))
 
     if args.action in [Actions.CHECK, Actions.CONFIG]:
         parser = YamlParser('./test.yml')
