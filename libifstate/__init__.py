@@ -51,7 +51,7 @@ class IfState():
                         logger.warning('%s is a orphan physical interface => shutdown', name)
                         ipr.link('set', index=link.get('index'), state='down')
 
-    def template(self):
+    def describe(self):
         ifs_links = []
         for ipr_link in ipr.get_links():
             name = ipr_link.get_attr('IFLA_IFNAME')
@@ -73,7 +73,7 @@ class IfState():
                     # unsupported link type, fallback to raw encoding
                     if type(data) == str:
                         ifs_link["info_data"] = data
-                    else:
+                    elif data is not None:
                         for k, v in data['attrs']:
                             ifs_link[ipr_link.nla2name(k)] = v
                 else:
