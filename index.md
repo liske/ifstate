@@ -17,8 +17,8 @@ When *IfState* was born there where already other projects for declarative inter
 ## Prerequisites
 
 *IfState* depends on Python3 and the following packages:
-- [pyroute2](https://pyroute2.org/)
-- [PyYAML](https://pyyaml.org/)
+- [pyroute2](https://pyroute2.org/) - Python Netlink library
+- [PyYAML](https://pyyaml.org/) - YAML parser and emitter for Python
 
 
 ## Installation
@@ -26,7 +26,7 @@ When *IfState* was born there where already other projects for declarative inter
 Use *pip* to install *IfState*:
 
 ```
-pip install ifstate
+pip3 install ifstate
 ```
 
 This will also install all dependencies if not already statisfied.
