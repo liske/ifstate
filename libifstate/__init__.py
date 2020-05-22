@@ -61,24 +61,26 @@ class IfState():
                 kind = 'physical'
 
                 ifs_link = {
-                        'ifname': name,
-                        'state': ipr_link['state']
+                        'name': name,
+                        'link': {
+                            'state': ipr_link['state'],
+                        },
                 }
 
                 info = ipr_link.get_attr('IFLA_LINKINFO')
                 if info is not None:
                     kind = info.get_attr('IFLA_INFO_KIND')
-                    ifs_link['kind'] = kind
+                    ifs_link['link']['kind'] = kind
 
                     data = info.get_attr('IFLA_INFO_DATA')
                     # unsupported link type, fallback to raw encoding
                     if type(data) == str:
-                        ifs_link["info_data"] = data
+                        ifs_link['link']["info_data"] = data
                     elif data is not None:
                         for k, v in data['attrs']:
-                            ifs_link[ipr_link.nla2name(k)] = v
+                            ifs_link['link'][ipr_link.nla2name(k)] = v
                 else:
-                    ifs_link['kind'] = kind
+                    ifs_link['link']['kind'] = kind
 
                 ifs_links.append(ifs_link)
 
