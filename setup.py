@@ -16,10 +16,17 @@ def requirements():
                 req.append(line)
     return req
 
+def version():
+    with open("libifstate/__init__.py") as fd:
+        for line in fd:
+            if line.startswith('__version__'):
+                delim = '"' if '"' in line else "'"
+                return line.split(delim)[1]
+    raise RuntimeError("Unable to find version string.")
 
 setup(
     name="ifstate",
-    version='0.2',
+    version=version(),
     description="Manage host interface settings in a declarative manner",
     author="Thomas Liske",
     author_email="thomas@fiasko-nw.net",

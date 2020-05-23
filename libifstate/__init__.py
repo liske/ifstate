@@ -4,6 +4,8 @@ from libifstate.parser import Parser
 from libifstate.util import logger, ipr
 import re
 
+__version__ = "0.3"
+
 class IfState():
     def __init__(self):
         self.links = {}
