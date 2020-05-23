@@ -1,7 +1,9 @@
 from libifstate.exception import LinkDuplicate
 from libifstate.link.base import Link
+from libifstate.address import Addresses
 from libifstate.parser import Parser
 from libifstate.util import logger, ipr
+from ipaddress import ip_interface
 import re
 
 __version__ = "0.3"
@@ -9,6 +11,7 @@ __version__ = "0.3"
 class IfState():
     def __init__(self):
         self.links = {}
+        self.addresses = {}
         self.ignore = {}
     
     def update(self, ifstates):
@@ -19,19 +22,32 @@ class IfState():
                 raise LinkDuplicate()
             if 'link' in ifstate:
                 self.links[name] = Link(name, **ifstate['link'])
+            else:
+                self.links[name] = None
+
+            if 'address' in ifstate:
+                self.addresses[name] = Addresses(name, ifstate['address'])
+            else:
+                self.addresses[name] = None
 
         # add ignore list items
         self.ignore.update(ifstates['ignore'])
 
     def commit(self):
+        logger.info('configuring interface links')
+
         commited = []
         while len(commited) < len(self.links):
             last = len(commited)
             for name, link in self.links.items():
-                dep = link.depends()
-                if dep is None or dep in commited:
-                    link.commit()
+                if link is None:
+                    logger.debug('skipped due to no link settings', extra={'iface': name})
                     commited.append(name)
+                else:
+                    dep = link.depends()
+                    if dep is None or dep in commited:
+                        link.commit()
+                        commited.append(name)
             if last == len(commited):
                 raise LinkCircularLinked()
 
@@ -43,16 +59,30 @@ class IfState():
                 # remove virtual interface
                 if info is not None:
                     kind = info.get_attr('IFLA_INFO_KIND')
-                    logger.info('%s is a orphan %s interface => remove', name, kind or 'virtual')
+                    logger.info('orphan %s interface, removing', kind or 'virtual', extra={'iface': name})
                     ipr.link('set', index=link.get('index'), state='down')
                     ipr.link('del', index=link.get('index'))
                 # shutdown physical interfaces
                 else:
                     if link.get('state') == 'down':
-                        logger.warning('%s is a orphan physical interface', name)
+                        logger.warning('is an orphan physical interface', extra={'iface': name})
                     else:
-                        logger.warning('%s is a orphan physical interface => shutdown', name)
+                        logger.warning('is an orphan physical interface, shutting down', extra={'iface': name})
                         ipr.link('set', index=link.get('index'), state='down')
+
+        logger.info('configuring interface ip addresses')
+        # add empty objects for unhandled interfaces
+        for link in ipr.get_links():
+            name = link.get_attr('IFLA_IFNAME')
+            # skip links on ignore list
+            if not name in self.addresses and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
+                self.addresses[name] = Addresses(name, [])
+
+        for name, addresses in self.addresses.items():
+            if addresses is None:
+                logger.debug('skipped due to no address settings', extra={'iface': name})
+            else:
+                addresses.commit()
 
     def describe(self):
         ifs_links = []

@@ -16,6 +16,27 @@ class Actions():
     CONFIGURE = "configure"
     DESCRIBE = "describe"
 
+class ColorFilter(logging.Filter):
+    def filter(self, record):
+        record.levelshort = record.levelname[:1]
+        if hasattr(record, 'iface'):
+            record.prefix = " {} ".format(record.iface)
+        else:
+            record.prefix = ''
+        return True
+
+def setup_logging(level):
+    if level != logging.DEBUG:
+        sys.tracebacklimit = 0
+
+    logging.basicConfig(
+        level=level,
+        format='%(levelshort)s: %(prefix)s%(message)s',
+    )
+
+    f = ColorFilter()
+    logger.addFilter(f)
+
 def main():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
@@ -27,13 +48,11 @@ def main():
 
     args = parser.parse_args()
     if args.verbose:
-        logging.basicConfig(level=logging.DEBUG)
+        setup_logging(logging.DEBUG)
     elif args.quiet:
-        sys.tracebacklimit = 0
-        logging.basicConfig(level=logging.WARNING)
+        setup_logging(logging.WARNING)
     else:
-        sys.tracebacklimit = 0
-        logging.basicConfig(level=logging.INFO)
+        setup_logging(logging.INFO)
 
     ifs = IfState()
 

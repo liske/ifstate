@@ -36,8 +36,6 @@ class Link(ABC):
         if self.idx is None:
             self.idx = next(iter(ipr.link_lookup(ifname=name)), None)
 
-        logger.debug('%s init %s', self.settings['ifname'], self.settings)
-
     def _drill_attr(self, data, keys):
         key = keys[0]
         d = data.get_attr(key)
@@ -77,8 +75,6 @@ class Link(ABC):
         return None
 
     def commit(self):
-        logger.debug('%s starting commit', self.settings['ifname'])
-
         # lookup for attributes requiring a interface index
         for attr in self.attr_idx:
             if attr in self.settings:
@@ -93,44 +89,42 @@ class Link(ABC):
                 self.update()
         else:
             self.create()
-        logger.debug('%s finished commit', self.settings['ifname'])
 
     def create(self):
-        logger.debug('%s creating link', self.settings['ifname'])
+        logger.info('creating link', extra={'iface': self.settings['ifname']})
 
         logger.debug("ip link add: {}".format( " ".join("{}={}".format(k, v) for k,v in self.settings.items()) ))
         ipr.link('add', **(self.settings))
 
     def recreate(self):
-        logger.debug('%s recreating link', self.settings['ifname'])
+        logger.info('has wrong link kind %s, removing', self.settings['kind'], extra={'iface': self.settings['ifname']})
         ipr.link('del', index=self.idx)
         self.idx = None
         self.create()
 
     def update(self):
-        logger.debug('%s updating link', self.settings['ifname'])
+        logger.debug('checking', extra={'iface': self.settings['ifname']})
 
         old_state = self.iface['state']
         has_changes = False
         for setting in self.settings.keys():
-            logger.debug('%s  %s: %s => %s', self.settings['ifname'], setting, self.get_if_attr(
-                setting), self.settings[setting])
+            logger.debug('  %s: %s => %s', setting, self.get_if_attr(
+                setting), self.settings[setting], extra={'iface': self.settings['ifname']})
             if setting != 'kind' or self.cap_create:
-                has_changes |= self.get_if_attr(
-                    setting) != self.settings[setting]
+                has_changes |= self.get_if_attr(setting) != self.settings[setting]
 
         if has_changes:
-            logger.debug('%s pending changes', self.settings['ifname'])
+            logger.debug('needs to be configured', extra={'iface': self.settings['ifname']})
             if old_state:
-                logger.debug('%s set state to down', self.settings['ifname'])
+                logger.debug('shutting down', extra={'iface': self.settings['ifname']})
                 ipr.link('set', index=self.idx, state='down')
                 if not 'state' in self.settings:
                     self.settings['state'] = 'up'
 
-            logger.debug('%s updating settings', self.settings['ifname'])
+            logger.info('updating settings', extra={'iface': self.settings['ifname']})
             ipr.link('set', index=self.idx, **(self.settings))
         else:
-            logger.debug('%s no pending changes', self.settings['ifname'])
+            logger.info('is compliant', extra={'iface': self.settings['ifname']})
 
     def depends(self):
         return None
