@@ -61,7 +61,7 @@ interfaces:
 Run the `ifstatecli` command:
 
 ```
-ifstatecli -c test.yml config
+# ifstatecli -c test.yml configure
 WARNING:ifstate:eth1 is a orphan physical interface => shutdown
 WARNING:ifstate:eth1.20 is a orphan virtual interface => remove
 ```
