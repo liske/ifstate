@@ -29,8 +29,10 @@ def main():
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
     elif args.quiet:
+        sys.tracebacklimit = 0
         logging.basicConfig(level=logging.WARNING)
     else:
+        sys.tracebacklimit = 0
         logging.basicConfig(level=logging.INFO)
 
     ifs = IfState()
