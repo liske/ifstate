@@ -7,8 +7,9 @@ from collections import namedtuple
 
 import argparse
 import logging
-import yaml
+import signal
 import sys
+import yaml
 
 class Actions():
     CHECK = "check"
@@ -49,6 +50,10 @@ def main():
         if args.action == Actions.CHECK:
             pass
         else:
+            # ignore some well-known signals to prevent interruptions (i.e. due to ssh connection loss)
+            signal.signal(signal.SIGHUP, signal.SIG_IGN)
+            signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+            signal.signal(signal.SIGTERM, signal.SIG_IGN)
             ifs.commit()
 
 if __name__ == "__main__":
