@@ -9,7 +9,7 @@ __version__ = "0.3"
 class IfState():
     def __init__(self):
         self.links = {}
-        self.ignore = set([])
+        self.ignore = {}
     
     def update(self, ifstates):
         # add interfaces from config
@@ -38,7 +38,7 @@ class IfState():
         for link in ipr.get_links():
             name = link.get_attr('IFLA_IFNAME')
             # skip links on ignore list
-            if not name in self.links and not any(re.match(regex, name) for regex in self.ignore):
+            if not name in self.links and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
                 info = link.get_attr('IFLA_LINKINFO')
                 # remove virtual interface
                 if info is not None:
@@ -59,7 +59,7 @@ class IfState():
         for ipr_link in ipr.get_links():
             name = ipr_link.get_attr('IFLA_IFNAME')
             # skip links on ignore list
-            if not any(re.match(regex, name) for regex in Parser._default_ifstates['ignore']):
+            if not any(re.match(regex, name) for regex in Parser._default_ifstates['ignore'].get('ifname', [])):
                 kind = 'physical'
 
                 ifs_link = {
@@ -86,6 +86,4 @@ class IfState():
 
                 ifs_links.append(ifs_link)
 
-        return {
-            'interfaces': ifs_links,
-        }
+        return { **Parser._default_ifstates, **{'interfaces': ifs_links}}

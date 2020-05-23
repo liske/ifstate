@@ -26,13 +26,18 @@ class IfAttrDict(dict):
 
 class Parser(ABC):
     _default_ifstates = {
-        'ignore': [
-            r'^docker\d+',
-            r'^lo$',
-            r'^ppp\d+$',
-            r'^veth',
-            r'^virbr\d+',
-        ],
+        'ignore': {
+            'ipaddr': [
+                'fe80::/8',
+            ],
+            'ifname': [
+                r'^docker\d+',
+                r'^lo$',
+                r'^ppp\d+$',
+                r'^veth',
+                r'^virbr\d+',
+            ],
+        },
         'interfaces': {}
     }
 
