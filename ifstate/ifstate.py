@@ -2,7 +2,7 @@
 
 from libifstate.parser import YamlParser
 from libifstate import __version__, IfState
-from libifstate.util import logger
+from libifstate.util import logger, LogStyle , AnsiColors
 from collections import namedtuple
 
 import argparse
@@ -16,13 +16,38 @@ class Actions():
     CONFIGURE = "configure"
     DESCRIBE = "describe"
 
-class ColorFilter(logging.Filter):
+class LogFilter(logging.Filter):
+    def __init__(self, terminal):
+        super().__init__()
+        self.terminal = terminal
+
     def filter(self, record):
         record.levelshort = record.levelname[:1]
         if hasattr(record, 'iface'):
-            record.prefix = " {} ".format(record.iface)
+            record.prefix = " {:15} ".format(record.iface)
         else:
             record.prefix = ''
+
+        if self.terminal:
+            if record.levelno >= logging.ERROR:
+                record.bol = AnsiColors.RED
+            elif record.levelno >= logging.WARNING:
+                record.bol = AnsiColors.MAGENTA
+            else:
+                record.bol = ''
+            record.eol = AnsiColors.RESET
+        else:
+            record.bol = ''
+            record.eol = ''
+
+        if hasattr(record, 'style'):
+            if self.terminal:
+                record.style = LogStyle.colorize(record.style)
+            else:
+                record.style = ""
+        else:
+            record.style = ""
+
         return True
 
 def setup_logging(level):
@@ -31,10 +56,10 @@ def setup_logging(level):
 
     logging.basicConfig(
         level=level,
-        format='%(levelshort)s: %(prefix)s%(message)s',
+        format='%(bol)s%(prefix)s%(style)s%(message)s%(eol)s',
     )
 
-    f = ColorFilter()
+    f = LogFilter(sys.stderr.isatty())
     logger.addFilter(f)
 
 def main():

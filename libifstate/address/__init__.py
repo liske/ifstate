@@ -1,4 +1,4 @@
-from libifstate.util import logger, ipr
+from libifstate.util import logger, ipr, LogStyle
 from ipaddress import ip_interface
 #from pyroute2.netlink.rtnl.ifaddrmsg import ifaddrmsg
 
@@ -26,14 +26,14 @@ class Addresses():
         for addr in self.addresses:
             ip = str(addr.ip)
             if addr in ipr_addr:
-                logger.info('has %s', addr.with_prefixlen, extra={'iface': self.iface})
+                logger.info('%s', addr.with_prefixlen, extra={'iface': self.iface, 'style': LogStyle.OK})
                 del ipr_addr[addr]
             else:
-                logger.info('adding %s', addr.with_prefixlen, extra={'iface': self.iface})
+                logger.info('%s', addr.with_prefixlen, extra={'iface': self.iface, 'style': LogStyle.CHG})
                 ipr.addr("add", index=idx, address=ip, mask=addr.network.prefixlen)
 
         for ip, addr in ipr_addr.items():
             if not any(ip in net for net in ignore):
 #                if 'IFA_F_PERMANENT' in ipr_flags[ip]:
-                logger.info('removing %s', ip.with_prefixlen, extra={'iface': self.iface})
+                logger.info('%s', ip.with_prefixlen, extra={'iface': self.iface, 'style': LogStyle.DEL})
                 ipr.addr("del", index=idx, address=str(ip.ip), mask=ip.network.prefixlen)

@@ -1,4 +1,4 @@
-from libifstate.util import logger, ipr
+from libifstate.util import logger, ipr, LogStyle
 from libifstate.exception import LinkTypeUnknown
 from abc import ABC, abstractmethod
 
@@ -90,17 +90,17 @@ class Link(ABC):
         else:
             self.create()
 
-    def create(self):
-        logger.info('creating link', extra={'iface': self.settings['ifname']})
+    def create(self, oper="add"):
+        logger.info(oper, extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
 
         logger.debug("ip link add: {}".format( " ".join("{}={}".format(k, v) for k,v in self.settings.items()) ))
         ipr.link('add', **(self.settings))
 
     def recreate(self):
-        logger.info('has wrong link kind %s, removing', self.settings['kind'], extra={'iface': self.settings['ifname']})
+        logger.debug('has wrong link kind %s, removing', self.settings['kind'], extra={'iface': self.settings['ifname']})
         ipr.link('del', index=self.idx)
         self.idx = None
-        self.create()
+        self.create("replace")
 
     def update(self):
         logger.debug('checking', extra={'iface': self.settings['ifname']})
@@ -121,10 +121,10 @@ class Link(ABC):
                 if not 'state' in self.settings:
                     self.settings['state'] = 'up'
 
-            logger.info('updating settings', extra={'iface': self.settings['ifname']})
+            logger.info('changed', extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
             ipr.link('set', index=self.idx, **(self.settings))
         else:
-            logger.info('is compliant', extra={'iface': self.settings['ifname']})
+            logger.info('ok', extra={'iface': self.settings['ifname'], 'style': LogStyle.OK})
 
     def depends(self):
         return None

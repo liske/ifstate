@@ -2,7 +2,7 @@ from libifstate.exception import LinkDuplicate
 from libifstate.link.base import Link
 from libifstate.address import Addresses
 from libifstate.parser import Parser
-from libifstate.util import logger, ipr
+from libifstate.util import logger, ipr, LogStyle
 from ipaddress import ip_network, ip_interface
 import re
 
@@ -63,18 +63,18 @@ class IfState():
                 # remove virtual interface
                 if info is not None:
                     kind = info.get_attr('IFLA_INFO_KIND')
-                    logger.info('orphan %s interface, removing', kind or 'virtual', extra={'iface': name})
+                    logger.info('del', extra={'iface': name, 'style': LogStyle.DEL})
                     ipr.link('set', index=link.get('index'), state='down')
                     ipr.link('del', index=link.get('index'))
                 # shutdown physical interfaces
                 else:
                     if link.get('state') == 'down':
-                        logger.warning('is an orphan physical interface', extra={'iface': name})
+                        logger.warning('orphan', extra={'iface': name, 'style': LogStyle.OK})
                     else:
-                        logger.warning('is an orphan physical interface, shutting down', extra={'iface': name})
+                        logger.warning('orphan', extra={'iface': name, 'style': LogStyle.CHG})
                         ipr.link('set', index=link.get('index'), state='down')
 
-        logger.info('configuring interface ip addresses')
+        logger.info("\nconfiguring interface ip addresses")
         # add empty objects for unhandled interfaces
         for link in ipr.get_links():
             name = link.get_attr('IFLA_IFNAME')
