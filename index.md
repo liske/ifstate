@@ -45,6 +45,8 @@ interfaces:
     kind: physical
     address: 8c:16:45:3c:f1:42
 - name: eth0.10
+  address:
+    - 192.168.254.3/25
   link:
     kind: vlan
     link: eth0
@@ -53,9 +55,11 @@ interfaces:
   link:
     kind: physical
     state: down
- - name: LOOP
-   link:
-     kind: dummy
+- name: LOOP
+  address:
+    - 192.168.0.3
+  link:
+    kind: dummy
 ```
 
 Run the `ifstatecli` command:
@@ -69,6 +73,15 @@ WARNING:ifstate:eth1.20 is a orphan virtual interface => remove
 It is possible to create a configuration template from the currently available interfaces using the `ifstatecli describe` command:
 
 ```yaml
+ignore:
+  ipaddr:
+  - fe80::/10
+  ifname:
+  - ^docker\d+
+  - ^lo$
+  - ^ppp\d+$
+  - ^veth
+  - ^virbr\d+
 interfaces:
 - link:
     kind: physical
