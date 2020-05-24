@@ -17,6 +17,7 @@ header_pages:
   - index.md
   - install.md
   - cli.md
+  - schema.md
 
 minima:
   skin: solarized-dark

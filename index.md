@@ -25,7 +25,7 @@ pip3 install ifstate
 
 This will also install all dependencies if not already statisfied.
 
-[More details...](install.md)
+[More...](install.md)
 
 # Usage
 
@@ -113,4 +113,4 @@ interfaces:
 You should consider to remove options which have not been changed or should be ignored.
 
 
-[More details...](cli.md)
+[More...](cli.md)
