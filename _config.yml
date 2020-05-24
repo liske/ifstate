@@ -8,3 +8,5 @@ kramdown:
   input: GFM
 github:
   repository_url: https://github.com/liske/ifstate
+plugins:
+  - "jekyll-github-metadata"

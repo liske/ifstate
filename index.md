@@ -45,8 +45,8 @@ interfaces:
     kind: physical
     address: 8c:16:45:3c:f1:42
 - name: eth0.10
-  address:
-    - 192.168.254.3/25
+  addresses:
+  - 198.51.100.3/27
   link:
     kind: vlan
     link: eth0
@@ -56,8 +56,9 @@ interfaces:
     kind: physical
     state: down
 - name: LOOP
-  address:
-    - 192.168.0.3
+  addresses:
+  - 192.0.2.3
+  - 2001:db8::3
   link:
     kind: dummy
 ```
@@ -65,12 +66,22 @@ interfaces:
 Run the `ifstatecli` command:
 
 ```
-# ifstatecli -c test.yml configure
-WARNING:ifstate:eth1 is a orphan physical interface => shutdown
-WARNING:ifstate:eth1.20 is a orphan virtual interface => remove
+# ifstatecli -c test.yml apply
+configuring interface links
+ eth0            ok
+ eth0.10         add
+ wlan0           change
+ LOOP            ok
+ eth1            orphan
+ eth1.20         del
+
+configuring ip addresses...
+ eth0.10         198.51.100.3/27
+ LOOP            192.0.2.3/32
+ LOOP            2001:db8::3/128
 ```
 
-It is possible to create a configuration template from the currently available interfaces using the `ifstatecli describe` command:
+It is possible to create a configuration template from the currently available interfaces using the `ifstatecli show` command:
 
 ```yaml
 ignore:
@@ -83,15 +94,22 @@ ignore:
   - ^veth
   - ^virbr\d+
 interfaces:
-- link:
+- name: eth0
+  addresses: []
+  link:
     kind: physical
+    address: 8c:16:45:3c:f1:42
     state: up
-  name: eth0
-- link:
+- name: wlan0
+  addresses: []
+  link:
     kind: physical
-    state: up
-  name: wlan0
-- link:
+    address: 8c:16:54:15:aa:21
+    state: down
+- name: eth0.10
+  addresses:
+  - 198.51.100.3/27
+  link:
     kind: vlan
     state: up
     vlan_flags:
@@ -100,11 +118,13 @@ interfaces:
         mask: 4294967295
     vlan_id: 10
     vlan_protocol: 33024
-  name: eth0.10
-- link:
+- name: LOOP
+  addresses:
+  - 192.0.2.3
+  - 2001:db8::3
+  link:
     kind: dummy
-    state: down
-  name: LOOP
+    state: up
 ```
 
 You should consider to remove options which have not been changed or should be ignored.
