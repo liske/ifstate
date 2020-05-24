@@ -43,6 +43,8 @@ class IfState():
             logger.error("DANGER: Not a single link config has been found!")
             raise LinkNoConfigFound()
 
+        logger.info('configuring interface links')
+
         applied = []
         while len(applied) < len(self.links):
             last = len(applied)
