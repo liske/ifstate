@@ -100,7 +100,7 @@ def main():
             signal.signal(signal.SIGHUP, signal.SIG_IGN)
             signal.signal(signal.SIGPIPE, signal.SIG_IGN)
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
-            ifs.commit()
+            ifs.apply()
 
 if __name__ == "__main__":
     main()

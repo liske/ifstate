@@ -33,26 +33,26 @@ class IfState():
         # add ignore list items
         self.ignore.update(ifstates['ignore'])
 
-    def commit(self):
+    def apply(self):
         self.ipaddr_ignore = set()
         for ip in self.ignore.get('ipaddr', []):
             self.ipaddr_ignore.add( ip_network(ip) )
 
         logger.info('configuring interface links')
 
-        commited = []
-        while len(commited) < len(self.links):
-            last = len(commited)
+        applied = []
+        while len(applied) < len(self.links):
+            last = len(applied)
             for name, link in self.links.items():
                 if link is None:
                     logger.debug('skipped due to no link settings', extra={'iface': name})
-                    commited.append(name)
+                    applied.append(name)
                 else:
                     dep = link.depends()
-                    if dep is None or dep in commited:
-                        link.commit()
-                        commited.append(name)
-            if last == len(commited):
+                    if dep is None or dep in applied:
+                        link.apply()
+                        applied.append(name)
+            if last == len(applied):
                 raise LinkCircularLinked()
 
         for link in ipr.get_links():
@@ -86,7 +86,7 @@ class IfState():
             if addresses is None:
                 logger.debug('skipped due to no address settings', extra={'iface': name})
             else:
-                addresses.commit(self.ipaddr_ignore)
+                addresses.apply(self.ipaddr_ignore)
 
     def describe(self):
         self.ipaddr_ignore = set()

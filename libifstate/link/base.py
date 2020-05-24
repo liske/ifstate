@@ -74,7 +74,7 @@ class Link(ABC):
 
         return None
 
-    def commit(self):
+    def apply(self):
         # lookup for attributes requiring a interface index
         for attr in self.attr_idx:
             if attr in self.settings:

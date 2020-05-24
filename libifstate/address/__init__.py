@@ -9,7 +9,7 @@ class Addresses():
         for address in addresses:
             self.addresses.append(ip_interface(address))
 
-    def commit(self, ignore):
+    def apply(self, ignore):
         logger.debug('getting addresses', extra={'iface': self.iface})
 
         # get ifindex
