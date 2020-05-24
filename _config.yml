@@ -9,7 +9,7 @@ markdown: kramdown
 kramdown:
   input: GFM
 
-github_username: liske
+github_username: liske/ifstate
 github:
   repository_url: https://github.com/liske/ifstate
 
@@ -21,4 +21,4 @@ header_pages:
 minima:
   skin: solarized-dark
   social_links:
-    github: liske
+    github: liske/ifstate
