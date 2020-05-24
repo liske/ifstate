@@ -23,7 +23,7 @@ optional arguments:
 
 ## apply
 
-The `apply` action will reconfigure the network config of the host to match the state of the config file:
+The *apply* action will reconfigure the network config of the host to match the state of the config file:
 
 ```
 # ifstatecli apply
@@ -43,7 +43,7 @@ configuring ip addresses...
 
 ## check
 
-The `check` action will parse the config file and does a *dry run* of the `apply` action.
+The *check* action will parse the config file and does a **dry run** of the *apply* action.
 
 
 ## show
@@ -95,4 +95,4 @@ interfaces:
     state: up
 ```
 
-You should consider to remove any unnecessary options.
+You should consider removing any unnecessary options.
