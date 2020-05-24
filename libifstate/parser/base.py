@@ -28,7 +28,7 @@ class Parser(ABC):
     _default_ifstates = {
         'ignore': {
             'ipaddr': [
-                'fe80::/8',
+                'fe80::/10',
             ],
             'ifname': [
                 r'^docker\d+',

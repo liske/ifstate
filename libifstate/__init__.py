@@ -3,7 +3,7 @@ from libifstate.link.base import Link
 from libifstate.address import Addresses
 from libifstate.parser import Parser
 from libifstate.util import logger, ipr
-from ipaddress import ip_interface
+from ipaddress import ip_network, ip_interface
 import re
 
 __version__ = "0.3"
@@ -34,6 +34,10 @@ class IfState():
         self.ignore.update(ifstates['ignore'])
 
     def commit(self):
+        self.ipaddr_ignore = set()
+        for ip in self.ignore.get('ipaddr', []):
+            self.ipaddr_ignore.add( ip_network(ip) )
+
         logger.info('configuring interface links')
 
         commited = []
@@ -82,7 +86,7 @@ class IfState():
             if addresses is None:
                 logger.debug('skipped due to no address settings', extra={'iface': name})
             else:
-                addresses.commit()
+                addresses.commit(self.ipaddr_ignore)
 
     def describe(self):
         ifs_links = []
