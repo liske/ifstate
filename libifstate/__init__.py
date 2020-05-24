@@ -88,7 +88,7 @@ class IfState():
             else:
                 addresses.apply(self.ipaddr_ignore)
 
-    def describe(self):
+    def show(self):
         self.ipaddr_ignore = set()
         for ip in Parser._default_ifstates.get('ignore').get('ipaddr'):
             self.ipaddr_ignore.add( ip_network(ip) )
@@ -98,8 +98,6 @@ class IfState():
             name = ipr_link.get_attr('IFLA_IFNAME')
             # skip links on ignore list
             if not any(re.match(regex, name) for regex in Parser._default_ifstates['ignore'].get('ifname', [])):
-                kind = 'physical'
-
                 ifs_link = {
                         'name': name,
                         'addr': [],
@@ -126,7 +124,10 @@ class IfState():
                         for k, v in data['attrs']:
                             ifs_link['link'][ipr_link.nla2name(k)] = v
                 else:
-                    ifs_link['link']['kind'] = kind
+                    ifs_link['link']['kind'] = 'physical'
+                    addr = ipr_link.get_attr('IFLA_ADDRESS')
+                    if not addr is None:
+                        ifs_link['link']['address'] = addr
 
                 ifs_links.append(ifs_link)
 

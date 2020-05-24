@@ -85,7 +85,7 @@ def main():
         # preserve dict order on python 3.7+
         if sys.version_info >= (3,7):
             yaml.add_representer(dict, lambda self, data: yaml.representer.SafeRepresenter.represent_dict(self, data.items()))
-        print(yaml.dump(ifs.describe()))
+        print(yaml.dump(ifs.show()))
 
     if args.action in [Actions.CHECK, Actions.APPLY]:
         parser = YamlParser(args.config)
