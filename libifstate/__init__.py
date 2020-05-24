@@ -89,6 +89,10 @@ class IfState():
                 addresses.commit(self.ipaddr_ignore)
 
     def describe(self):
+        self.ipaddr_ignore = set()
+        for ip in Parser._default_ifstates.get('ignore').get('ipaddr'):
+            self.ipaddr_ignore.add( ip_network(ip) )
+
         ifs_links = []
         for ipr_link in ipr.get_links():
             name = ipr_link.get_attr('IFLA_IFNAME')
@@ -98,10 +102,16 @@ class IfState():
 
                 ifs_link = {
                         'name': name,
+                        'addr': [],
                         'link': {
                             'state': ipr_link['state'],
                         },
                 }
+
+                for addr in ipr.get_addr(index=ipr_link['index']):
+                    ip = ip_interface(addr.get_attr('IFA_ADDRESS') + '/' + str(addr['prefixlen']))
+                    if not any(ip in net for net in self.ipaddr_ignore):
+                        ifs_link['addr'].append(ip.with_prefixlen)
 
                 info = ipr_link.get_attr('IFLA_LINKINFO')
                 if info is not None:
