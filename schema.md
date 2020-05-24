@@ -15,7 +15,7 @@ interfaces:
     # ...
 ```
 
-## `options`
+## options
 
 Global settings are defined in the `options` key.
 
