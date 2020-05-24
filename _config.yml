@@ -1,6 +1,6 @@
 title: IfState
 description: Manage host interface settings in a declarative manner
-theme: jekyll-theme-midnight
+theme: minima
 language: en
 date_format: '%Y-%m-%d'
 markdown: kramdown
@@ -8,3 +8,7 @@ kramdown:
   input: GFM
 github:
   repository_url: https://github.com/liske/ifstate
+header_pages:
+  - index.md
+  - install.md
+  - cli.md
