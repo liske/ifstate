@@ -9,3 +9,6 @@ class LinkDuplicate(Exception):
 
 class LinkCircularLinked(Exception):
     pass
+
+class LinkNoConfigFound(Exception):
+    pass

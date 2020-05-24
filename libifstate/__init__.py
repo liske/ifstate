@@ -3,6 +3,7 @@ from libifstate.link.base import Link
 from libifstate.address import Addresses
 from libifstate.parser import Parser
 from libifstate.util import logger, ipr, LogStyle
+from libifstate.exception import LinkNoConfigFound
 from ipaddress import ip_network, ip_interface
 import re
 
@@ -25,8 +26,8 @@ class IfState():
             else:
                 self.links[name] = None
 
-            if 'address' in ifstate:
-                self.addresses[name] = Addresses(name, ifstate['address'])
+            if 'addresses' in ifstate:
+                self.addresses[name] = Addresses(name, ifstate['addresses'])
             else:
                 self.addresses[name] = None
 
@@ -38,7 +39,9 @@ class IfState():
         for ip in self.ignore.get('ipaddr', []):
             self.ipaddr_ignore.add( ip_network(ip) )
 
-        logger.info('configuring interface links')
+        if not any(not x is None for x in self.links.values()):
+            logger.error("DANGER: Not a single link config has been found!")
+            raise LinkNoConfigFound()
 
         applied = []
         while len(applied) < len(self.links):
@@ -74,19 +77,22 @@ class IfState():
                         logger.warning('orphan', extra={'iface': name, 'style': LogStyle.CHG})
                         ipr.link('set', index=link.get('index'), state='down')
 
-        logger.info("\nconfiguring interface ip addresses")
-        # add empty objects for unhandled interfaces
-        for link in ipr.get_links():
-            name = link.get_attr('IFLA_IFNAME')
-            # skip links on ignore list
-            if not name in self.addresses and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
-                self.addresses[name] = Addresses(name, [])
+        if any(not x is None for x in self.addresses.values()):
+            logger.info("\nconfiguring interface ip addresses...")
+            # add empty objects for unhandled interfaces
+            for link in ipr.get_links():
+                name = link.get_attr('IFLA_IFNAME')
+                # skip links on ignore list
+                if not name in self.addresses and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
+                    self.addresses[name] = Addresses(name, [])
 
-        for name, addresses in self.addresses.items():
-            if addresses is None:
-                logger.debug('skipped due to no address settings', extra={'iface': name})
-            else:
-                addresses.apply(self.ipaddr_ignore)
+            for name, addresses in self.addresses.items():
+                if addresses is None:
+                    logger.debug('skipped due to no address settings', extra={'iface': name})
+                else:
+                    addresses.apply(self.ipaddr_ignore)
+        else:
+            logger.info("\nno interface ip addressing to be applied")
 
     def show(self):
         self.ipaddr_ignore = set()
@@ -100,7 +106,7 @@ class IfState():
             if not any(re.match(regex, name) for regex in Parser._default_ifstates['ignore'].get('ifname', [])):
                 ifs_link = {
                         'name': name,
-                        'addr': [],
+                        'addresses': [],
                         'link': {
                             'state': ipr_link['state'],
                         },
@@ -109,7 +115,7 @@ class IfState():
                 for addr in ipr.get_addr(index=ipr_link['index']):
                     ip = ip_interface(addr.get_attr('IFA_ADDRESS') + '/' + str(addr['prefixlen']))
                     if not any(ip in net for net in self.ipaddr_ignore):
-                        ifs_link['addr'].append(ip.with_prefixlen)
+                        ifs_link['addresses'].append(ip.with_prefixlen)
 
                 info = ipr_link.get_attr('IFLA_LINKINFO')
                 if info is not None:
