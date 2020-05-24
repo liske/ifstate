@@ -1,4 +1,4 @@
-# About
+# Overview
 
 *IfState* is a python library to configure (linux) host interfaces in a declarative manner. The configuration is done using the kernels netlink protocol and aims to be as powerful as the iproute2/bridge/ethtool commands.
 
