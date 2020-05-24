@@ -7,7 +7,7 @@ from libifstate.exception import LinkNoConfigFound
 from ipaddress import ip_network, ip_interface
 import re
 
-__version__ = "0.3"
+__version__ = "0.4"
 
 class IfState():
     def __init__(self):
