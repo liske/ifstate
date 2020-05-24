@@ -1,16 +1,25 @@
 title: IfState
 description: Manage host interface settings in a declarative manner
+author: Thomas Liske
+email: thomas@fiasko-nw.net
+
 theme: minima
 language: en
 date_format: '%Y-%m-%d'
 markdown: kramdown
 kramdown:
   input: GFM
+
+github_username: liske
 github:
   repository_url: https://github.com/liske/ifstate
+
 header_pages:
   - index.md
   - install.md
   - cli.md
+
 minima:
   skin: solarized-dark
+  social_links:
+    github: liske
