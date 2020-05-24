@@ -37,7 +37,6 @@ interfaces:
 - name: eth0
   link:
     kind: physical
-    address: 8c:16:45:3c:f1:42
 - name: eth0.10
   addresses:
   - 198.51.100.3/27
