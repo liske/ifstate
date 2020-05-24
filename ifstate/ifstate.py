@@ -75,7 +75,7 @@ def main():
     if args.verbose:
         setup_logging(logging.DEBUG)
     elif args.quiet:
-        setup_logging(logging.WARNING)
+        setup_logging(logging.ERROR)
     else:
         setup_logging(logging.INFO)
 
