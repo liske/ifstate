@@ -15,7 +15,7 @@ title: Install
 
 *IfState* is available at [Python Package Index](https://pypi.org/project/ifstate/).  Use *pip3* for installation:
 
-```
+```bash
 pip3 install ifstate
 ```
 

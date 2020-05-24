@@ -19,7 +19,7 @@ When *IfState* was born there where already other projects for declarative inter
 
 Use *pip3* to install *IfState*:
 
-```
+```bash
 pip3 install ifstate
 ```
 
@@ -56,7 +56,7 @@ interfaces:
 
 Run the `ifstatecli` command:
 
-```
+```bash
 # ifstatecli -c test.yml apply
 configuring interface links
  eth0            ok

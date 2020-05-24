@@ -4,7 +4,7 @@ title: CLI
 
 # Usage
 
-```
+```bash
 usage: ifstatecli [-h] [-q | -v] [--version] [-c CONFIG] {apply,check,show}
 
 positional arguments:
@@ -25,7 +25,7 @@ optional arguments:
 
 The *apply* action will reconfigure the network config of the host to match the state of the config file:
 
-```
+```bash
 # ifstatecli apply
 configuring interface links
  eth0            ok
