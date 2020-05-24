@@ -1,7 +1,6 @@
 title: IfState
 description: Manage host interface settings in a declarative manner
 author: Thomas Liske
-email: thomas@fiasko-nw.net
 
 theme: minima
 language: en
