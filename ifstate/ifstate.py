@@ -13,8 +13,8 @@ import yaml
 
 class Actions():
     CHECK = "check"
-    CONFIGURE = "configure"
-    DESCRIBE = "describe"
+    APPLY = "apply"
+    SHOW = "show"
 
 class LogFilter(logging.Filter):
     def __init__(self, terminal):
@@ -81,13 +81,13 @@ def main():
 
     ifs = IfState()
 
-    if args.action == Actions.DESCRIBE:
+    if args.action == Actions.SHOW:
         # preserve dict order on python 3.7+
         if sys.version_info >= (3,7):
             yaml.add_representer(dict, lambda self, data: yaml.representer.SafeRepresenter.represent_dict(self, data.items()))
         print(yaml.dump(ifs.describe()))
 
-    if args.action in [Actions.CHECK, Actions.CONFIGURE]:
+    if args.action in [Actions.CHECK, Actions.APPLY]:
         parser = YamlParser(args.config)
         ifstates = parser.config()
 
