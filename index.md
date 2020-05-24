@@ -69,47 +69,6 @@ configuring ip addresses...
  LOOP            2001:db8::3/128
 ```
 
-It is possible to create a configuration template from the currently available interfaces using the `ifstatecli show` command:
-
-```yaml
-ignore:
-  ipaddr:
-  - fe80::/10
-  ifname:
-  - ^docker\d+
-  - ^lo$
-  - ^ppp\d+$
-  - ^veth
-  - ^virbr\d+
-interfaces:
-- name: eth0
-  addresses: []
-  link:
-    kind: physical
-    address: 8c:16:45:3c:f1:42
-    state: up
-- name: eth0.10
-  addresses:
-  - 198.51.100.3/27
-  link:
-    kind: vlan
-    state: up
-    vlan_flags:
-      state:
-        flags: 1
-        mask: 4294967295
-    vlan_id: 10
-    vlan_protocol: 33024
-- name: LOOP
-  addresses:
-  - 192.0.2.3
-  - 2001:db8::3
-  link:
-    kind: dummy
-    state: up
-```
-
-You should consider to remove options which have not been changed or should be ignored.
-
+It is possible to create a configuration template from the currently available interfaces using the `ifstatecli show` command.
 
 [More...](cli.md)
