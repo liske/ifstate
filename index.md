@@ -15,18 +15,9 @@ When *IfState* was born there where already other projects for declarative inter
 
 
 
-# Prepration
+# Installation
 
-## Prerequisites
-
-*IfState* depends on Python3 and the following packages:
-- [pyroute2](https://pyroute2.org/) - Python Netlink library
-- [PyYAML](https://pyyaml.org/) - YAML parser and emitter for Python
-
-
-## Installation
-
-Use *pip* to install *IfState*:
+Use *pip3* to install *IfState*:
 
 ```
 pip3 install ifstate
@@ -34,6 +25,7 @@ pip3 install ifstate
 
 This will also install all dependencies if not already statisfied.
 
+[More details...](install.md)
 
 # Usage
 
@@ -54,10 +46,6 @@ interfaces:
     kind: vlan
     link: eth0
     vlan_id: 10
-- name: wlan0
-  link:
-    kind: physical
-    state: down
 - name: LOOP
   addresses:
   - 192.0.2.3
@@ -73,10 +61,8 @@ Run the `ifstatecli` command:
 configuring interface links
  eth0            ok
  eth0.10         add
- wlan0           change
  LOOP            ok
  eth1            orphan
- eth1.20         del
 
 configuring ip addresses...
  eth0.10         198.51.100.3/27
@@ -103,12 +89,6 @@ interfaces:
     kind: physical
     address: 8c:16:45:3c:f1:42
     state: up
-- name: wlan0
-  addresses: []
-  link:
-    kind: physical
-    address: 8c:16:54:15:aa:21
-    state: down
 - name: eth0.10
   addresses:
   - 198.51.100.3/27
@@ -131,3 +111,6 @@ interfaces:
 ```
 
 You should consider to remove options which have not been changed or should be ignored.
+
+
+[More details...](cli.md)
