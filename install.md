@@ -1,2 +1,6 @@
-# Install
+---
+title: Install
+---
+
+# pypi
 
