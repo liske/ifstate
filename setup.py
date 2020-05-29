@@ -35,7 +35,10 @@ setup(
     url="https://github.com/liske/ifstate",
     license="GPL3+",
     packages=find_packages(),
-    install_requires=requirements(),
+    install_requires=[
+        "pyroute2",
+        "PyYAML",
+    ],
     entry_points={
         "console_scripts": ["ifstatecli = ifstate.ifstate:main"]
     },
