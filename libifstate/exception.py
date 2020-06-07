@@ -12,3 +12,6 @@ class LinkCircularLinked(Exception):
 
 class LinkNoConfigFound(Exception):
     pass
+
+class RouteDupblicate(Exception):
+    pass

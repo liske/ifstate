@@ -37,6 +37,9 @@ class Parser(ABC):
                 r'^veth',
                 r'^virbr\d+',
             ],
+            'routes': {
+                'protos': [1, 2, 8, 9, 10, 11, 12, 13, 14, 15, 16, 42, 186, 187, 188, 189, 192],
+            }
         },
         'interfaces': {}
     }

@@ -1,6 +1,7 @@
 from libifstate.exception import LinkDuplicate
 from libifstate.link.base import Link
 from libifstate.address import Addresses
+from libifstate.routing import Tables, Rules
 from libifstate.parser import Parser
 from libifstate.util import logger, ipr, LogStyle
 from libifstate.exception import LinkNoConfigFound
@@ -14,6 +15,8 @@ class IfState():
         self.links = {}
         self.addresses = {}
         self.ignore = {}
+        self.tables = None
+        self.rules = None
     
     def update(self, ifstates):
         # add interfaces from config
@@ -30,6 +33,20 @@ class IfState():
                 self.addresses[name] = Addresses(name, ifstate['addresses'])
             else:
                 self.addresses[name] = None
+
+        # add routing from config
+        if 'routing' in ifstates:
+            if 'routes' in ifstates['routing']:
+                if self.tables is None:
+                    self.tables = Tables()
+                for route in ifstates['routing']['routes']:
+                    self.tables.add(route)
+
+            if 'rules' in ifstates['routing']:
+                if self.rules is None:
+                    self.rules = Rules()
+                for rule in ifstates['routing']['rules']:
+                    self.rules.add(rule)
 
         # add ignore list items
         self.ignore.update(ifstates['ignore'])
@@ -95,6 +112,9 @@ class IfState():
                     addresses.apply(self.ipaddr_ignore)
         else:
             logger.info("\nno interface ip addressing to be applied")
+
+        if not self.tables is None:
+            self.tables.apply(self.ignore.get('routes', []))
 
     def show(self):
         self.ipaddr_ignore = set()
