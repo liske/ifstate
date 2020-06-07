@@ -17,7 +17,6 @@ class Addresses():
 
         # get active ip addresses
         ipr_addr = {}
-        ipr_flags = {}
         for addr in ipr.get_addr(index=idx):
             ip = ip_interface(addr.get_attr('IFA_ADDRESS') + '/' + str(addr['prefixlen']))
             ipr_addr[ip] = addr
