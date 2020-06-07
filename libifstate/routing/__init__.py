@@ -3,6 +3,7 @@ from libifstate.exception import RouteDupblicate
 from ipaddress import ip_address, ip_network
 from pyroute2.netlink.exceptions import NetlinkError
 import collections.abc
+from glob import glob
 import os
 import re
 import sys
@@ -33,11 +34,11 @@ class RTLookup():
             with open(fn, 'r') as fp:
                 self._parse(fp)
 
-            dn = os.path.join('/etc/iproute2', "{}.d".format(name))
+            for fn in glob(os.path.join('/etc/iproute2', "{}.d".format(name), "*.conf")):
+                with open(fn, 'r') as fp:
+                    self._parse(fp)
         except:
             logger.info('could not open {}'.format(fn))
-
-        # XXX scan self.dn for additional .conf files
 
     def _parse(self, fp):
         for line in fp:
