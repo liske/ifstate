@@ -201,5 +201,11 @@ class Routes():
 
         self.routes[dst] = route
 
+
 class Rules():
-    pass
+
+    def add(self, rule):
+        pass
+
+    def apply(self, ignores):
+        pass
