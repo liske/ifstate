@@ -4,7 +4,7 @@ from libifstate.address import Addresses
 from libifstate.routing import Tables, Rules
 from libifstate.parser import Parser
 from libifstate.util import logger, ipr, LogStyle
-from libifstate.exception import LinkNoConfigFound
+from libifstate.exception import LinkCircularLinked, LinkNoConfigFound
 from ipaddress import ip_network, ip_interface
 import re
 
