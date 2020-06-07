@@ -116,6 +116,9 @@ class IfState():
         if not self.tables is None:
             self.tables.apply(self.ignore.get('routes', []))
 
+        if not self.rules is None:
+            self.rules.apply(self.ignore.get('rules', []))
+
     def show(self):
         self.ipaddr_ignore = set()
         for ip in Parser._default_ifstates.get('ignore').get('ipaddr'):
