@@ -20,6 +20,12 @@ support for many virtual link types:
 - [NMState](https://nmstate.io) - A Declarative API for Host Network Management
 - [Netplan](https://netplan.io) - The network configuration abstraction renderer
 
+*IfState* can be used as a base for dynamic routing daemons like:
+- [BIRD](https://bird.network.cz/)
+- [FRRouting](https://frrouting.org/)
+- [Quagga](https://www.quagga.net/)
+
+It is possible to skip ip address configuration if the routing daemon already supports it (i.e. *FRR*, *Quagga*).
 
 
 # Installation
