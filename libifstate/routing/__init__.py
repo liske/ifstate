@@ -99,7 +99,56 @@ class Tables(collections.abc.Mapping):
             self.tables[rt['table']] = []
         self.tables[rt['table']].append(rt)
 
-    def _get_kroutes(self, table):
+    def show_routes(self, ignores):
+        routes = []
+        for route in ipr.get_routes(family=AF_INET) + ipr.get_routes(family=AF_INET6):
+            # skip routes from local table
+            table = route.get_attr('RTA_TABLE')
+            if table == 255:
+                continue
+
+            # skip ignored routes
+            if route['proto'] in ignores.get('protos', []):
+                continue
+
+            if route['dst_len'] > 0:
+                dst = ip_network('{}/{}'.format(route.get_attr('RTA_DST'), route['dst_len'])).with_prefixlen
+            elif route['family']==AF_INET:
+                dst = ip_network('0.0.0.0/0').with_prefixlen
+            elif route['family']==AF_INET6:
+                dst = ip_network('::/0').with_prefixlen
+
+            rt = {
+                'to': dst,
+                'table': RTLookups.tables.lookup_str(table),
+            }
+
+            dev = route.get_attr('RTA_OIF')
+            if dev:
+                link = next(iter(ipr.get_links(dev)), None)
+                if link:
+                    rt['dev'] = link.get_attr('IFLA_IFNAME', dev)
+                else:
+                    rt['dev'] = dev
+
+            realm = route.get_attr('RTA_FLOW')
+            if realm:
+                rt['realm'] = RTLookups.realms.lookup_str(realm)
+
+            if route['scope'] != 0:
+                rt['scope'] = RTLookups.scopes.lookup_str(route['scope'])
+
+            if route['proto'] != 3:
+                rt['proto'] = RTLookups.protos.lookup_str(route['proto'])
+
+            if route['tos'] != 0:
+                rt['tos'] = route['tos']
+
+            routes.append(rt)
+
+        return routes
+
+    def kernel_routes(self, table):
         routes = []
         for route in ipr.get_routes(table=table, family=AF_INET) + ipr.get_routes(table=table, family=AF_INET6):
             if route['dst_len'] > 0:
@@ -139,7 +188,7 @@ class Tables(collections.abc.Mapping):
             pfx = RTLookups.tables.lookup_str(table)
             logger.info('\nconfiguring routing table {}...'.format(pfx))
 
-            kroutes = self._get_kroutes(table)
+            kroutes = self.kernel_routes(table)
 
             for route in croutes:
                 found = False

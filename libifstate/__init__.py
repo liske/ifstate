@@ -162,4 +162,8 @@ class IfState():
 
                 ifs_links.append(ifs_link)
 
-        return { **Parser._default_ifstates, **{'interfaces': ifs_links}}
+        routing = {
+            'routes': Tables().show_routes(Parser._default_ifstates['ignore']['routes']),
+        }
+
+        return { **Parser._default_ifstates, **{'interfaces': ifs_links, 'routing': routing}}
