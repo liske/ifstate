@@ -8,7 +8,7 @@ from libifstate.exception import LinkCircularLinked, LinkNoConfigFound
 from ipaddress import ip_network, ip_interface
 import re
 
-__version__ = "0.5.1"
+__version__ = "0.6.0"
 
 class IfState():
     def __init__(self):
