@@ -19,6 +19,8 @@ header_pages:
   - install.md
   - cli.md
   - schema.md
+  - title: VCS
+    url: https://github.com/liske/ifstate
 
 minima:
   skin: solarized-dark
