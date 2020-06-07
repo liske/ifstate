@@ -58,6 +58,11 @@ interfaces:
   - 2001:db8::3
   link:
     kind: dummy
+
+routing:
+  routes:
+  - to: 198.51.100.128/25
+    via: 198.51.100.1
 ```
 
 Run the `ifstatecli` command:
@@ -74,6 +79,9 @@ configuring ip addresses...
  eth0.10         198.51.100.3/27
  LOOP            192.0.2.3/32
  LOOP            2001:db8::3/128
+
+configuring routing table main...
+ 198.51.100.128/25 add
 ```
 
 It is possible to create a configuration template from the currently available interfaces using the `ifstatecli show` command.

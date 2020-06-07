@@ -8,11 +8,13 @@ The YaML configuration file for *ifstatecli* uses a loose schema with the follow
 
 ```yaml
 options:
-    # ...
+    # global options
 ignore:
-    # ...
+    # ignore patterns
 interfaces:
-    # ...
+    # interfaces and ip addresses
+routing:
+    # routing tables and rules
 ```
 
 ## options
@@ -22,7 +24,7 @@ Global settings are defined in the `options` key.
 
 ## ignore
 
-Ignore patterns for links and ip addresses are defined in the `ignore` key.
+Ignore patterns defined in the `ignore` key are used to skip interface, ip address or routing objects.
 
 ```yaml
 # ...
@@ -35,6 +37,7 @@ ignore:
     - ^ppp\d+$
     - ^veth
     - ^virbr\d+
+    routes:
 # ...
 ```
 ### ipaddr
@@ -69,3 +72,21 @@ Configures ip addresses (`ip address`) of the interface.
 ### link
 
 Configures link settings (`ip link`) of the interface.
+
+
+## routing
+
+Configures routing rules and tables.
+
+### routes
+
+A list of routing table entries to be configured. Each entry requires at least a `to` key.
+
+```yaml
+# ...
+routing:
+    routes:
+    - to: 198.51.100.128/25
+      via: 198.51.100.1
+# ...
+```

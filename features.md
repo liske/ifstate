@@ -15,6 +15,7 @@ The following features are already available:
 - remove orphan interfaces and ip addresses
 - ignore interfaces by patterns
 - ignore ip addresses by prefix lists
+- configure routing tables
 
 
 # Planned features
@@ -23,7 +24,6 @@ The following features a planned for a later release of *ifstate*:
 
 - configure ip routing
   - `ip rules`
-  - `ip route`
 - interface driver and hardware settings
   - `ethtool`
 - support for hotplug interfaces
