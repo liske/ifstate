@@ -7,8 +7,6 @@ declarative manner. It is a frontend for the kernel netlink protocol using
 [pyroute2](https://pyroute2.org/) and aims to be as powerful as the
 iproute2/bridge/ethtool commands.
 
-> *IfState* is in a early development state and not ready for productive use!
-
 It was written for interface configuration on lightweight software defined linux
 routers **without** using any additional network management daemon like
 [Network-Manager](https://gitlab.freedesktop.org/NetworkManager/NetworkManager) or
