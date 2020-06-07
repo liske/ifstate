@@ -121,7 +121,7 @@ class Link(ABC):
                 if not 'state' in self.settings:
                     self.settings['state'] = 'up'
 
-            logger.info('changed', extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
+            logger.info('change', extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
             ipr.link('set', index=self.idx, **(self.settings))
         else:
             logger.info('ok', extra={'iface': self.settings['ifname'], 'style': LogStyle.OK})
