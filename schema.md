@@ -1,8 +1,7 @@
 ---
 title: Schema
+redirect_to: schema/
 ---
-
-{% include_relative schema/iframe.html %}
 
 # YaML
 
