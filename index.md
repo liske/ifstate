@@ -25,7 +25,8 @@ support for many virtual link types:
 - [FRR](https://frrouting.org/) - The FRRouting Protocol Suite
 - [Quagga](https://www.quagga.net/) - Routing Software Suite
 
-It is possible to skip ip address configuration in *IfState* if the routing daemon supports it (*FRR*, *Quagga*).
+It is possible to skip ip address configuration by *IfState* if the routing
+daemon can handle it (*FRR*, *Quagga*).
 
 
 # Installation
