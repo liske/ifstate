@@ -2,6 +2,8 @@
 title: Schema
 ---
 
+{% include_relative schema/iframe.html %}
+
 # YaML
 
 The YaML configuration file for *ifstatecli* uses a loose schema with the following top-level keys:
