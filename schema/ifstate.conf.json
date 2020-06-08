@@ -1,16 +1,51 @@
 {
     "$id": "https://liske.github.io/ifstate/schema/ifstate.conf.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ifstate.conf",
     "description": "IfState Configuration Schema",
     "type": "object",
     "properties": {
         "options": {
+            "description": "global configuration settings",
             "type": "object"
         },
         "ignore": {
-            "type": "object"
+            "description": "ignore patterns to skip interface, ip address or routing objects",
+            "type": "object",
+            "properties": {
+                "ipaddr": {
+                    "description": "list of ip address prefixes to be ignored",
+                    "type": "array",
+                    "items": {
+                        "description": "ip address with prefix length (i.e. `192.0.2.0/24`)",
+                        "type": "string"
+                    }
+                },
+                "ifname": {
+                    "description": "interface names matching this list of regex will be ignored",
+                    "type": "array",
+                    "items": {
+                        "description": "regex to match interface name (i.e. `^veth`)",
+                        "type": "string"
+                    }
+                },
+                "routes": {
+                    "description": "filter routes by options",
+                    "type": "object",
+                    "properties": {
+                        "protos": {
+                            "type": "array",
+                            "items": {
+                                "description": "protocol number (`/etc/iproute2/rt_protos`)",
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            }
         },
         "interfaces": {
+            "description": "list of interface settings (link and ip addresses)",
             "type": "array",
             "items": {
                 "type": "object",
@@ -19,15 +54,18 @@
                 ],
                 "properties": {
                     "name": {
+                        "description": "name of the interface",
                         "type": "string"
                     },
                     "addresses": {
+                        "description": "ip addresses of the interface",
                         "type": "array",
                         "items": {
                             "type": "string"
                         }
                     },
                     "link": {
+                        "description": "link settings of the interface",
                         "type": "object",
                         "required": [
                             "kind"
@@ -62,7 +100,8 @@
                                 "type": "string"
                             },
                             "proto": {
-                                "type": "string"
+                                "type": "string",
+                                "default": "boot"
                             },
                             "realm": {
                                 "type": "string"
@@ -71,7 +110,8 @@
                                 "type": "string"
                             },
                             "table": {
-                                "type": "string"
+                                "type": "string",
+                                "default": "main"
                             },
                             "to": {
                                 "type": "string"
