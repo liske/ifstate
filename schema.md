@@ -67,11 +67,17 @@ interfaces:
 
 ### addresses
 
-Configures ip addresses ([`ip address`](https://man7.org/linux/man-pages/man8/ip-address.8.html)) of the interface.
+Configures ip addresses of the interface. This is a simple list of IPv4 and IPv6
+addresses in prefix notation. Furhter options of the
+[`ip address`](https://man7.org/linux/man-pages/man8/ip-address.8.html) are
+not supported, yet.
 
 ### link
 
-Configures link settings ([`ip link`](https://man7.org/linux/man-pages/man8/ip-link.8.html)) of the interface.
+Configures link settings of the interface by specifying a dict where keys are
+in the style of [`ip link`](https://man7.org/linux/man-pages/man8/ip-link.8.html)
+options.
+
 
 
 ## routing
@@ -80,13 +86,15 @@ Configures routing rules and tables.
 
 ### routes
 
-A list of routing table entries ([`ip route`](https://man7.org/linux/man-pages/man8/ip-route.8.html)) to be configured. Each entry requires at least a `to` key.
+A list of routing table entries to be configured. Each entry requires to be a
+dict with at least a `to` key. Further keys are in the style of the
+[`ip route`](https://man7.org/linux/man-pages/man8/ip-route.8.html) options.
 
 ```yaml
 # ...
 routing:
     routes:
-    - to: 198.51.100.128/25
+    - to: 0.0.0.0/0
       via: 198.51.100.1
 # ...
 ```
