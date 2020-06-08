@@ -1,0 +1,57 @@
+$id: https://liske.github.io/ifstate/ifstate.conf.schema.json
+$schema: http://json-schema.org/draft-07/schema#
+description: IfState Configuration Schema
+type: object
+properties:
+    options:
+        type: object
+    ignore:
+        type: object
+    interfaces:
+        type: array
+        items:
+            type: object
+            required:
+            - name
+            properties:
+                name:
+                    type: string
+                addresses:
+                    type: array
+                    items:
+                        type: string
+                link:
+                    type: object
+                    required:
+                    - kind
+                    properties:
+                        kind:
+                            type: string
+                        link:
+                            type: string
+                        state:
+                            type: string
+    routing:
+        type: object
+        properties:
+            routes:
+                type: array
+                items:
+                    type: object
+                    required:
+                    - to
+                    properties:
+                        dev:
+                            type: string
+                        proto:
+                            type: string
+                        realm:
+                            type: string
+                        scope:
+                            type: string
+                        table:
+                            type: string
+                        to:
+                            type: string
+                        via:
+                            type: string
