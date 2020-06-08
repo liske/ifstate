@@ -22,7 +22,7 @@ header_pages:
   - install.md
   - cli.md
   - schema.md
-  - sources.md
+  - source.md
 
 minima:
   skin: solarized-dark
