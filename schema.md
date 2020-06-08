@@ -1,5 +1,5 @@
 ---
-title: Schema
+title: 🔗Schema
 redirect_to: schema/
 ---
 
