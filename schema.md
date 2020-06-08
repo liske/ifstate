@@ -67,11 +67,11 @@ interfaces:
 
 ### addresses
 
-Configures ip addresses (`ip address`) of the interface.
+Configures ip addresses ([`ip address`](https://man7.org/linux/man-pages/man8/ip-address.8.html)) of the interface.
 
 ### link
 
-Configures link settings (`ip link`) of the interface.
+Configures link settings ([`ip link`](https://man7.org/linux/man-pages/man8/ip-link.8.html)) of the interface.
 
 
 ## routing
@@ -80,7 +80,7 @@ Configures routing rules and tables.
 
 ### routes
 
-A list of routing table entries to be configured. Each entry requires at least a `to` key.
+A list of routing table entries ([`ip route`](https://man7.org/linux/man-pages/man8/ip-route.8.html)) to be configured. Each entry requires at least a `to` key.
 
 ```yaml
 # ...
