@@ -4,6 +4,7 @@ from libifstate.parser import YamlParser
 from libifstate import __version__, IfState
 from libifstate.util import logger, LogStyle , AnsiColors
 from collections import namedtuple
+from jsonschema import ValidationError
 
 import argparse
 import logging
@@ -91,7 +92,11 @@ def main():
         parser = YamlParser(args.config)
         ifstates = parser.config()
 
-        ifs.update(ifstates)
+        try:
+            ifs.update(ifstates)
+        except ValidationError as err:
+            logger.error("Configuration validation failed:\n path : {}\n error: {}".format(".".join(err.path), err.message))
+            exit(1)
 
         if args.action == Actions.CHECK:
             pass

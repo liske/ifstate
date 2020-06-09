@@ -6,7 +6,10 @@ from libifstate.parser import Parser
 from libifstate.util import logger, ipr, LogStyle
 from libifstate.exception import LinkCircularLinked, LinkNoConfigFound
 from ipaddress import ip_network, ip_interface
+from jsonschema import validate, ValidationError
+import pkgutil
 import re
+import json
 
 __version__ = "0.6.0"
 
@@ -19,6 +22,10 @@ class IfState():
         self.rules = None
     
     def update(self, ifstates):
+        # check config schema
+        schema = json.loads(pkgutil.get_data("ifstate", "../schema/ifstate.conf.schema.json"))
+        validate(ifstates, schema)
+
         # add interfaces from config
         for ifstate in ifstates['interfaces']:
             name = ifstate['name']

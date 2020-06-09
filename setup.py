@@ -6,6 +6,7 @@ def readme():
     with open("README.md") as f:
         return f.read()
 
+
 def version():
     with open("libifstate/__init__.py") as fd:
         for line in fd:
@@ -13,6 +14,7 @@ def version():
                 delim = '"' if '"' in line else "'"
                 return line.split(delim)[1]
     raise RuntimeError("Unable to find version string.")
+
 
 setup(
     name="ifstate",
@@ -25,6 +27,9 @@ setup(
     url="https://github.com/liske/ifstate",
     license="GPL3+",
     packages=find_packages(),
+    package_data={
+        "ifstate": ["../schema/*.schema.json"],
+    },
     install_requires=[
         "pyroute2",
         "PyYAML",
