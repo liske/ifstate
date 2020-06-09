@@ -1,5 +1,5 @@
 {
-    "$id": "https://liske.github.io/ifstate/schema/ifstate.conf.json",
+    "$id": "https://liske.github.io/ifstate/schema/ifstate.conf.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ifstate.conf",
     "description": "IfState Configuration Schema",
