@@ -17,15 +17,24 @@
                     "description": "list of ip address prefixes to be ignored",
                     "type": "array",
                     "items": {
-                        "description": "ip address with prefix length (i.e. `192.0.2.0/24`)",
-                        "type": "string"
+                        "description": "ip address with prefix length",
+                        "type": "string",
+                        "examples": [
+                            "fe80::/10"
+                        ]
                     }
                 },
                 "ifname": {
                     "description": "interface names matching this list of regex will be ignored",
                     "type": "array",
                     "items": {
-                        "description": "regex to match interface name (i.e. `^veth`)",
+                        "description": "regex to match interface name",
+                        "examples": [
+                            "^docker\\d+",
+                            "^lo$",
+                            "^ppp\\d+$",
+                            "^veth"
+                        ],
                         "type": "string"
                     }
                 },
@@ -45,7 +54,7 @@
             }
         },
         "interfaces": {
-            "description": "list of interface settings (link and ip addresses)",
+            "description": "list of interface settings (link settings and ip addresses)",
             "type": "array",
             "items": {
                 "type": "object",
@@ -61,7 +70,12 @@
                         "description": "ip addresses of the interface",
                         "type": "array",
                         "items": {
-                            "type": "string"
+                            "type": "string",
+                            "examples": [
+                                "192.0.2.1",
+                                "192.168.0.1/24",
+                                "2001:db8::1/64"
+                            ]
                         }
                     },
                     "link": {
@@ -72,13 +86,44 @@
                         ],
                         "properties": {
                             "kind": {
-                                "type": "string"
+                                "type": "string",
+                                "description": "link type",
+                                "enum": [
+                                    "bond",
+                                    "bridge",
+                                    "geneve",
+                                    "gre",
+                                    "gretap",
+                                    "gtp",
+                                    "ip6gre",
+                                    "ip6gretap",
+                                    "ip6tnl",
+                                    "ipip",
+                                    "ipoib",
+                                    "ipvlan",
+                                    "macvlan",
+                                    "macvtap",
+                                    "physical",
+                                    "sit",
+                                    "team",
+                                    "tuntap",
+                                    "veth",
+                                    "vlan",
+                                    "vrf",
+                                    "vti",
+                                    "vti6",
+                                    "vxlan",
+                                    "xfrm"
+                                ]
                             },
                             "link": {
-                                "type": "string"
+                                "type": "string",
+                                "description": "specifies a master device"
                             },
                             "state": {
-                                "type": "string"
+                                "type": "string",
+                                "description": "change device state",
+                                "enum": ["up", "down"]
                             }
                         }
                     }
