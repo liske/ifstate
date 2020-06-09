@@ -13,5 +13,9 @@ class LinkCircularLinked(Exception):
 class LinkNoConfigFound(Exception):
     pass
 
+class ParserValidationError(Exception):
+    def __init__(self, detail):
+        self.detail = detail
+
 class RouteDupblicate(Exception):
     pass

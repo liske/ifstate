@@ -28,7 +28,7 @@ setup(
     license="GPL3+",
     packages=find_packages(),
     package_data={
-        "ifstate": ["../schema/*.schema.json"],
+        "libifstate": ["../schema/*.schema.json"],
     },
     install_requires=[
         "pyroute2",

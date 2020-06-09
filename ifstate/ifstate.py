@@ -2,9 +2,9 @@
 
 from libifstate.parser import YamlParser
 from libifstate import __version__, IfState
+from libifstate.exception import ParserValidationError
 from libifstate.util import logger, LogStyle , AnsiColors
 from collections import namedtuple
-from jsonschema import ValidationError
 
 import argparse
 import logging
@@ -94,8 +94,8 @@ def main():
 
         try:
             ifs.update(ifstates)
-        except ValidationError as err:
-            logger.error("Configuration validation failed:\n path : {}\n error: {}".format(".".join(err.path), err.message))
+        except ParserValidationError as ex:
+            logger.error("Config validation failed for {}".format(ex.detail))
             exit(1)
 
         if args.action == Actions.CHECK:

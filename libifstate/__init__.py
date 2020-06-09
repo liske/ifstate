@@ -4,7 +4,7 @@ from libifstate.address import Addresses
 from libifstate.routing import Tables, Rules
 from libifstate.parser import Parser
 from libifstate.util import logger, ipr, LogStyle
-from libifstate.exception import LinkCircularLinked, LinkNoConfigFound
+from libifstate.exception import LinkCircularLinked, LinkNoConfigFound, ParserValidationError
 from ipaddress import ip_network, ip_interface
 from jsonschema import validate, ValidationError
 import pkgutil
@@ -23,8 +23,23 @@ class IfState():
     
     def update(self, ifstates):
         # check config schema
-        schema = json.loads(pkgutil.get_data("ifstate", "../schema/ifstate.conf.schema.json"))
-        validate(ifstates, schema)
+        schema = json.loads(pkgutil.get_data("libifstate", "../schema/ifstate.conf.schema.json"))
+        try:
+            validate(ifstates, schema)
+        except ValidationError as ex:
+            if len(ex.path) > 0:
+                path = ["$"]
+                for i, p in enumerate(ex.path):
+                    if type(p) == int:
+                        path.append("[{}]".format(p))
+                    else:
+                        path.append(".")
+                        path.append(p)
+
+                detail = "{}: {}".format("".join(path),ex.message)
+            else:
+                detail = ex.message
+            raise ParserValidationError(detail)
 
         # add interfaces from config
         for ifstate in ifstates['interfaces']:
