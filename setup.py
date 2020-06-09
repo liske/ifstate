@@ -6,16 +6,6 @@ def readme():
     with open("README.md") as f:
         return f.read()
 
-
-def requirements():
-    req = []
-    with open("requirements.txt") as fd:
-        for line in fd:
-            line.strip()
-            if not line.startswith("#"):
-                req.append(line)
-    return req
-
 def version():
     with open("libifstate/__init__.py") as fd:
         for line in fd:
