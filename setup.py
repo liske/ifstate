@@ -38,6 +38,7 @@ setup(
     install_requires=[
         "pyroute2",
         "PyYAML",
+        "jsonschema",
     ],
     entry_points={
         "console_scripts": ["ifstatecli = ifstate.ifstate:main"]
