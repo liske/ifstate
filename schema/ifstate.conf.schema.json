@@ -87,6 +87,7 @@
                         "properties": {
                             "kind": {
                                 "type": "string",
+                                "title": "link type",
                                 "description": "link type",
                                 "enum": [
                                     "bond",
