@@ -11,7 +11,8 @@ It was written for interface configuration on lightweight software defined linux
 routers **without** using any additional network management daemon like
 [Network-Manager](https://gitlab.freedesktop.org/NetworkManager/NetworkManager) or
 [systemd-networkd](https://www.freedesktop.org/software/systemd/man/systemd-networkd.service.html).
-It can be used with deployment tools like ansible since it's declarative and
+It can be used with deployment and automation tools like
+[ansible](https://github.com/ansible/ansible) since it's declarative and
 operates idempotent.
 
 When *IfState* was born there where already other projects for declarative
