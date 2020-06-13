@@ -25,7 +25,8 @@ http://dl-cdn.alpinelinux.org/alpine/v3.12/community
 
 - enable [repository
   pinning](https://wiki.alpinelinux.org/wiki/Alpine_Linux_package_management#Repository_pinning)
-  in `/etc/apk/repositories` **including** for *community* to statisfy the *pyroute2* dependency:
+  in `/etc/apk/repositories` **including** the *community* repository to
+  statisfy the *pyroute2* dependency:
 
 ```perl
 http://dl-cdn.alpinelinux.org/alpine/v3.12/main
