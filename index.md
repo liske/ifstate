@@ -31,6 +31,10 @@ daemon can handle it (*FRR*, *Quagga*).
 
 # Installation
 
+*IfState* is available in the following linux distributions:
+
+- [Alpine Linux](install.md#Alpine-Linux)
+
 Use *pip3* to install *IfState*:
 
 ```bash
