@@ -117,8 +117,12 @@
                                 ]
                             },
                             "link": {
-                                "type": "string",
-                                "description": "specifies a master device"
+                                "type": ["integer", "string"],
+                                "description": "specifies a parent device name or index"
+                            },
+                            "master": {
+                                "type": ["integer", "string"],
+                                "description": "specifies a master device name or index"
                             },
                             "state": {
                                 "type": "string",
