@@ -27,7 +27,7 @@ class Link(ABC):
         self.attr_map = {
             'kind': ['IFLA_LINKINFO', 'IFLA_INFO_KIND'],
         }
-        self.attr_idx = ['link']
+        self.attr_idx = ['link', 'master']
         self.idx = None
 
         if 'address' in self.settings:
