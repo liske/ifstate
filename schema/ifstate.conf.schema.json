@@ -146,20 +146,20 @@
                         ],
                         "properties": {
                             "dev": {
-                                "type": "string"
+                                "type": ["integer", "string"]
                             },
                             "proto": {
-                                "type": "string",
+                                "type": ["integer", "string"],
                                 "default": "boot"
                             },
                             "realm": {
-                                "type": "string"
+                                "type": ["integer", "string"]
                             },
                             "scope": {
-                                "type": "string"
+                                "type": ["integer", "string"]
                             },
                             "table": {
-                                "type": "string",
+                                "type": ["integer", "string"],
                                 "default": "main"
                             },
                             "to": {
