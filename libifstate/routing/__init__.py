@@ -20,9 +20,6 @@ def route_matches(r1, r2, fields=('dst', 'metric', 'proto'), verbose=False):
                 return False
     return True
 
-def route_identical(r1, r2):
-    return route_matches(r1, r2, set(r1.keys()) | set(r2.keys()), True)
-
 class RTLookup():
     def __init__(self, name):
         self.name = name
@@ -198,7 +195,7 @@ class Tables(collections.abc.Mapping):
                     if route_matches(route, kroute):
                         del kroutes[i]
                         found = True
-                        if route_identical(route, kroute):
+                        if route_matches(route, kroute, route.keys(), True):
                             identical = True
                             break
 
