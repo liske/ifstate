@@ -1,4 +1,4 @@
 #!/bin/sh
 
 git checkout master -- schema/ifstate.conf.schema.json
-generate-schema-doc --expand-buttons schema/ifstate.conf.schema.json schema/index.html
+generate-schema-doc --no-link-to-reused-ref --expand-buttons schema/ifstate.conf.schema.json schema/index.html
