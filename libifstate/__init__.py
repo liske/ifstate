@@ -11,7 +11,7 @@ import pkgutil
 import re
 import json
 
-__version__ = "0.6.2"
+__version__ = "0.6.3"
 
 class IfState():
     def __init__(self):
