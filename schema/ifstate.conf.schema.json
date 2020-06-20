@@ -4,6 +4,54 @@
     "title": "ifstate.conf",
     "description": "IfState Configuration Schema",
     "type": "object",
+    "definitions": {
+        "iface-link_link": {
+            "type": [
+                "integer",
+                "string"
+            ],
+            "description": "specifies a parent device name or index"
+        },
+        "iface-link_master": {
+            "type": [
+                "integer",
+                "string"
+            ],
+            "description": "specifies a master device name or index"
+        },
+        "iface-link_state": {
+            "type": "string",
+            "description": "set device state",
+            "enum": [
+                "up",
+                "down"
+            ]
+        },
+        "iface-link_tun-remote4": {
+            "type": "string",
+            "description": "remote IPv4 address of the tunnel",
+            "format": "ipv4"
+        },
+        "iface-link_tun-local4": {
+            "type": "string",
+            "description": "local IPv4 address of the tunnel",
+            "format": "ipv4"
+        },
+        "iface-link_tun-remote6": {
+            "type": "string",
+            "description": "remote IPv4 address of the tunnel",
+            "format": "ipv6"
+        },
+        "iface-link_tun-local6": {
+            "type": "string",
+            "description": "local IPv4 address of the tunnel",
+            "format": "ipv6"
+        },
+        "iface-link_tun-dev": {
+            "$ref": "#/definitions/iface-link_link",
+            "description": "interface to use for tunnel endpoint communication"
+        }
+    },
     "properties": {
         "options": {
             "description": "global configuration settings",
@@ -81,55 +129,324 @@
                     "link": {
                         "description": "link settings of the interface",
                         "type": "object",
-                        "required": [
-                            "kind"
-                        ],
-                        "properties": {
-                            "kind": {
-                                "type": "string",
-                                "description": "link type",
-                                "enum": [
-                                    "bond",
-                                    "bridge",
-                                    "geneve",
-                                    "gre",
-                                    "gretap",
-                                    "gtp",
-                                    "ip6gre",
-                                    "ip6gretap",
-                                    "ip6tnl",
-                                    "ipip",
-                                    "ipoib",
-                                    "ipvlan",
-                                    "macvlan",
-                                    "macvtap",
-                                    "physical",
-                                    "sit",
-                                    "team",
-                                    "tuntap",
-                                    "veth",
-                                    "vlan",
-                                    "vrf",
-                                    "vti",
-                                    "vti6",
-                                    "vxlan",
-                                    "xfrm"
+                        "oneOf": [
+                            {
+                                "description": "generic interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "bond",
+                                            "bridge",
+                                            "gtp",
+                                            "ip6tnl",
+                                            "ipoib",
+                                            "ipvlan",
+                                            "macvlan",
+                                            "macvtap",
+                                            "physical",
+                                            "team",
+                                            "tuntap",
+                                            "veth",
+                                            "vrf",
+                                            "vti",
+                                            "vti6"
+                                        ]
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "VLAN interface",
+                                "required": [
+                                    "kind",
+                                    "link",
+                                    "vlan_id"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "vlan"
+                                        ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "link": {
+                                        "$ref": "#/definitions/iface-link_link"
+                                    },
+                                    "vlan_id": {
+                                        "type": [
+                                            "integer"
+                                        ],
+                                        "minimum": 0,
+                                        "maximum": 4094,
+                                        "description": "specifies the VLAN identifier to use"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "VXLAN interface",
+                                "required": [
+                                    "kind",
+                                    "vxlan_id",
+                                    "vxlan_link"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "vxlan"
+                                        ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "vxlan_id": {
+                                        "type": [
+                                            "integer"
+                                        ],
+                                        "minimum": 0,
+                                        "maximum": 16777215,
+                                        "description": "specifies the VNI"
+                                    },
+                                    "vxlan_link": {
+                                        "$ref": "#/definitions/iface-link_tun-dev"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "IPIP interface",
+                                "required": [
+                                    "kind",
+                                    "ipip_remote",
+                                    "ipip_local"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "ipip"
+                                        ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "ipip_remote": {
+                                        "$ref": "#/definitions/iface-link_tun-remote4"
+                                    },
+                                    "ipip_local": {
+                                        "$ref": "#/definitions/iface-link_tun-local4"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "SIT interface",
+                                "required": [
+                                    "kind",
+                                    "sit_remote",
+                                    "sit_local"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "sit"
+                                        ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "sit_remote": {
+                                        "$ref": "#/definitions/iface-link_tun-remote4"
+                                    },
+                                    "sit_local": {
+                                        "$ref": "#/definitions/iface-link_tun-local4"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "GRE, GRETAP interface",
+                                "required": [
+                                    "kind",
+                                    "gre_remote",
+                                    "gre_local"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "gre",
+                                            "gretap"
+                                        ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "gre_remote": {
+                                        "$ref": "#/definitions/iface-link_tun-remote4"
+                                    },
+                                    "gre_local": {
+                                        "$ref": "#/definitions/iface-link_tun-local4"
+                                    },
+                                    "gre_link": {
+                                        "$ref": "#/definitions/iface-link_tun-dev"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "IP6GRE, IP6GRETAP interface",
+                                "required": [
+                                    "kind",
+                                    "ip6gre_remote",
+                                    "ip6gre_local"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "ip6gre",
+                                            "ip6gretap"
+                                        ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "ip6gre_remote": {
+                                        "$ref": "#/definitions/iface-link_tun-remote4"
+                                    },
+                                    "ip6gre_local": {
+                                        "$ref": "#/definitions/iface-link_tun-local4"
+                                    },
+                                    "ip6gre_link": {
+                                        "$ref": "#/definitions/iface-link_tun-dev"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "GENEVE interface",
+                                "required": [
+                                    "kind",
+                                    "geneve_id"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "geneve"
+                                        ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "geneve_id": {
+                                        "type": [
+                                            "integer"
+                                        ],
+                                        "minimum": 0,
+                                        "maximum": 16777215,
+                                        "description": "specifies the VNI to use"
+                                    }
+                                },
+                                "oneOf": [
+                                    {
+                                        "description": "tunnel over IPv4",
+                                        "required": [
+                                            "geneve_remote"
+                                        ],
+                                        "properties": {
+                                            "geneve_remote": {
+                                                "$ref": "#/definitions/iface-link_tun-remote4"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "tunnel over IPv6",
+                                        "required": [
+                                            "geneve_remote6"
+                                        ],
+                                        "properties": {
+                                            "geneve_remote6": {
+                                                "$ref": "#/definitions/iface-link_tun-remote6"
+                                            }
+                                        }
+                                    }
                                 ]
                             },
-                            "link": {
-                                "type": ["integer", "string"],
-                                "description": "specifies a parent device name or index"
-                            },
-                            "master": {
-                                "type": ["integer", "string"],
-                                "description": "specifies a master device name or index"
-                            },
-                            "state": {
-                                "type": "string",
-                                "description": "change device state",
-                                "enum": ["up", "down"]
+                            {
+                                "description": "XFRM interface",
+                                "required": [
+                                    "kind",
+                                    "xfrm_link"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "xfrm"
+                                        ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "xfrm_link": {
+                                        "$ref": "#/definitions/iface-link_tun-dev",
+                                        "description": "underlying interface used to send and receive the transformed traffic"
+                                    },
+                                    "xfrm_if_id": {
+                                        "type": [
+                                            "integer"
+                                        ],
+                                        "minimum": 0,
+                                        "maximum": 4294967295,
+                                        "default": 0,
+                                        "description": "lookup key to match xfrm policies"
+                                    }
+                                }
                             }
-                        }
+                        ]
                     }
                 }
             }
@@ -146,20 +463,35 @@
                         ],
                         "properties": {
                             "dev": {
-                                "type": ["integer", "string"]
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ]
                             },
                             "proto": {
-                                "type": ["integer", "string"],
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
                                 "default": "boot"
                             },
                             "realm": {
-                                "type": ["integer", "string"]
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ]
                             },
                             "scope": {
-                                "type": ["integer", "string"]
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ]
                             },
                             "table": {
-                                "type": ["integer", "string"],
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
                                 "default": "main"
                             },
                             "to": {
