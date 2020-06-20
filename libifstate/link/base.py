@@ -27,7 +27,7 @@ class Link(ABC):
         self.attr_map = {
             'kind': ['IFLA_LINKINFO', 'IFLA_INFO_KIND'],
         }
-        self.attr_idx = ['link', 'master', 'xfrm_link']
+        self.attr_idx = ['link', 'master', 'gre_link', 'ip6gre_link', 'vxlan_link', 'xfrm_link']
         self.idx = None
 
         if 'address' in self.settings:
