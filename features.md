@@ -11,7 +11,7 @@ The following features are already available:
   - rename static interfaces by mac address
   - set interface state
 - create and configure interfaces
-  - support many [interface types](schema/#interfaces_items_link_kind)
+  - support many [interface types](schema/#interfaces_items_link)
 - configure ip addresses
 - remove orphan interfaces and ip addresses
 - configure routing tables
