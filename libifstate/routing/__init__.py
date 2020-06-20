@@ -88,7 +88,7 @@ class Tables(collections.abc.Mapping):
         }
 
         if 'dev' in route:
-            rt['oif'] = next(iter(ipr.link_lookup(ifname=route['dev'])))
+            rt['oif'] = route['dev']
 
         if 'via' in route:
             rt['gateway'] = str(ip_address(route['via']))
@@ -189,6 +189,8 @@ class Tables(collections.abc.Mapping):
             kroutes = self.kernel_routes(table)
 
             for route in croutes:
+                if 'oif' in route and type(route['oif']) == str:
+                    route['oif'] = next(iter(ipr.link_lookup(ifname=route['oif'])))
                 found = False
                 identical = False
                 for i, kroute in enumerate(kroutes):
