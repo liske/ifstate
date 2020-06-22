@@ -194,6 +194,10 @@ class Tables(collections.abc.Mapping):
                 found = False
                 identical = False
                 for i, kroute in enumerate(kroutes):
+                    # ignore RTM_F_CLONED routes
+                    if kroute.flags & 512:
+                        continue
+
                     if route_matches(route, kroute):
                         del kroutes[i]
                         found = True
