@@ -149,6 +149,10 @@ class Tables(collections.abc.Mapping):
     def kernel_routes(self, table):
         routes = []
         for route in ipr.get_routes(table=table, family=AF_INET) + ipr.get_routes(table=table, family=AF_INET6):
+            # ignore RTM_F_CLONED routes
+            if route['flags'] & 512:
+                continue
+
             if route['dst_len'] > 0:
                 dst = ip_network('{}/{}'.format(route.get_attr('RTA_DST'), route['dst_len'])).with_prefixlen
             elif route['family']==AF_INET:
@@ -194,10 +198,6 @@ class Tables(collections.abc.Mapping):
                 found = False
                 identical = False
                 for i, kroute in enumerate(kroutes):
-                    # ignore RTM_F_CLONED routes
-                    if kroute.flags & 512:
-                        continue
-
                     if route_matches(route, kroute):
                         del kroutes[i]
                         found = True
