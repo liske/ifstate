@@ -107,6 +107,9 @@ To make *strongSwan* VRF aware you must use [swanctl](https://wiki.strongswan.or
 It is not possible to use the classic `ipsec.conf` with XFRM interfaces. A swanctl configuration might look like:
 
 ```ini
+#
+# IPsec tunnel for tenant1
+#
 connections {
     # Section for an IKE connection named <conn>.
     tentant1 {
@@ -148,6 +151,10 @@ connections {
     }
 }
 
+
+#
+# IPsec tunnel for tenant2
+#
 connections {
     # Section for an IKE connection named <conn>.
     tentant2 {
