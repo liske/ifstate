@@ -103,6 +103,9 @@ routing:
 
 ## strongSwan
 
+To make *strongSwan* VRF aware you must use [swanctl](https://wiki.strongswan.org/projects/strongswan/wiki/swanctl).
+It is not possible to use the classic `ipsec.conf` with XFRM interfaces. A swanctl configuration might look like:
+
 ```ini
 connections {
     # Section for an IKE connection named <conn>.
