@@ -1,9 +1,12 @@
-# XFRM Interfaces for multitenant IPsec
+# Example: XFRM Interfaces for multitenant IPsec
 
 This example configures a multitenant IPsec setup:
 - use strongSwan for IPsec setup
 - use VLAN subinterfaces for inside VRF access
 - XFRM interfaces to connect IPsec tunnels with the VRFs
+
+[Back](../examples.md)
+
 
 ## ifstate
 

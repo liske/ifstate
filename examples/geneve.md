@@ -1,8 +1,4 @@
----
-title: Example: GENEVE Layer 2 Tunnel
----
-
-# [Example](../examples.md): GENEVE Layer 2 Tunnel
+# Example: GENEVE Layer 2 Tunnel
 
 This example configures a GENEVE layer 2 tunnel and a bridge:
 - create a bridge interface `br0`
@@ -10,6 +6,8 @@ This example configures a GENEVE layer 2 tunnel and a bridge:
 - add `gen0` and the interface `eth0` to the bridge `br0`
 - disable STP on the bridge `br0`
 - set all interface link states to `up`
+
+[Back](../examples.md)
 
 
 ## ifstate

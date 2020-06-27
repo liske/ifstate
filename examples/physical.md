@@ -1,13 +1,11 @@
----
-title: Example: Physical Interface
----
-
-# [Example](../examples.md): Physical Interface
+# Example: Physical Interface
 
 This example configures an existing physical interface link:
 - rename it to `outside`
 - add an ipv4 address
 - set the link state to `up`
+
+[Back](../examples.md)
 
 
 ## ifstate

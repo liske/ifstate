@@ -1,8 +1,4 @@
----
-title: Example: VLAN Interface (802.1q)
----
-
-# [Example](../examples.md): VLAN Interface (802.1q)
+# Example: VLAN Interface (802.1q)
 
 This example configures a VLAN subinterface (IEEE 802.1q):
 - rename the base interface to `trunk`
@@ -10,6 +6,8 @@ This example configures a VLAN subinterface (IEEE 802.1q):
 - create a VLAN subinterface for VLAN ID `42`
 - set the subinterface link state to `up`
 - add an ipv4 address on the subinterface
+
+[Back](../examples.md)
 
 
 ## ifstate
