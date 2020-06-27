@@ -3,7 +3,7 @@
 This example configures a multitenant IPsec setup:
 - use strongSwan for IPsec setup
 - use VLAN subinterfaces for inside VRF access
-- XFRM interfaces to connect IPsec tunnels with the VRFs
+- [XFRM interfaces](https://patchwork.ozlabs.org/project/netdev/cover/20180612075610.2000-1-steffen.klassert@secunet.com/) to connect IPsec tunnels with the VRFs (requires Linux kernel 4.19+)
 
 [Back](../examples.md)
 
