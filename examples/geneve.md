@@ -1,8 +1,8 @@
 ---
-title: Examples: GENEVE Layer 2 Tunnel
+title: Example: GENEVE Layer 2 Tunnel
 ---
 
-# Examples: GENEVE Layer 2 Tunnel
+# [Example](../examples.md): GENEVE Layer 2 Tunnel
 
 This example configures a GENEVE layer 2 tunnel and a bridge:
 - create a bridge interface `br0`

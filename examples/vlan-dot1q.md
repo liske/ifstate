@@ -1,8 +1,8 @@
 ---
-title: Examples: VLAN Interface (802.1q)
+title: Example: VLAN Interface (802.1q)
 ---
 
-# Examples: VLAN Interface (802.1q)
+# [Example](../examples.md): VLAN Interface (802.1q)
 
 This example configures a VLAN subinterface (IEEE 802.1q):
 - rename the base interface to `trunk`

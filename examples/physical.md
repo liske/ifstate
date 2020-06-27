@@ -1,8 +1,8 @@
 ---
-title: Examples: Physical Interface
+title: Example: Physical Interface
 ---
 
-# Examples: Physical Interface
+# [Example](../examples.md): Physical Interface
 
 This example configures an existing physical interface link:
 - rename it to `outside`
