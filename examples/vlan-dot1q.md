@@ -2,6 +2,8 @@
 title: Examples: VLAN Interface (802.1q)
 ---
 
+# Examples: VLAN Interface (802.1q)
+
 This example configures a VLAN subinterface (IEEE 802.1q):
 - rename the base interface to `trunk`
 - set the base interface link to `up`
@@ -10,7 +12,7 @@ This example configures a VLAN subinterface (IEEE 802.1q):
 - add an ipv4 address on the subinterface
 
 
-# ifstate
+## ifstate
 
 ```yaml
 interfaces:
@@ -29,7 +31,7 @@ interfaces:
 ```
 
 
-# iproute2
+## iproute2
 
 ```bash
 ip link dev eth0 set down
