@@ -1,15 +1,18 @@
 ---
-title: Examples: Physical Link
+title: Examples: Physical Interface
 ---
 
-This example configures an existing physical link.
+This example configures an existing physical interface link:
+- rename it to `outside`
+- add an ipv4 address
+- set the link state to `up`
 
 
 # ifstate
 
 ```yaml
 interfaces:
-- name: eth0
+- name: outside
   addresses:
     - 192.0.2.1/24
   link:
@@ -22,6 +25,7 @@ interfaces:
 # iproute2
 
 ```bash
-ip link dev eth0 set up
-ip address replace 192.0.2.1/24 dev eth0
+ip link dev eth0 set down
+ip link set dev eth0 name outside up
+ip address add 192.0.2.1/24 dev eth0
 ```

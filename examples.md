@@ -5,4 +5,5 @@ title: Examples
 This is a collection of configuration examples for different interface link types and routing setups.
 
 
-- [physical link](examples/physical.md)
+- [Physical Interface](examples/physical.md)
+- [VLAN subinterface (802.1q)](examples/vlan-dot1q.md)
