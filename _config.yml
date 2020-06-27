@@ -21,6 +21,7 @@ header_pages:
   - features.md
   - install.md
   - cli.md
+  - examples.md
   - schema.md
   - source.md
 
