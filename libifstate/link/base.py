@@ -83,6 +83,12 @@ class Link(ABC):
         if self.idx is not None:
             self.iface = next(iter(ipr.get_links(self.idx)), None)
 
+            # check for ifname collisions
+            idx = next(iter(ipr.link_lookup(ifname=self.settings['ifname'])), None)
+            if idx is not None and idx != self.idx:
+                ipr.link('set', index=idx, state='down')
+                ipr.link('set', index=idx, ifname='{}!'.format(self.settings['ifname']))
+
             if self.cap_create and self.get_if_attr('kind') != self.settings['kind']:
                 self.recreate()
             else:
