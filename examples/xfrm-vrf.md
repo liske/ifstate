@@ -1,7 +1,3 @@
----
-title: [Examples](../examples.md)
----
-
 # XFRM Interfaces for multitenant IPsec
 
 This example configures a multitenant IPsec setup:
@@ -107,7 +103,7 @@ routing:
 
 ## strongSwan
 
-```json
+```ini
 connections {
     # Section for an IKE connection named <conn>.
     tentant1 {
