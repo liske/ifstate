@@ -32,6 +32,7 @@ class Parser(ABC):
         'ignore': {
             'ipaddr': [
                 'fe80::/10',
+                'ff00::/8',
             ],
             'ifname': [
                 r'^docker\d+',
