@@ -512,18 +512,16 @@
                             "priority"
                         ],
                         "properties": {
-                            "type": {
+                            "action": {
                                 "type": [
                                     "integer",
                                     "string"
                                 ],
                                 "description": "the type of this rule",
                                 "enum": [
-                                    "unicast",
                                     "blackhole",
                                     "unreachable",
-                                    "prohibit",
-                                    "nat"
+                                    "prohibit"
                                 ],
                                 "default": "unicast"
                             },
@@ -564,7 +562,19 @@
                                     "integer",
                                     "string"
                                 ],
-                                "default": "boot"
+                                "default": "unspec",
+                                "description": "routing protocol number (`/etc/iproute2/rt_protos`)"
+                            },
+                            "fwmark": {
+                                "type": "integer",
+                                "description": "select the *fwmark* value to match"
+                            },
+                            "ipproto": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "description": "select the ip protocol to match"
                             }
                         }
                     }

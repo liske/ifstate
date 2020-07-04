@@ -7,7 +7,9 @@ from glob import glob
 import os
 import re
 import sys
+import socket
 from socket import AF_INET, AF_INET6
+
 
 def route_matches(r1, r2, fields=('dst', 'metric', 'proto'), verbose=False):
     for fld in fields:
@@ -17,8 +19,9 @@ def route_matches(r1, r2, fields=('dst', 'metric', 'proto'), verbose=False):
             if r1[fld] != r2[fld]:
                 return False
         elif fld in r1 or fld in r2:
-                return False
+            return False
     return True
+
 
 class RTLookup():
     def __init__(self, name):
@@ -47,17 +50,19 @@ class RTLookup():
     def lookup_id(self, key):
         if type(key) == int or key.isdecimal():
             return int(key)
-        
+
         return self.str2id[key]
 
     def lookup_str(self, key):
         return self.id2str.get(key, key)
+
 
 class RTLookups():
     tables = RTLookup('rt_tables')
     realms = RTLookup('rt_realms')
     scopes = RTLookup('rt_scopes')
     protos = RTLookup('rt_protos')
+
 
 class Tables(collections.abc.Mapping):
     def __init__(self):
@@ -79,7 +84,7 @@ class Tables(collections.abc.Mapping):
 
     def add(self, route):
         rt = {
-            'table': RTLookups.tables.lookup_id( route.get('table', 254) ),
+            'table': RTLookups.tables.lookup_id(route.get('table', 254)),
             'dst': ip_network(route['to']).with_prefixlen,
             'scope': RTLookups.scopes.lookup_id(route.get('scope', 0)),
             'proto': RTLookups.protos.lookup_id(route.get('proto', 3)),
@@ -110,10 +115,11 @@ class Tables(collections.abc.Mapping):
                 continue
 
             if route['dst_len'] > 0:
-                dst = ip_network('{}/{}'.format(route.get_attr('RTA_DST'), route['dst_len'])).with_prefixlen
-            elif route['family']==AF_INET:
+                dst = ip_network(
+                    '{}/{}'.format(route.get_attr('RTA_DST'), route['dst_len'])).with_prefixlen
+            elif route['family'] == AF_INET:
                 dst = ip_network('0.0.0.0/0').with_prefixlen
-            elif route['family']==AF_INET6:
+            elif route['family'] == AF_INET6:
                 dst = ip_network('::/0').with_prefixlen
 
             rt = {
@@ -154,10 +160,11 @@ class Tables(collections.abc.Mapping):
                 continue
 
             if route['dst_len'] > 0:
-                dst = ip_network('{}/{}'.format(route.get_attr('RTA_DST'), route['dst_len'])).with_prefixlen
-            elif route['family']==AF_INET:
+                dst = ip_network(
+                    '{}/{}'.format(route.get_attr('RTA_DST'), route['dst_len'])).with_prefixlen
+            elif route['family'] == AF_INET:
                 dst = ip_network('0.0.0.0/0').with_prefixlen
-            elif route['family']==AF_INET6:
+            elif route['family'] == AF_INET6:
                 dst = ip_network('::/0').with_prefixlen
 
             rt = {
@@ -194,7 +201,8 @@ class Tables(collections.abc.Mapping):
 
             for route in croutes:
                 if 'oif' in route and type(route['oif']) == str:
-                    route['oif'] = next(iter(ipr.link_lookup(ifname=route['oif'])))
+                    route['oif'] = next(
+                        iter(ipr.link_lookup(ifname=route['oif'])))
                 found = False
                 identical = False
                 for i, kroute in enumerate(kroutes):
@@ -206,24 +214,30 @@ class Tables(collections.abc.Mapping):
                             break
 
                 if identical:
-                    logger.info('ok', extra={'iface': route['dst'], 'style': LogStyle.OK})
+                    logger.info(
+                        'ok', extra={'iface': route['dst'], 'style': LogStyle.OK})
                 else:
                     if found:
-                        logger.info('change', extra={'iface': route['dst'], 'style': LogStyle.CHG})
+                        logger.info('change', extra={
+                                    'iface': route['dst'], 'style': LogStyle.CHG})
                     else:
-                        logger.info('add', extra={'iface': route['dst'], 'style': LogStyle.CHG})
+                        logger.info(
+                            'add', extra={'iface': route['dst'], 'style': LogStyle.CHG})
 
-                    logger.debug("ip route replace: {}".format( " ".join("{}={}".format(k, v) for k,v in route.items()) ))
+                    logger.debug("ip route replace: {}".format(
+                        " ".join("{}={}".format(k, v) for k, v in route.items())))
                     try:
                         ipr.route('replace', **route)
                     except NetlinkError as err:
-                        logger.warning('setup route {} failed: {}'.format(route['dst'], err.args[1]))
+                        logger.warning('setup route {} failed: {}'.format(
+                            route['dst'], err.args[1]))
 
             for route in kroutes:
                 if route['proto'] in ignores.get('protos', []):
                     continue
 
-                logger.info('del', extra={'iface': route['dst'], 'style': LogStyle.DEL})
+                logger.info(
+                    'del', extra={'iface': route['dst'], 'style': LogStyle.DEL})
                 ipr.route('del', **route)
 
 
@@ -237,7 +251,8 @@ class Routes():
             raise RouteDupblicate()
 
         if 'table' in route:
-            route['table'] = RTLookups.tables.lookup_id(route.get_attr('RTA_TABLE', 'main'))
+            route['table'] = RTLookups.tables.lookup_id(
+                route.get_attr('RTA_TABLE', 'main'))
         # if 'dev' in route:
         #     route['dev'] = xxxx
         if 'scope' in route:
@@ -256,9 +271,86 @@ class Routes():
 
 
 class Rules():
+    def __init__(self):
+        self.rules = []
 
     def add(self, rule):
-        pass
+        ru = {
+            'table': RTLookups.tables.lookup_id(rule.get('table', 254)),
+            'protocol': RTLookups.protos.lookup_id(rule.get('proto', 0)),
+            'tos': rule.get('tos', 0),
+        }
+
+        if 'action' in rule:
+            if type(rule['action']) == str:
+                ru['action'] = {
+                    "unicast": "FR_ACT_UNICAST",
+                    "blackhole": "FR_ACT_BLACKHOLE",
+                    "unreachable": "FR_ACT_UNREACHABLE",
+                    "prohibit": "FR_ACT_PROHIBIT",
+                    "nat": "FR_ACT_NAT",
+                }.get(rule['action'])
+            else:
+                ru['action'] = rule['action'.lower()]
+
+        if 'fwmark' in rule:
+            ru['fwmark'] = rule['fwmark']
+
+        if 'ipproto' in rule:
+            if type(rule['ipproto']) == str:
+                ru['ip_proto'] = socket.getprotobyname(rule['ipproto'])
+            else:
+                ru['ip_proto'] = rule['ipproto']
+
+        if 'to' in rule:
+            ru['dst'] = str(ip_network(rule['to']).network_address)
+            ru['dst_len'] = ip_network(rule['to']).prefixlen
+
+        if 'from' in rule:
+            ru['src'] = str(ip_network(rule['from']).network_address)
+            ru['src_len'] = ip_network(rule['from']).prefixlen
+
+        if 'iif' in rule:
+            ru['iifname'] = rule['iif']
+
+        if 'oif' in rule:
+            ru['oifname'] = rule['oif']
+
+        if 'priority' in rule:
+            ru['priority'] = rule['priority']
+
+        self.rules.append(ru)
 
     def apply(self, ignores):
-        pass
+        logger.info('\nconfiguring routing rules...')
+        for rule in self.rules:
+            logger.debug("ip rule add: {}".format(
+                " ".join("{}={}".format(k, v) for k, v in rule.items())))
+            try:
+                ipr.rule('add', **rule)
+            except NetlinkError as err:
+                logger.warning('setup rule failed: {}'.format(err.args[1]))
+
+            # found = False
+            # identical = False
+            # for i, kroute in enumerate(kroutes):
+            #     if route_matches(route, kroute):
+            #         del kroutes[i]
+            #         found = True
+            #         if route_matches(route, kroute, route.keys(), True):
+            #             identical = True
+            #             break
+
+            #     if identical:
+            #         logger.info('ok', extra={'iface': route['dst'], 'style': LogStyle.OK})
+            #     else:
+            #         if found:
+            #             logger.info('change', extra={'iface': route['dst'], 'style': LogStyle.CHG})
+            #         else:
+            #             logger.info('add', extra={'iface': route['dst'], 'style': LogStyle.CHG})
+
+            #         logger.debug("ip route replace: {}".format( " ".join("{}={}".format(k, v) for k,v in route.items()) ))
+            #         try:
+            #             ipr.route('replace', **route)
+            #         except NetlinkError as err:
+            #             logger.warning('setup route {} failed: {}'.format(route['dst'], err.args[1]))
