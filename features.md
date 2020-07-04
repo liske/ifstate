@@ -15,18 +15,19 @@ The following features are already available:
 - configure ip addresses
 - remove orphan interfaces and ip addresses
 - configure routing tables
+- configure routing rules
 - ignore interfaces by patterns
 - ignore ip addresses by prefix lists
 - ignore routing table entries by protocol
+- ignore routing rules by protocol
 
 
 # Planned features
 
 The following features a planned for a later release of *ifstate*:
 
-- configure ip routing rules
-  - `ip rules`
 - interface driver and hardware settings
   - `ethtool`
-- support for hotplug interfaces
+- configure interface `sysctl` options
 - configure `ipset`
+- support for hotplug interfaces
