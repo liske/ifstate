@@ -519,11 +519,12 @@
                                 ],
                                 "description": "the type of this rule",
                                 "enum": [
+                                    "to_tbl",
                                     "blackhole",
                                     "unreachable",
                                     "prohibit"
                                 ],
-                                "default": "unicast"
+                                "default": "to_tbl"
                             },
                             "table": {
                                 "type": [

@@ -2,6 +2,7 @@ from libifstate.util import logger, ipr, LogStyle
 from libifstate.exception import RouteDupblicate
 from ipaddress import ip_address, ip_network
 from pyroute2.netlink.exceptions import NetlinkError
+from pyroute2.netlink.rtnl.fibmsg import FR_ACT_VALUES
 import collections.abc
 from glob import glob
 import os
@@ -12,6 +13,12 @@ from socket import AF_INET, AF_INET6
 
 
 def route_matches(r1, r2, fields=('dst', 'metric', 'proto'), verbose=False):
+    return _matches(r1, r2, fields, verbose)
+
+def rule_matches(r1, r2, fields=('priority', 'iif', 'oif', 'dst', 'metric', 'proto'), verbose=False):
+    return _matches(r1, r2, fields, verbose)
+
+def _matches(r1, r2, fields, verbose):
     for fld in fields:
         if verbose:
             logger.debug("{}: {} - {}".format(fld, r1.get(fld), r2.get(fld)))
@@ -281,17 +288,17 @@ class Rules():
             'tos': rule.get('tos', 0),
         }
 
-        if 'action' in rule:
-            if type(rule['action']) == str:
-                ru['action'] = {
-                    "unicast": "FR_ACT_UNICAST",
-                    "blackhole": "FR_ACT_BLACKHOLE",
-                    "unreachable": "FR_ACT_UNREACHABLE",
-                    "prohibit": "FR_ACT_PROHIBIT",
-                    "nat": "FR_ACT_NAT",
-                }.get(rule['action'])
-            else:
-                ru['action'] = rule['action'.lower()]
+        if type(rule['action']) == str:
+            ru['action'] = {
+                "to_tbl": "FR_ACT_TO_TBL",
+                "unicast": "FR_ACT_UNICAST",
+                "blackhole": "FR_ACT_BLACKHOLE",
+                "unreachable": "FR_ACT_UNREACHABLE",
+                "prohibit": "FR_ACT_PROHIBIT",
+                "nat": "FR_ACT_NAT",
+            }.get(rule['action'])
+        else:
+            ru['action'] = rule.get('action'.lower(), "FR_ACTION_TO_TBL")
 
         if 'fwmark' in rule:
             ru['fwmark'] = rule['fwmark']
@@ -321,36 +328,68 @@ class Rules():
 
         self.rules.append(ru)
 
+    def kernel_rules(self):
+        rules = []
+        for rule in ipr.get_rules(family=AF_INET) + ipr.get_rules(family=AF_INET6):
+            ru = {
+                'action': FR_ACT_VALUES.get(rule['action']),
+                'table': rule.get_attr('FRA_TABLE'),
+                'protocol': rule.get_attr('FRA_PROTOCOL'),
+                'priority': rule.get_attr('FRA_PRIORITY', 0),
+                'family': rule['family'],
+                'tos': rule['tos'],
+            }
+
+            if rule['dst_len'] > 0:
+                ru['dst'] = rule.get_attr('FRA_DST')
+                ru['dst_len'] = rule['dst_len']
+
+            if rule['src_len'] > 0:
+                ru['src'] = rule.get_attr('FRA_SRC')
+                ru['src_len'] = rule['src_len']
+
+            for field in ['iifname', 'oifname', 'fwmark', 'ip_proto']:
+                value = rule.get_attr('FRA_{}'.format(field.upper()))
+                if not value is None:
+                    ru[field] = value
+            
+            rules.append(ru)
+        return rules
+
     def apply(self, ignores):
         logger.info('\nconfiguring routing rules...')
+        krules = self.kernel_rules()
         for rule in self.rules:
-            logger.debug("ip rule add: {}".format(
-                " ".join("{}={}".format(k, v) for k, v in rule.items())))
+            found = False
+            for i, krule in enumerate(krules):
+                if rule_matches(rule, krule, rule.keys()):
+                    del krules[i]
+                    found = True
+                    break
+
+            if found:
+                logger.info(
+                    'ok', extra={'iface': '#{}'.format(rule['priority']), 'style': LogStyle.OK})
+            else:
+                logger.info(
+                    'add', extra={'iface': '#{}'.format(rule['priority']), 'style': LogStyle.CHG})
+
+                logger.debug("ip rule add: {}".format(
+                    " ".join("{}={}".format(k, v) for k, v in rule.items())))
+                try:
+                    ipr.rule('add', **rule)
+                except NetlinkError as err:
+                    logger.warning('setup rule failed: {}'.format(err.args[1]))
+
+
+        for rule in krules:
+            if rule['protocol'] in ignores.get('protos', []):
+                continue
+
+            logger.info(
+                'del', extra={'iface': '#{}'.format(rule['priority']), 'style': LogStyle.DEL})
             try:
-                ipr.rule('add', **rule)
+                ipr.rule('del', **rule)
             except NetlinkError as err:
-                logger.warning('setup rule failed: {}'.format(err.args[1]))
-
-            # found = False
-            # identical = False
-            # for i, kroute in enumerate(kroutes):
-            #     if route_matches(route, kroute):
-            #         del kroutes[i]
-            #         found = True
-            #         if route_matches(route, kroute, route.keys(), True):
-            #             identical = True
-            #             break
-
-            #     if identical:
-            #         logger.info('ok', extra={'iface': route['dst'], 'style': LogStyle.OK})
-            #     else:
-            #         if found:
-            #             logger.info('change', extra={'iface': route['dst'], 'style': LogStyle.CHG})
-            #         else:
-            #             logger.info('add', extra={'iface': route['dst'], 'style': LogStyle.CHG})
-
-            #         logger.debug("ip route replace: {}".format( " ".join("{}={}".format(k, v) for k,v in route.items()) ))
-            #         try:
-            #             ipr.route('replace', **route)
-            #         except NetlinkError as err:
-            #             logger.warning('setup route {} failed: {}'.format(route['dst'], err.args[1]))
+                print(rule)
+                logger.warning('remove rule failed: {}'.format(err.args[1]))
