@@ -15,6 +15,7 @@ __version__ = "0.6.3"
 
 class IfState():
     def __init__(self):
+        logger.debug('IfState {}'.format(__version__))
         self.links = {}
         self.addresses = {}
         self.ignore = {}
