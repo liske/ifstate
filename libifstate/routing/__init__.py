@@ -15,8 +15,10 @@ from socket import AF_INET, AF_INET6
 def route_matches(r1, r2, fields=('dst', 'metric', 'proto'), verbose=False):
     return _matches(r1, r2, fields, verbose)
 
+
 def rule_matches(r1, r2, fields=('priority', 'iif', 'oif', 'dst', 'metric', 'proto'), verbose=False):
     return _matches(r1, r2, fields, verbose)
+
 
 def _matches(r1, r2, fields, verbose):
     for fld in fields:
@@ -236,7 +238,7 @@ class Tables(collections.abc.Mapping):
                     try:
                         ipr.route('replace', **route)
                     except NetlinkError as err:
-                        logger.warning('setup route {} failed: {}'.format(
+                        logger.warning('route setup {} failed: {}'.format(
                             route['dst'], err.args[1]))
 
             for route in kroutes:
@@ -245,7 +247,11 @@ class Tables(collections.abc.Mapping):
 
                 logger.info(
                     'del', extra={'iface': route['dst'], 'style': LogStyle.DEL})
-                ipr.route('del', **route)
+                try:
+                    ipr.route('del', **route)
+                except NetlinkError as err:
+                    logger.warning('removing route {} failed: {}'.format(
+                        route['dst'], err.args[1]))
 
 
 class Routes():
@@ -352,7 +358,7 @@ class Rules():
                 value = rule.get_attr('FRA_{}'.format(field.upper()))
                 if not value is None:
                     ru[field] = value
-            
+
             rules.append(ru)
         return rules
 
@@ -379,8 +385,7 @@ class Rules():
                 try:
                     ipr.rule('add', **rule)
                 except NetlinkError as err:
-                    logger.warning('setup rule failed: {}'.format(err.args[1]))
-
+                    logger.warning('rule setup failed: {}'.format(err.args[1]))
 
         for rule in krules:
             if rule['protocol'] in ignores.get('protos', []):
@@ -392,4 +397,4 @@ class Rules():
                 ipr.rule('del', **rule)
             except NetlinkError as err:
                 print(rule)
-                logger.warning('remove rule failed: {}'.format(err.args[1]))
+                logger.warning('removing rule failed: {}'.format(err.args[1]))
