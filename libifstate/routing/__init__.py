@@ -12,18 +12,18 @@ import socket
 from socket import AF_INET, AF_INET6
 
 
-def route_matches(r1, r2, fields=('dst', 'metric', 'proto'), verbose=False):
-    return _matches(r1, r2, fields, verbose)
+def route_matches(r1, r2, fields=('dst', 'metric', 'proto'), verbose=False, indent=""):
+    return _matches(r1, r2, fields, verbose, indent)
 
 
-def rule_matches(r1, r2, fields=('priority', 'iif', 'oif', 'dst', 'metric', 'proto'), verbose=False):
-    return _matches(r1, r2, fields, verbose)
+def rule_matches(r1, r2, fields=('priority', 'iif', 'oif', 'dst', 'metric', 'proto'), verbose=False, indent=""):
+    return _matches(r1, r2, fields, verbose, indent)
 
 
-def _matches(r1, r2, fields, verbose):
+def _matches(r1, r2, fields, verbose, indent):
     for fld in fields:
         if verbose:
-            logger.debug("{}: {} - {}".format(fld, r1.get(fld), r2.get(fld)))
+            logger.debug("{}: {} - {}".format(fld, r1.get(fld), r2.get(fld)), extra={'iface': indent})
         if fld in r1 and fld in r2:
             if r1[fld] != r2[fld]:
                 return False
@@ -218,7 +218,7 @@ class Tables(collections.abc.Mapping):
                     if route_matches(route, kroute):
                         del kroutes[i]
                         found = True
-                        if route_matches(route, kroute, route.keys(), True):
+                        if route_matches(route, kroute, route.keys(), True, route['dst']):
                             identical = True
                             break
 
