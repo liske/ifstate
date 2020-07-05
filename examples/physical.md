@@ -27,5 +27,5 @@ interfaces:
 ```bash
 ip link dev eth0 set down
 ip link set dev eth0 name outside up
-ip address add 192.0.2.1/24 dev eth0
+ip address add 192.0.2.1/24 dev outside
 ```
