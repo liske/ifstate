@@ -50,12 +50,295 @@
         "iface-link_tun-dev": {
             "$ref": "#/definitions/iface-link_link",
             "description": "interface to use for tunnel endpoint communication"
+        },
+        "iface-sysctl": {
+            "type": "object",
+            "description": "configures [per interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt)",
+            "properties": {
+                "ipv4": {
+                    "type": "object",
+                    "description": "settings in `/proc/sys/net/ipv4/*/conf/`",
+                    "properties": {
+                        "accept_local": {
+                            "type": "integer"
+                        },
+                        "accept_redirects": {
+                            "type": "integer"
+                        },
+                        "accept_source_route": {
+                            "type": "integer"
+                        },
+                        "arp_accept": {
+                            "type": "integer"
+                        },
+                        "arp_announce": {
+                            "type": "integer"
+                        },
+                        "arp_filter": {
+                            "type": "integer"
+                        },
+                        "arp_ignore": {
+                            "type": "integer"
+                        },
+                        "arp_notify": {
+                            "type": "integer"
+                        },
+                        "bc_forwarding": {
+                            "type": "integer"
+                        },
+                        "bootp_relay": {
+                            "type": "integer"
+                        },
+                        "disable_policy": {
+                            "type": "integer"
+                        },
+                        "disable_xfrm": {
+                            "type": "integer"
+                        },
+                        "drop_gratuitous_arp": {
+                            "type": "integer"
+                        },
+                        "drop_unicast_in_l2_multicast": {
+                            "type": "integer"
+                        },
+                        "force_igmp_version": {
+                            "type": "integer"
+                        },
+                        "forwarding": {
+                            "type": "integer"
+                        },
+                        "igmpv2_unsolicited_report_interval": {
+                            "type": "integer"
+                        },
+                        "igmpv3_unsolicited_report_interval": {
+                            "type": "integer"
+                        },
+                        "ignore_routes_with_linkdown": {
+                            "type": "integer"
+                        },
+                        "log_martians": {
+                            "type": "integer"
+                        },
+                        "mc_forwarding": {
+                            "type": "integer"
+                        },
+                        "medium_id": {
+                            "type": "integer"
+                        },
+                        "promote_secondaries": {
+                            "type": "integer"
+                        },
+                        "proxy_arp": {
+                            "type": "integer"
+                        },
+                        "proxy_arp_pvlan": {
+                            "type": "integer"
+                        },
+                        "route_localnet": {
+                            "type": "integer"
+                        },
+                        "rp_filter": {
+                            "type": "integer"
+                        },
+                        "secure_redirects": {
+                            "type": "integer"
+                        },
+                        "send_redirects": {
+                            "type": "integer"
+                        },
+                        "shared_media": {
+                            "type": "integer"
+                        },
+                        "src_valid_mark": {
+                            "type": "integer"
+                        },
+                        "tag": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "ipv6": {
+                    "type": "object",
+                    "description": "settings in `/proc/sys/net/ipv6/*/conf/`",
+                    "properties": {
+                        "accept_dad": {
+                            "type": "integer"
+                        },
+                        "accept_ra": {
+                            "type": "integer"
+                        },
+                        "accept_ra_defrtr": {
+                            "type": "integer"
+                        },
+                        "accept_ra_from_local": {
+                            "type": "integer"
+                        },
+                        "accept_ra_min_hop_limit": {
+                            "type": "integer"
+                        },
+                        "accept_ra_mtu": {
+                            "type": "integer"
+                        },
+                        "accept_ra_pinfo": {
+                            "type": "integer"
+                        },
+                        "accept_ra_rt_info_max_plen": {
+                            "type": "integer"
+                        },
+                        "accept_ra_rt_info_min_plen": {
+                            "type": "integer"
+                        },
+                        "accept_ra_rtr_pref": {
+                            "type": "integer"
+                        },
+                        "accept_redirects": {
+                            "type": "integer"
+                        },
+                        "accept_source_route": {
+                            "type": "integer"
+                        },
+                        "addr_gen_mode": {
+                            "type": "integer"
+                        },
+                        "autoconf": {
+                            "type": "integer"
+                        },
+                        "dad_transmits": {
+                            "type": "integer"
+                        },
+                        "disable_ipv6": {
+                            "type": "integer"
+                        },
+                        "disable_policy": {
+                            "type": "integer"
+                        },
+                        "drop_unicast_in_l2_multicast": {
+                            "type": "integer"
+                        },
+                        "drop_unsolicited_na": {
+                            "type": "integer"
+                        },
+                        "enhanced_dad": {
+                            "type": "integer"
+                        },
+                        "force_mld_version": {
+                            "type": "integer"
+                        },
+                        "force_tllao": {
+                            "type": "integer"
+                        },
+                        "forwarding": {
+                            "type": "integer"
+                        },
+                        "hop_limit": {
+                            "type": "integer"
+                        },
+                        "ignore_routes_with_linkdown": {
+                            "type": "integer"
+                        },
+                        "keep_addr_on_down": {
+                            "type": "integer"
+                        },
+                        "max_addresses": {
+                            "type": "integer"
+                        },
+                        "max_desync_factor": {
+                            "type": "integer"
+                        },
+                        "mc_forwarding": {
+                            "type": "integer"
+                        },
+                        "mldv1_unsolicited_report_interval": {
+                            "type": "integer"
+                        },
+                        "mldv2_unsolicited_report_interval": {
+                            "type": "integer"
+                        },
+                        "mtu": {
+                            "type": "integer"
+                        },
+                        "ndisc_notify": {
+                            "type": "integer"
+                        },
+                        "ndisc_tclass": {
+                            "type": "integer"
+                        },
+                        "optimistic_dad": {
+                            "type": "integer"
+                        },
+                        "proxy_ndp": {
+                            "type": "integer"
+                        },
+                        "regen_max_retry": {
+                            "type": "integer"
+                        },
+                        "router_probe_interval": {
+                            "type": "integer"
+                        },
+                        "router_solicitation_delay": {
+                            "type": "integer"
+                        },
+                        "router_solicitation_interval": {
+                            "type": "integer"
+                        },
+                        "router_solicitation_max_interval": {
+                            "type": "integer"
+                        },
+                        "router_solicitations": {
+                            "type": "integer"
+                        },
+                        "seg6_enabled": {
+                            "type": "integer"
+                        },
+                        "seg6_require_hmac": {
+                            "type": "integer"
+                        },
+                        "stable_secret": {
+                            "type": "string",
+                            "format": "ipv6"
+                        },
+                        "suppress_frag_ndisc": {
+                            "type": "integer"
+                        },
+                        "temp_prefered_lft": {
+                            "type": "integer"
+                        },
+                        "temp_valid_lft": {
+                            "type": "integer"
+                        },
+                        "use_oif_addrs_only": {
+                            "type": "integer"
+                        },
+                        "use_optimistic": {
+                            "type": "integer"
+                        },
+                        "use_tempaddr": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
         }
     },
     "properties": {
         "options": {
             "description": "global configuration settings",
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "sysctl": {
+                    "type": "object",
+                    "properties": {
+                        "all": {
+                            "description": "overrides [per interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/all/`",
+                            "$ref": "#/definitions/iface-sysctl"
+                        },
+                        "Default": {
+                            "description": "default [per interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/default/`",
+                            "$ref": "#/definitions/iface-sysctl"
+                        }
+                    }
+                }
+            }
         },
         "ignore": {
             "description": "ignore patterns to skip interface, ip address or routing objects",
@@ -447,6 +730,9 @@
                                 }
                             }
                         ]
+                    },
+                    "sysctl": {
+                        "$ref": "#/definitions/iface-sysctl"
                     }
                 }
             }

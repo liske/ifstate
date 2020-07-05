@@ -11,11 +11,12 @@ The following features are already available:
   - rename static interfaces by mac address
   - set interface state
 - create and configure interfaces
-  - support many [interface types](schema/#interfaces_items_link)
+  - supports many [interface types](schema/#interfaces_items_link)
 - configure ip addresses
 - remove orphan interfaces and ip addresses
-- configure routing tables
-- configure routing rules
+- configure routing tables [0.6.0+]
+- configure routing rules [0.7.0+]
+- configure interface `sysctl` options [0.7.1+]
 - ignore interfaces by patterns
 - ignore ip addresses by prefix lists
 - ignore routing table entries by protocol
@@ -28,6 +29,4 @@ The following features a planned for a later release of *ifstate*:
 
 - interface driver and hardware settings
   - `ethtool`
-- configure interface `sysctl` options
-- configure `ipset`
 - support for hotplug interfaces
