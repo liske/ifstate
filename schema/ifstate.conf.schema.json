@@ -732,6 +732,7 @@
                         ]
                     },
                     "sysctl": {
+                        "description": "[interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/{IFACE}/`",
                         "$ref": "#/definitions/iface-sysctl"
                     }
                 }
