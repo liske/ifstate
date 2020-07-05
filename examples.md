@@ -6,6 +6,7 @@ This is a collection of configuration examples for different interface link type
 
 
 - [Physical Interface](examples/physical.md)
+- [Policy Based Routing (PBR)](examples/pbr.md)
 - [VLAN subinterface (802.1q)](examples/vlan-dot1q.md)
 - [GENEVE Layer 2 Tunnel](examples/geneve.md)
 - [XFRM Interfaces for multitenant IPsec](examples/xfrm-vrf.md)
