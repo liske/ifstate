@@ -2,6 +2,7 @@ from libifstate.exception import LinkDuplicate
 from libifstate.link.base import Link
 from libifstate.address import Addresses
 from libifstate.routing import Tables, Rules
+from libifstate.sysctl import Sysctl
 from libifstate.parser import Parser
 from libifstate.util import logger, ipr, LogStyle
 from libifstate.exception import LinkCircularLinked, LinkNoConfigFound, ParserValidationError
@@ -13,6 +14,7 @@ import json
 
 __version__ = "0.7.0"
 
+
 class IfState():
     def __init__(self):
         logger.debug('IfState {}'.format(__version__))
@@ -21,10 +23,12 @@ class IfState():
         self.ignore = {}
         self.tables = None
         self.rules = None
-    
+        self.sysctl = Sysctl()
+
     def update(self, ifstates):
         # check config schema
-        schema = json.loads(pkgutil.get_data("libifstate", "../schema/ifstate.conf.schema.json"))
+        schema = json.loads(pkgutil.get_data(
+            "libifstate", "../schema/ifstate.conf.schema.json"))
         try:
             validate(ifstates, schema)
         except ValidationError as ex:
@@ -37,10 +41,19 @@ class IfState():
                         path.append(".")
                         path.append(p)
 
-                detail = "{}: {}".format("".join(path),ex.message)
+                detail = "{}: {}".format("".join(path), ex.message)
             else:
                 detail = ex.message
             raise ParserValidationError(detail)
+
+        # parse options
+        if 'options' in ifstates:
+            # parse global sysctl settings
+            if 'sysctl' in ifstates['options']:
+                for iface in ['all', 'default']:
+                    if iface in ifstates['options']['sysctl']:
+                        self.sysctl.add(
+                            iface, ifstates['options']['sysctl'][iface])
 
         # add interfaces from config
         for ifstate in ifstates['interfaces']:
@@ -56,6 +69,9 @@ class IfState():
                 self.addresses[name] = Addresses(name, ifstate['addresses'])
             else:
                 self.addresses[name] = None
+
+            if 'sysctl' in ifstate:
+                self.sysctl.add(name, ifstate['sysctl'])
 
         # add routing from config
         if 'routing' in ifstates:
@@ -77,24 +93,31 @@ class IfState():
     def apply(self):
         self.ipaddr_ignore = set()
         for ip in self.ignore.get('ipaddr', []):
-            self.ipaddr_ignore.add( ip_network(ip) )
+            self.ipaddr_ignore.add(ip_network(ip))
 
         if not any(not x is None for x in self.links.values()):
             logger.error("DANGER: Not a single link config has been found!")
             raise LinkNoConfigFound()
 
-        logger.info('configuring interface links')
+        for iface in ['all', 'default']:
+            if self.sysctl.has_settings(iface):
+                logger.info("\nconfiguring {} interface sysctl".format(iface))
+                self.sysctl.apply(iface)
+
+        logger.info("\nconfiguring interface links")
 
         applied = []
         while len(applied) < len(self.links):
             last = len(applied)
             for name, link in self.links.items():
                 if link is None:
-                    logger.debug('skipped due to no link settings', extra={'iface': name})
+                    logger.debug('skipped due to no link settings',
+                                 extra={'iface': name})
                     applied.append(name)
                 else:
                     dep = link.depends()
                     if dep is None or dep in applied:
+                        self.sysctl.apply(name)
                         link.apply()
                         applied.append(name)
             if last == len(applied):
@@ -108,15 +131,18 @@ class IfState():
                 # remove virtual interface
                 if info is not None:
                     kind = info.get_attr('IFLA_INFO_KIND')
-                    logger.info('del', extra={'iface': name, 'style': LogStyle.DEL})
+                    logger.info(
+                        'del', extra={'iface': name, 'style': LogStyle.DEL})
                     ipr.link('set', index=link.get('index'), state='down')
                     ipr.link('del', index=link.get('index'))
                 # shutdown physical interfaces
                 else:
                     if link.get('state') == 'down':
-                        logger.warning('orphan', extra={'iface': name, 'style': LogStyle.OK})
+                        logger.warning('orphan', extra={
+                                       'iface': name, 'style': LogStyle.OK})
                     else:
-                        logger.warning('orphan', extra={'iface': name, 'style': LogStyle.CHG})
+                        logger.warning('orphan', extra={
+                                       'iface': name, 'style': LogStyle.CHG})
                         ipr.link('set', index=link.get('index'), state='down')
 
         if any(not x is None for x in self.addresses.values()):
@@ -130,7 +156,8 @@ class IfState():
 
             for name, addresses in self.addresses.items():
                 if addresses is None:
-                    logger.debug('skipped due to no address settings', extra={'iface': name})
+                    logger.debug('skipped due to no address settings', extra={
+                                 'iface': name})
                 else:
                     addresses.apply(self.ipaddr_ignore)
         else:
@@ -145,7 +172,7 @@ class IfState():
     def show(self):
         self.ipaddr_ignore = set()
         for ip in Parser._default_ifstates.get('ignore').get('ipaddr'):
-            self.ipaddr_ignore.add( ip_network(ip) )
+            self.ipaddr_ignore.add(ip_network(ip))
 
         ifs_links = []
         for ipr_link in ipr.get_links():
@@ -153,15 +180,16 @@ class IfState():
             # skip links on ignore list
             if not any(re.match(regex, name) for regex in Parser._default_ifstates['ignore'].get('ifname', [])):
                 ifs_link = {
-                        'name': name,
-                        'addresses': [],
-                        'link': {
-                            'state': ipr_link['state'],
-                        },
+                    'name': name,
+                    'addresses': [],
+                    'link': {
+                        'state': ipr_link['state'],
+                    },
                 }
 
                 for addr in ipr.get_addr(index=ipr_link['index']):
-                    ip = ip_interface(addr.get_attr('IFA_ADDRESS') + '/' + str(addr['prefixlen']))
+                    ip = ip_interface(addr.get_attr(
+                        'IFA_ADDRESS') + '/' + str(addr['prefixlen']))
                     if not any(ip in net for net in self.ipaddr_ignore):
                         ifs_link['addresses'].append(ip.with_prefixlen)
 
@@ -189,4 +217,4 @@ class IfState():
             'routes': Tables().show_routes(Parser._default_ifstates['ignore']['routes']),
         }
 
-        return { **Parser._default_ifstates, **{'interfaces': ifs_links, 'routing': routing}}
+        return {**Parser._default_ifstates, **{'interfaces': ifs_links, 'routing': routing}}
