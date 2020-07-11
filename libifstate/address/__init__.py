@@ -13,7 +13,11 @@ class Addresses():
         logger.debug('getting addresses', extra={'iface': self.iface})
 
         # get ifindex
-        idx = next(iter(ipr.link_lookup(ifname=self.iface)))
+        idx = next(iter(ipr.link_lookup(ifname=self.iface)), None)
+
+        if idx == None:
+            logger.warning('link missing', extra={'iface': self.iface})
+            return
 
         # get active ip addresses
         ipr_addr = {}
