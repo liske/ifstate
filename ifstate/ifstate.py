@@ -99,7 +99,7 @@ def main():
             exit(1)
 
         if args.action == Actions.CHECK:
-            pass
+            ifs.check()
         else:
             # ignore some well-known signals to prevent interruptions (i.e. due to ssh connection loss)
             signal.signal(signal.SIGHUP, signal.SIG_IGN)

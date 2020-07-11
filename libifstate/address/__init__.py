@@ -9,7 +9,7 @@ class Addresses():
         for address in addresses:
             self.addresses.append(ip_interface(address))
 
-    def apply(self, ignore):
+    def apply(self, ignore, do_apply):
         logger.debug('getting addresses', extra={'iface': self.iface})
 
         # get ifindex
@@ -29,10 +29,12 @@ class Addresses():
                 del ipr_addr[addr]
             else:
                 logger.info('%s', addr.with_prefixlen, extra={'iface': self.iface, 'style': LogStyle.CHG})
-                ipr.addr("add", index=idx, address=ip, mask=addr.network.prefixlen)
+                if do_apply:
+                    ipr.addr("add", index=idx, address=ip, mask=addr.network.prefixlen)
 
         for ip, addr in ipr_addr.items():
             if not any(ip in net for net in ignore):
 #                if 'IFA_F_PERMANENT' in ipr_flags[ip]:
                 logger.info('%s', ip.with_prefixlen, extra={'iface': self.iface, 'style': LogStyle.DEL})
-                ipr.addr("del", index=idx, address=str(ip.ip), mask=ip.network.prefixlen)
+                if do_apply:
+                    ipr.addr("del", index=idx, address=str(ip.ip), mask=ip.network.prefixlen)

@@ -201,7 +201,7 @@ class Tables(collections.abc.Mapping):
             routes.append(rt)
         return routes
 
-    def apply(self, ignores):
+    def apply(self, ignores, do_apply):
         for table, croutes in self.tables.items():
             pfx = RTLookups.tables.lookup_str(table)
             logger.info('\nconfiguring routing table {}...'.format(pfx))
@@ -236,7 +236,8 @@ class Tables(collections.abc.Mapping):
                     logger.debug("ip route replace: {}".format(
                         " ".join("{}={}".format(k, v) for k, v in route.items())))
                     try:
-                        ipr.route('replace', **route)
+                        if do_apply:
+                            ipr.route('replace', **route)
                     except NetlinkError as err:
                         logger.warning('route setup {} failed: {}'.format(
                             route['dst'], err.args[1]))
@@ -248,7 +249,8 @@ class Tables(collections.abc.Mapping):
                 logger.info(
                     'del', extra={'iface': route['dst'], 'style': LogStyle.DEL})
                 try:
-                    ipr.route('del', **route)
+                    if do_apply:
+                        ipr.route('del', **route)
                 except NetlinkError as err:
                     logger.warning('removing route {} failed: {}'.format(
                         route['dst'], err.args[1]))
@@ -362,7 +364,7 @@ class Rules():
             rules.append(ru)
         return rules
 
-    def apply(self, ignores):
+    def apply(self, ignores, do_apply):
         logger.info('\nconfiguring routing rules...')
         krules = self.kernel_rules()
         for rule in self.rules:
@@ -383,7 +385,8 @@ class Rules():
                 logger.debug("ip rule add: {}".format(
                     " ".join("{}={}".format(k, v) for k, v in rule.items())))
                 try:
-                    ipr.rule('add', **rule)
+                    if do_apply:
+                        ipr.rule('add', **rule)
                 except NetlinkError as err:
                     logger.warning('rule setup failed: {}'.format(err.args[1]))
 
@@ -394,7 +397,8 @@ class Rules():
             logger.info(
                 'del', extra={'iface': '#{}'.format(rule['priority']), 'style': LogStyle.DEL})
             try:
-                ipr.rule('del', **rule)
+                if do_apply:
+                    ipr.rule('del', **rule)
             except NetlinkError as err:
                 print(rule)
                 logger.warning('removing rule failed: {}'.format(err.args[1]))

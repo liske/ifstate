@@ -91,6 +91,12 @@ class IfState():
         self.ignore.update(ifstates['ignore'])
 
     def apply(self):
+        self._apply(True)
+
+    def check(self):
+        self._apply(False)
+
+    def _apply(self, do_apply):
         self.ipaddr_ignore = set()
         for ip in self.ignore.get('ipaddr', []):
             self.ipaddr_ignore.add(ip_network(ip))
@@ -102,7 +108,7 @@ class IfState():
         for iface in ['all', 'default']:
             if self.sysctl.has_settings(iface):
                 logger.info("\nconfiguring {} interface sysctl".format(iface))
-                self.sysctl.apply(iface)
+                self.sysctl.apply(iface, do_apply)
 
         logger.info("\nconfiguring interface links")
 
@@ -117,8 +123,8 @@ class IfState():
                 else:
                     dep = link.depends()
                     if dep is None or dep in applied:
-                        self.sysctl.apply(name)
-                        link.apply()
+                        self.sysctl.apply(name, do_apply)
+                        link.apply(do_apply)
                         applied.append(name)
             if last == len(applied):
                 raise LinkCircularLinked()
@@ -133,8 +139,9 @@ class IfState():
                     kind = info.get_attr('IFLA_INFO_KIND')
                     logger.info(
                         'del', extra={'iface': name, 'style': LogStyle.DEL})
-                    ipr.link('set', index=link.get('index'), state='down')
-                    ipr.link('del', index=link.get('index'))
+                    if do_apply:
+                        ipr.link('set', index=link.get('index'), state='down')
+                        ipr.link('del', index=link.get('index'))
                 # shutdown physical interfaces
                 else:
                     if link.get('state') == 'down':
@@ -143,7 +150,8 @@ class IfState():
                     else:
                         logger.warning('orphan', extra={
                                        'iface': name, 'style': LogStyle.CHG})
-                        ipr.link('set', index=link.get('index'), state='down')
+                        if do_apply:
+                            ipr.link('set', index=link.get('index'), state='down')
 
         if any(not x is None for x in self.addresses.values()):
             logger.info("\nconfiguring interface ip addresses...")
@@ -159,15 +167,15 @@ class IfState():
                     logger.debug('skipped due to no address settings', extra={
                                  'iface': name})
                 else:
-                    addresses.apply(self.ipaddr_ignore)
+                    addresses.apply(self.ipaddr_ignore, do_apply)
         else:
             logger.info("\nno interface ip addressing to be applied")
 
         if not self.tables is None:
-            self.tables.apply(self.ignore.get('routes', []))
+            self.tables.apply(self.ignore.get('routes', []), do_apply)
 
         if not self.rules is None:
-            self.rules.apply(self.ignore.get('rules', []))
+            self.rules.apply(self.ignore.get('rules', []), do_apply)
 
     def show(self):
         self.ipaddr_ignore = set()

@@ -74,7 +74,7 @@ class Link(ABC):
 
         return None
 
-    def apply(self):
+    def apply(self, do_apply):
         # lookup for attributes requiring a interface index
         for attr in self.attr_idx:
             if attr in self.settings:
@@ -85,30 +85,31 @@ class Link(ABC):
 
             # check for ifname collisions
             idx = next(iter(ipr.link_lookup(ifname=self.settings['ifname'])), None)
-            if idx is not None and idx != self.idx:
+            if idx is not None and idx != self.idx and do_apply:
                 ipr.link('set', index=idx, state='down')
                 ipr.link('set', index=idx, ifname='{}!'.format(self.settings['ifname']))
 
             if self.cap_create and self.get_if_attr('kind') != self.settings['kind']:
-                self.recreate()
+                self.recreate(do_apply)
             else:
-                self.update()
+                self.update(do_apply)
         else:
-            self.create()
+            self.create(do_apply)
 
-    def create(self, oper="add"):
+    def create(self, do_apply, oper="add"):
         logger.info(oper, extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
 
         logger.debug("ip link add: {}".format( " ".join("{}={}".format(k, v) for k,v in self.settings.items()) ))
-        ipr.link('add', **(self.settings))
+        if do_apply:
+            ipr.link('add', **(self.settings))
 
-    def recreate(self):
+    def recreate(self, do_apply):
         logger.debug('has wrong link kind %s, removing', self.settings['kind'], extra={'iface': self.settings['ifname']})
         ipr.link('del', index=self.idx)
         self.idx = None
-        self.create("replace")
+        self.create(do_apply, "replace")
 
-    def update(self):
+    def update(self, do_apply):
         logger.debug('checking', extra={'iface': self.settings['ifname']})
 
         old_state = self.iface['state']
@@ -123,12 +124,17 @@ class Link(ABC):
             logger.debug('needs to be configured', extra={'iface': self.settings['ifname']})
             if old_state:
                 logger.debug('shutting down', extra={'iface': self.settings['ifname']})
-                ipr.link('set', index=self.idx, state='down')
+                if do_apply:
+                    ipr.link('set', index=self.idx, state='down')
                 if not 'state' in self.settings:
                     self.settings['state'] = 'up'
 
-            logger.info('change', extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
-            ipr.link('set', index=self.idx, **(self.settings))
+            if self.get_if_attr('ifname') == self.settings['ifname']:
+                logger.info('change', extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
+            else:
+                logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
+            if do_apply:
+                ipr.link('set', index=self.idx, **(self.settings))
         else:
             logger.info('ok', extra={'iface': self.settings['ifname'], 'style': LogStyle.OK})
 
