@@ -7,7 +7,7 @@ title: Install
 *IfState* is currently available in the *testing* repository, only.
 
 
-## Alpine 3.12
+## Alpine ≥3.12
 
 - enable [repository
   pinning](https://wiki.alpinelinux.org/wiki/Alpine_Linux_package_management#Repository_pinning)
@@ -21,7 +21,7 @@ http://dl-cdn.alpinelinux.org/alpine/v3.12/community
 - install *IfState* using `apk add ifstate@testing`
 
 
-## Alpine 3.11-
+## Alpine ≤3.11
 
 - enable [repository
   pinning](https://wiki.alpinelinux.org/wiki/Alpine_Linux_package_management#Repository_pinning)
@@ -29,8 +29,8 @@ http://dl-cdn.alpinelinux.org/alpine/v3.12/community
   statisfy the *pyroute2* dependency:
 
 ```perl
-http://dl-cdn.alpinelinux.org/alpine/v3.12/main
-http://dl-cdn.alpinelinux.org/alpine/v3.12/community
+http://dl-cdn.alpinelinux.org/alpine/v3.11/main
+http://dl-cdn.alpinelinux.org/alpine/v3.11/community
 @edgecommunity http://dl-cdn.alpinelinux.org/alpine/edge/community
 @testing http://dl-cdn.alpinelinux.org/alpine/edge/testing
 ```
