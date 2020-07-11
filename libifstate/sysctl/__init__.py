@@ -11,7 +11,8 @@ class Sysctl():
         self.sysctls[iface] = sysctl
 
     def set_sysctl(self, iface, family, key, val, do_apply):
-        with open('/proc/sys/net/{}/conf/{}/{}'.format(family, iface, key)) as fh:
+        fn = '/proc/sys/net/{}/conf/{}/{}'.format(family, iface, key)
+        with open(fn) as fh:
             current = fh.readline().rstrip()
         if current == str(val):
             logger.info(
@@ -19,6 +20,13 @@ class Sysctl():
         else:
             logger.info(
                 'set', extra={'iface': "{}/{}".format(family, key), 'style': LogStyle.CHG})
+            if do_apply:
+                try:
+                    with open(fn, 'w') as fh:
+                        fh.writelines([str(val)])
+                except OSError as err:
+                    logger.warning('updating sysctl {}/{} failed: {}'.format(
+                        family, key, err.args[1]))
 
     def apply(self, iface, do_apply):
         if not iface in self.sysctls:
