@@ -12,7 +12,7 @@ import pkgutil
 import re
 import json
 
-__version__ = "0.7.0"
+__version__ = "0.7.1"
 
 
 class IfState():
