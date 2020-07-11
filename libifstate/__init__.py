@@ -140,8 +140,12 @@ class IfState():
                     logger.info(
                         'del', extra={'iface': name, 'style': LogStyle.DEL})
                     if do_apply:
-                        ipr.link('set', index=link.get('index'), state='down')
-                        ipr.link('del', index=link.get('index'))
+                        try:
+                            ipr.link('set', index=link.get('index'), state='down')
+                            ipr.link('del', index=link.get('index'))
+                        except NetlinkError as err:
+                            logger.warning('removing link {} failed: {}'.format(
+                                name, err.args[1]))
                 # shutdown physical interfaces
                 else:
                     if link.get('state') == 'down':
@@ -151,7 +155,11 @@ class IfState():
                         logger.warning('orphan', extra={
                                        'iface': name, 'style': LogStyle.CHG})
                         if do_apply:
-                            ipr.link('set', index=link.get('index'), state='down')
+                            try:
+                                ipr.link('set', index=link.get('index'), state='down')
+                            except NetlinkError as err:
+                                logger.warning('updating link {} failed: {}'.format(
+                                    name, err.args[1]))
 
         if any(not x is None for x in self.addresses.values()):
             logger.info("\nconfiguring interface ip addresses...")

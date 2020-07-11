@@ -86,8 +86,12 @@ class Link(ABC):
             # check for ifname collisions
             idx = next(iter(ipr.link_lookup(ifname=self.settings['ifname'])), None)
             if idx is not None and idx != self.idx and do_apply:
-                ipr.link('set', index=idx, state='down')
-                ipr.link('set', index=idx, ifname='{}!'.format(self.settings['ifname']))
+                try:
+                    ipr.link('set', index=idx, state='down')
+                    ipr.link('set', index=idx, ifname='{}!'.format(self.settings['ifname']))
+                except NetlinkError as err:
+                    logger.warning('renaming link {} failed: {}'.format(
+                        self.settings['ifname'], err.args[1]))
 
             if self.cap_create and self.get_if_attr('kind') != self.settings['kind']:
                 self.recreate(do_apply)
@@ -101,11 +105,20 @@ class Link(ABC):
 
         logger.debug("ip link add: {}".format( " ".join("{}={}".format(k, v) for k,v in self.settings.items()) ))
         if do_apply:
-            ipr.link('add', **(self.settings))
+            try:
+                ipr.link('add', **(self.settings))
+            except NetlinkError as err:
+                logger.warning('adding link {} failed: {}'.format(
+                    self.settings['ifname'], err.args[1]))
 
     def recreate(self, do_apply):
         logger.debug('has wrong link kind %s, removing', self.settings['kind'], extra={'iface': self.settings['ifname']})
-        ipr.link('del', index=self.idx)
+        if do_apply:
+            try:
+                ipr.link('del', index=self.idx)
+            except NetlinkError as err:
+                logger.warning('removing link {} failed: {}'.format(
+                    self.settings['ifname'], err.args[1]))
         self.idx = None
         self.create(do_apply, "replace")
 
@@ -125,7 +138,11 @@ class Link(ABC):
             if old_state:
                 logger.debug('shutting down', extra={'iface': self.settings['ifname']})
                 if do_apply:
-                    ipr.link('set', index=self.idx, state='down')
+                    try:
+                        ipr.link('set', index=self.idx, state='down')
+                    except NetlinkError as err:
+                        logger.warning('shutting down link {} failed: {}'.format(
+                            self.settings['ifname'], err.args[1]))
                 if not 'state' in self.settings:
                     self.settings['state'] = 'up'
 
@@ -134,7 +151,11 @@ class Link(ABC):
             else:
                 logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
             if do_apply:
-                ipr.link('set', index=self.idx, **(self.settings))
+                try:
+                    ipr.link('set', index=self.idx, **(self.settings))
+                except NetlinkError as err:
+                    logger.warning('updating link {} failed: {}'.format(
+                        self.settings['ifname'], err.args[1]))
         else:
             logger.info('ok', extra={'iface': self.settings['ifname'], 'style': LogStyle.OK})
 

@@ -400,5 +400,4 @@ class Rules():
                 if do_apply:
                     ipr.rule('del', **rule)
             except NetlinkError as err:
-                print(rule)
                 logger.warning('removing rule failed: {}'.format(err.args[1]))
