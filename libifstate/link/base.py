@@ -96,19 +96,28 @@ class Link(ABC):
                              extra={'iface': self.settings['ifname']})
                 continue
 
-            # try:
-            with open(fn) as fh:
-                ethtool[setting] = yaml.load(fh, Loader=yaml.SafeLoader)
-            # except Exception as err:
-            #     logger.warning('parsing {} failed: {}'.format(
-            #         fn, err.args[1]))
+            try:
+                with open(fn) as fh:
+                    obj = yaml.load(fh, Loader=yaml.SafeLoader)
+                    if type(obj) == dict:
+                        ethtool[setting] = obj
+            except Exception as err:
+                logger.warning('parsing {} failed: {}'.format(
+                    fn, err))
 
         return ethtool
 
-    def set_ethtool_state(self, ifname):
+    def set_ethtool_state(self, ifname, settings, do_apply):
+        if len(settings) == 0:
+            return
+
         logger.info(
             'change (ethtool)', extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
-        for setting, options in self.ethtool.items():
+
+        if not do_apply:
+            return
+
+        for setting in settings:
             cmd = ["ethtool"]
             if setting in ['coalesce', 'features', 'pause']:
                 cmd.append("--{}".format(setting))
@@ -117,7 +126,7 @@ class Link(ABC):
             else:
                 cmd.append("--set-{}".format(setting))
             cmd.append(ifname)
-            for option, value in options.items():
+            for option, value in self.ethtool[setting].items():
                 if type(value) == bool:
                     value = {True: "on", False: "off"}[value]
                 value = str(value)
@@ -135,8 +144,11 @@ class Link(ABC):
                 return
 
             fn = self.get_ethtool_fn(setting)
-            with open(fn, 'w') as fh:
-                yaml.dump(options, fh)
+            try:
+                with open(fn, 'w') as fh:
+                    yaml.dump(self.ethtool[setting], fh)
+            except Exception as err:
+                logger.warning('failed write `{}`: {}'.format(fn, err.args[1]))
 
     def apply(self, do_apply):
         # lookup for attributes requiring a interface index
@@ -182,8 +194,8 @@ class Link(ABC):
 
         if not self.ethtool is None:
             logger.debug("ethtool: {}".format(self.ethtool))
-            if do_apply:
-                self.set_ethtool_state()
+            self.set_ethtool_state(
+                self.settings['ifname'], self.ethtool.keys(), do_apply)
 
     def recreate(self, do_apply):
         logger.debug('has wrong link kind %s, removing', self.settings['kind'], extra={
@@ -198,7 +210,7 @@ class Link(ABC):
         self.create(do_apply, "replace")
 
     def update(self, do_apply):
-        logger.debug('checking', extra={'iface': self.settings['ifname']})
+        logger.debug('checking link', extra={'iface': self.settings['ifname']})
 
         old_state = self.iface['state']
         has_link_changes = False
@@ -209,20 +221,23 @@ class Link(ABC):
                 has_link_changes |= self.get_if_attr(
                     setting) != self.settings[setting]
 
-        has_ethtool_changes = False
+        has_ethtool_changes = set()
         if not self.ethtool is None:
+            logger.debug('checking ethtool', extra={
+                         'iface': self.settings['ifname']})
             ethtool = self.get_ethtool_state(self.ethtool.keys())
             if ethtool is None:
-                has_ethtool_changes = self.ethtool
+                has_ethtool_changes.add(self.ethtool.keys())
             else:
                 for setting, options in self.ethtool.items():
                     if not setting in ethtool:
-                        has_ethtool_changes |= True
+                        has_ethtool_changes.add(setting)
                     else:
                         for option in options.keys():
-                            logger.debug('  %s.%s: %s => %s', setting, option, ethtool[setting].get(option), self.ethtool[setting][option], extra={'iface': self.settings['ifname']})
-                            has_ethtool_changes |= self.ethtool[setting][option] != ethtool[setting].get(
-                                option)
+                            logger.debug('  %s.%s: %s => %s', setting, option, ethtool[setting].get(
+                                option), self.ethtool[setting][option], extra={'iface': self.settings['ifname']})
+                            if self.ethtool[setting][option] != ethtool[setting].get(option):
+                                has_ethtool_changes.add(setting)
 
         if has_link_changes:
             logger.debug('needs to be configured', extra={
@@ -239,8 +254,8 @@ class Link(ABC):
                 if not 'state' in self.settings:
                     self.settings['state'] = 'up'
 
-            if has_ethtool_changes:
-                self.set_ethtool_state(self.get_if_attr('ifname'))
+            self.set_ethtool_state(self.get_if_attr(
+                'ifname'), has_ethtool_changes, do_apply)
 
             if self.get_if_attr('ifname') == self.settings['ifname']:
                 logger.info('change', extra={
@@ -255,8 +270,8 @@ class Link(ABC):
                     logger.warning('updating link {} failed: {}'.format(
                         self.settings['ifname'], err.args[1]))
         else:
-            if has_ethtool_changes:
-                self.set_ethtool_state(self.get_if_attr('ifname'))
+            self.set_ethtool_state(self.get_if_attr(
+                'ifname'), has_ethtool_changes, do_apply)
             logger.info(
                 'ok', extra={'iface': self.settings['ifname'], 'style': LogStyle.OK})
 
