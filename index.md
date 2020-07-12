@@ -32,7 +32,7 @@ daemon can handle it (*FRR*, *Quagga*).
 
 # Installation
 
-*IfState* is available in the following linux distributions:
+*IfState* is already available in the following linux distributions:
 
 - [Alpine Linux](install.md#Alpine-Linux)
 

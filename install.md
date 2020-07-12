@@ -4,10 +4,10 @@ title: Install
 
 # Alpine Linux
 
-*IfState* is currently available in the *testing* repository, only.
+*IfState* is currently available in the *edge community* repository, only.
 
 
-## Alpine ≥3.12
+## Alpine ≥ 3.12
 
 - enable [repository
   pinning](https://wiki.alpinelinux.org/wiki/Alpine_Linux_package_management#Repository_pinning)
@@ -16,25 +16,23 @@ title: Install
 ```perl
 http://dl-cdn.alpinelinux.org/alpine/v3.12/main
 http://dl-cdn.alpinelinux.org/alpine/v3.12/community
-@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing
+@edgecommunity http://dl-cdn.alpinelinux.org/alpine/edge/community
 ```
-- install *IfState* using `apk add ifstate@testing`
+- install *IfState* using `apk add ifstate@edgecommunity`
 
 
-## Alpine ≤3.11
+## Alpine ≤ 3.11
 
 - enable [repository
   pinning](https://wiki.alpinelinux.org/wiki/Alpine_Linux_package_management#Repository_pinning)
-  in `/etc/apk/repositories` **including** the *community* repository to
-  statisfy the *pyroute2* dependency:
+  in `/etc/apk/repositories`:
 
 ```perl
 http://dl-cdn.alpinelinux.org/alpine/v3.11/main
 http://dl-cdn.alpinelinux.org/alpine/v3.11/community
 @edgecommunity http://dl-cdn.alpinelinux.org/alpine/edge/community
-@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing
 ```
-- install *IfState* using `apk add ifstate@testing py3-pyroute2@edgecommunity`
+- install *IfState* using `apk add ifstate@edgecommunity py3-pyroute2@edgecommunity`
 
 
 # Manual installation
