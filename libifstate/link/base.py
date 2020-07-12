@@ -119,7 +119,7 @@ class Link(ABC):
 
         for setting in settings:
             cmd = ["ethtool"]
-            if setting in ['coalesce', 'features', 'pause']:
+            if setting in ['coalesce', 'features', 'pause', 'rxfh']:
                 cmd.append("--{}".format(setting))
             elif setting in ['nfc']:
                 cmd.append("--config-{}".format(setting))
