@@ -1,3 +1,5 @@
+from pyroute2.netlink.exceptions import NetlinkError
+
 class LinkCannotAdd(Exception):
     pass
 

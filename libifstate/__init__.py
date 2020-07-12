@@ -5,7 +5,7 @@ from libifstate.routing import Tables, Rules
 from libifstate.sysctl import Sysctl
 from libifstate.parser import Parser
 from libifstate.util import logger, ipr, LogStyle
-from libifstate.exception import LinkCircularLinked, LinkNoConfigFound, ParserValidationError
+from libifstate.exception import LinkCircularLinked, LinkNoConfigFound, NetlinkError, ParserValidationError
 from ipaddress import ip_network, ip_interface
 from jsonschema import validate, ValidationError
 import pkgutil
@@ -61,7 +61,7 @@ class IfState():
             if name in self.links:
                 raise LinkDuplicate()
             if 'link' in ifstate:
-                self.links[name] = Link(name, **ifstate['link'])
+                self.links[name] = Link(name, ifstate['link'], ifstate.get('ethtool'))
             else:
                 self.links[name] = None
 

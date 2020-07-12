@@ -318,6 +318,18 @@
                     }
                 }
             }
+        },
+        "iface-ethtool_onoff": {
+            "type": [
+                "boolean",
+                "string"
+            ],
+            "enum": [
+                "on",
+                "off",
+                true,
+                false
+            ]
         }
     },
     "properties": {
@@ -734,6 +746,40 @@
                     "sysctl": {
                         "description": "[interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/{IFACE}/`",
                         "$ref": "#/definitions/iface-sysctl"
+                    },
+                    "ethtool": {
+                        "description": "network driver and hardware settings via [ethtool(8)](https://man7.org/linux/man-pages/man8/ethtool.8.html)",
+                        "type": "object",
+                        "properties": {
+                            "pause": {},
+                            "coalesce": {},
+                            "ring": {},
+                            "features": {},
+                            "change": {},
+                            "channels": {},
+                            "eee": {
+                                "type": "object",
+                                "description": "Energy-Efficient Ethernet (according to the IEEE 802.3az specifications)",
+                                "properties": {
+                                    "eee": {
+                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                    },
+                                    "tx-pli": {
+                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                    },
+                                    "advertise": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    },
+                                    "tx-timer": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    }
+                                }
+                            },
+                            "phy-tunable": {},
+                            "fec": {}
+                        }
                     }
                 }
             }

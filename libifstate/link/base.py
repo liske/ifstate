@@ -1,6 +1,10 @@
 from libifstate.util import logger, ipr, LogStyle
-from libifstate.exception import LinkTypeUnknown
+from libifstate.exception import LinkTypeUnknown, NetlinkError
 from abc import ABC, abstractmethod
+import os
+import subprocess
+import yaml
+
 
 class Link(ABC):
     _nla_prefix = 'IFLA_'
@@ -9,7 +13,7 @@ class Link(ABC):
     def __new__(cls, *args, **kwargs):
         cname = cls.__name__
         if cname == Link.__name__:
-            cname = "{}Link".format(kwargs["kind"].lower().capitalize())
+            cname = "{}Link".format(args[1]['kind'].lower().capitalize())
 
         for c in Link.__subclasses__():
             if c.__name__ == cname:
@@ -18,16 +22,19 @@ class Link(ABC):
         return super().__new__(GenericLink)
         #raise LinkTypeUnknown()
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, name, link, ethtool):
         self.cap_create = True
+        self.cap_ethtool = False
         self.settings = {
             'ifname': name,
         }
-        self.settings.update(kwargs)
+        self.settings.update(link)
+        self.ethtool = None
         self.attr_map = {
             'kind': ['IFLA_LINKINFO', 'IFLA_INFO_KIND'],
         }
-        self.attr_idx = ['link', 'master', 'gre_link', 'ip6gre_link', 'vxlan_link', 'xfrm_link']
+        self.attr_idx = ['link', 'master', 'gre_link',
+                         'ip6gre_link', 'vxlan_link', 'xfrm_link']
         self.idx = None
 
         if 'address' in self.settings:
@@ -74,21 +81,81 @@ class Link(ABC):
 
         return None
 
+    def get_ethtool_fn(self, setting):
+        return "/run/ifstate-ethtool:{}_{}.state".format(self.idx, setting)
+
+    def get_ethtool_state(self, settings):
+        ethtool = {}
+
+        for setting in settings:
+            ethtool[setting] = {}
+            fn = self.get_ethtool_fn(setting)
+
+            if not os.path.isfile(fn):
+                logger.debug('no prior ethtool %s state available', setting,
+                             extra={'iface': self.settings['ifname']})
+                continue
+
+            # try:
+            with open(fn) as fh:
+                ethtool[setting] = yaml.load(fh, Loader=yaml.SafeLoader)
+            # except Exception as err:
+            #     logger.warning('parsing {} failed: {}'.format(
+            #         fn, err.args[1]))
+
+        return ethtool
+
+    def set_ethtool_state(self, ifname):
+        logger.info(
+            'change (ethtool)', extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
+        for setting, options in self.ethtool.items():
+            cmd = ["ethtool"]
+            if setting in ['coalesce', 'features', 'pause']:
+                cmd.append("--{}".format(setting))
+            elif setting in ['nfc']:
+                cmd.append("--config-{}".format(setting))
+            else:
+                cmd.append("--set-{}".format(setting))
+            cmd.append(ifname)
+            for option, value in options.items():
+                if type(value) == bool:
+                    value = {True: "on", False: "off"}[value]
+                value = str(value)
+                cmd.extend([option, value])
+            logger.debug("{}".format(" ".join(cmd)))
+            try:
+                res = subprocess.run(cmd)
+                if res.returncode != 0:
+                    logger.warning(
+                        '`{}` has failed'.format(" ".join(cmd[0:3])))
+                    return
+            except Exception as err:
+                logger.warning('failed to run `{}`: {}'.format(
+                    " ".join(cmd[0:3]), err.args[1]))
+                return
+
+            fn = self.get_ethtool_fn(setting)
+            with open(fn, 'w') as fh:
+                yaml.dump(options, fh)
+
     def apply(self, do_apply):
         # lookup for attributes requiring a interface index
         for attr in self.attr_idx:
             if attr in self.settings:
-                self.settings[attr] = next(iter(ipr.link_lookup(ifname=self.settings[attr])), self.settings[attr])
+                self.settings[attr] = next(iter(ipr.link_lookup(
+                    ifname=self.settings[attr])), self.settings[attr])
 
         if self.idx is not None:
             self.iface = next(iter(ipr.get_links(self.idx)), None)
 
             # check for ifname collisions
-            idx = next(iter(ipr.link_lookup(ifname=self.settings['ifname'])), None)
+            idx = next(iter(ipr.link_lookup(
+                ifname=self.settings['ifname'])), None)
             if idx is not None and idx != self.idx and do_apply:
                 try:
                     ipr.link('set', index=idx, state='down')
-                    ipr.link('set', index=idx, ifname='{}!'.format(self.settings['ifname']))
+                    ipr.link('set', index=idx, ifname='{}!'.format(
+                        self.settings['ifname']))
                 except NetlinkError as err:
                     logger.warning('renaming link {} failed: {}'.format(
                         self.settings['ifname'], err.args[1]))
@@ -101,9 +168,11 @@ class Link(ABC):
             self.create(do_apply)
 
     def create(self, do_apply, oper="add"):
-        logger.info(oper, extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
+        logger.info(
+            oper, extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
 
-        logger.debug("ip link add: {}".format( " ".join("{}={}".format(k, v) for k,v in self.settings.items()) ))
+        logger.debug("ip link add: {}".format(
+            " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
         if do_apply:
             try:
                 ipr.link('add', **(self.settings))
@@ -111,8 +180,14 @@ class Link(ABC):
                 logger.warning('adding link {} failed: {}'.format(
                     self.settings['ifname'], err.args[1]))
 
+        if not self.ethtool is None:
+            logger.debug("ethtool: {}".format(self.ethtool))
+            if do_apply:
+                self.set_ethtool_state()
+
     def recreate(self, do_apply):
-        logger.debug('has wrong link kind %s, removing', self.settings['kind'], extra={'iface': self.settings['ifname']})
+        logger.debug('has wrong link kind %s, removing', self.settings['kind'], extra={
+                     'iface': self.settings['ifname']})
         if do_apply:
             try:
                 ipr.link('del', index=self.idx)
@@ -126,17 +201,35 @@ class Link(ABC):
         logger.debug('checking', extra={'iface': self.settings['ifname']})
 
         old_state = self.iface['state']
-        has_changes = False
+        has_link_changes = False
         for setting in self.settings.keys():
             logger.debug('  %s: %s => %s', setting, self.get_if_attr(
                 setting), self.settings[setting], extra={'iface': self.settings['ifname']})
             if setting != 'kind' or self.cap_create:
-                has_changes |= self.get_if_attr(setting) != self.settings[setting]
+                has_link_changes |= self.get_if_attr(
+                    setting) != self.settings[setting]
 
-        if has_changes:
-            logger.debug('needs to be configured', extra={'iface': self.settings['ifname']})
+        has_ethtool_changes = False
+        if not self.ethtool is None:
+            ethtool = self.get_ethtool_state(self.ethtool.keys())
+            if ethtool is None:
+                has_ethtool_changes = self.ethtool
+            else:
+                for setting, options in self.ethtool.items():
+                    if not setting in ethtool:
+                        has_ethtool_changes |= True
+                    else:
+                        for option in options.keys():
+                            logger.debug('  %s.%s: %s => %s', setting, option, ethtool[setting].get(option), self.ethtool[setting][option], extra={'iface': self.settings['ifname']})
+                            has_ethtool_changes |= self.ethtool[setting][option] != ethtool[setting].get(
+                                option)
+
+        if has_link_changes:
+            logger.debug('needs to be configured', extra={
+                         'iface': self.settings['ifname']})
             if old_state:
-                logger.debug('shutting down', extra={'iface': self.settings['ifname']})
+                logger.debug('shutting down', extra={
+                             'iface': self.settings['ifname']})
                 if do_apply:
                     try:
                         ipr.link('set', index=self.idx, state='down')
@@ -146,10 +239,15 @@ class Link(ABC):
                 if not 'state' in self.settings:
                     self.settings['state'] = 'up'
 
+            if has_ethtool_changes:
+                self.set_ethtool_state(self.get_if_attr('ifname'))
+
             if self.get_if_attr('ifname') == self.settings['ifname']:
-                logger.info('change', extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
+                logger.info('change', extra={
+                            'iface': self.settings['ifname'], 'style': LogStyle.CHG})
             else:
-                logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
+                logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={
+                            'iface': self.settings['ifname'], 'style': LogStyle.CHG})
             if do_apply:
                 try:
                     ipr.link('set', index=self.idx, **(self.settings))
@@ -157,7 +255,10 @@ class Link(ABC):
                     logger.warning('updating link {} failed: {}'.format(
                         self.settings['ifname'], err.args[1]))
         else:
-            logger.info('ok', extra={'iface': self.settings['ifname'], 'style': LogStyle.OK})
+            if has_ethtool_changes:
+                self.set_ethtool_state(self.get_if_attr('ifname'))
+            logger.info(
+                'ok', extra={'iface': self.settings['ifname'], 'style': LogStyle.OK})
 
     def depends(self):
         return None
@@ -178,5 +279,5 @@ class Link(ABC):
 
 
 class GenericLink(Link):
-    def __init__(self, name, **kwargs):
-        super().__init__(name, **kwargs)
+    def __init__(self, name, link, ethtool):
+        super().__init__(name, link, ethtool)
