@@ -14,9 +14,10 @@ The following features are already available:
   - supports many [interface types](schema/#interfaces_items_link)
 - configure ip addresses
 - remove orphan interfaces and ip addresses
-- configure routing tables [≥0.6.0]
-- configure routing rules [≥0.7.0]
-- configure interface `sysctl` options [≥0.7.1]
+- configure routing tables [≥ 0.6.0]
+- configure routing rules [≥ 0.7.0]
+- configure interface `sysctl` options [≥ 0.7.1]
+- configure interface driver and hardware settings via `ethtool` [≥ 0.8.0]
 - ignore interfaces by patterns
 - ignore ip addresses by prefix lists
 - ignore routing table entries by protocol
@@ -27,6 +28,4 @@ The following features are already available:
 
 The following features a planned for a later release of *ifstate*:
 
-- interface driver and hardware settings
-  - `ethtool`
 - support for hotplug interfaces
