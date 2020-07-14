@@ -969,6 +969,46 @@
                                         "description": "SecureOn™ password",
                                         "type": "string",
                                         "pattern": "^[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}$"
+                                    },
+                                    "msglvl": {
+                                        "description": "driver message flags",
+                                        "oneOf": [
+                                            {
+                                                "description": "driver message flags by number",
+                                                "type": "integer"
+                                            },
+                                            {
+                                                "description": "driver message flags by name",
+                                                "type": "array",
+                                                "items": [
+                                                    {
+                                                        "description": "flag name",
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "drv",
+                                                            "probe",
+                                                            "link",
+                                                            "timer",
+                                                            "ifdown",
+                                                            "ifup",
+                                                            "rx_err",
+                                                            "tx_err",
+                                                            "tx_queued",
+                                                            "intr",
+                                                            "tx_done",
+                                                            "rx_status",
+                                                            "pktdata",
+                                                            "hw",
+                                                            "wol"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "description": "enable flag",
+                                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     }
                                 }
                             },
@@ -1022,15 +1062,96 @@
                                 "properties": {
                                     "downshift": {
                                         "description": "enable downshift",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "oneOf": [
+                                            {
+                                                "description": "enable downshift",
+                                                "$ref": "#/definitions/iface-ethtool_onoff"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "minItems": 3,
+                                                "maxItems": 3,
+                                                "items": [
+                                                    {
+                                                        "description": "enable downshift",
+                                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                                    },
+                                                    {
+                                                        "description": "*REQUIRED*",
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "count"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "description": "PHY downshift re-tries count",
+                                                        "type": "integer"
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     },
                                     "fast-link-down": {
                                         "description": "enable Fast Link Down",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "oneOf": [
+                                            {
+                                                "description": "enable Fast Link Down",
+                                                "$ref": "#/definitions/iface-ethtool_onoff"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "minItems": 3,
+                                                "maxItems": 3,
+                                                "items": [
+                                                    {
+                                                        "description": "enable Fast Link Down",
+                                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                                    },
+                                                    {
+                                                        "description": "*REQUIRED*",
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "msec"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "description": "period after which the link is reported as down",
+                                                        "type": "integer"
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     },
                                     "energy-detect-power-down": {
                                         "description": "enable Energy Detect Power Down (EDPD)",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "oneOf": [
+                                            {
+                                                "description": "enable EDPD",
+                                                "$ref": "#/definitions/iface-ethtool_onoff"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "minItems": 3,
+                                                "maxItems": 3,
+                                                "items": [
+                                                    {
+                                                        "description": "enable EDPD",
+                                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                                    },
+                                                    {
+                                                        "description": "*REQUIRED*",
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "msec"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "description": "wake-up interval for Tx pulses",
+                                                        "type": "integer"
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     }
                                 }
                             },
