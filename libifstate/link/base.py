@@ -238,7 +238,6 @@ class Link(ABC):
             if ethtool is None:
                 has_ethtool_changes.add(self.ethtool.keys())
             else:
-                print(self.ethtool)
                 for setting, options in self.ethtool.items():
                     if not setting in ethtool:
                         has_ethtool_changes.add(setting)
