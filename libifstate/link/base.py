@@ -107,6 +107,18 @@ class Link(ABC):
 
         return ethtool
 
+    def fmt_ethtool_opt(self, value):
+        if type(value) == bool:
+            return {True: ["on"], False: ["off"]}[value]
+
+        if type(value) == list:
+            r = []
+            for v in value:
+                r += self.fmt_ethtool_opt(v)
+            return r
+
+        return [str(value)]
+
     def set_ethtool_state(self, ifname, settings, do_apply):
         if len(settings) == 0:
             return
@@ -127,10 +139,7 @@ class Link(ABC):
                 cmd.append("--set-{}".format(setting))
             cmd.append(ifname)
             for option, value in self.ethtool[setting].items():
-                if type(value) == bool:
-                    value = {True: "on", False: "off"}[value]
-                value = str(value)
-                cmd.extend([option, value])
+                cmd.extend([option] + self.fmt_ethtool_opt(value))
             logger.debug("{}".format(" ".join(cmd)))
             try:
                 res = subprocess.run(cmd)
@@ -229,6 +238,7 @@ class Link(ABC):
             if ethtool is None:
                 has_ethtool_changes.add(self.ethtool.keys())
             else:
+                print(self.ethtool)
                 for setting, options in self.ethtool.items():
                     if not setting in ethtool:
                         has_ethtool_changes.add(setting)
