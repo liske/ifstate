@@ -1155,6 +1155,10 @@
                                     }
                                 }
                             },
+                            "priv-flags": {
+                                "type": "object",
+                                "description": "private flags"
+                            },
                             "fec": {
                                 "type": "object",
                                 "description": "Forward Error Correction",
