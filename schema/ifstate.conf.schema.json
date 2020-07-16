@@ -751,7 +751,20 @@
                         "description": "network driver and hardware settings via [ethtool(8)](https://man7.org/linux/man-pages/man8/ethtool.8.html)",
                         "type": "object",
                         "properties": {
-                            "pause": {},
+                            "pause": {
+                                "autoneg": {
+                                    "description": "enable pause autonegotiation",
+                                    "$ref": "#/definitions/iface-ethtool_onoff"
+                                },
+                                "rx": {
+                                    "description": "enable Rx pause",
+                                    "$ref": "#/definitions/iface-ethtool_onoff"
+                                },
+                                "tx": {
+                                    "description": "enable Tx pause",
+                                    "$ref": "#/definitions/iface-ethtool_onoff"
+                                }
+                            },
                             "coalesce": {
                                 "type": "object",
                                 "description": "interrupt coalescing",
@@ -1154,6 +1167,10 @@
                                         ]
                                     }
                                 }
+                            },
+                            "priv-flags": {
+                                "type": "object",
+                                "description": "private flags"
                             },
                             "fec": {
                                 "type": "object",
