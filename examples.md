@@ -11,3 +11,4 @@ This is a collection of configuration examples for different interface link type
 - [GENEVE Layer 2 Tunnel](examples/geneve.md)
 - [XFRM Interfaces for multitenant IPsec](examples/xfrm-vrf.md)
 - [sysctl interface settings](examples/sysctl.md)
+- [ethtool hardware settings](examples/ethtool.md)

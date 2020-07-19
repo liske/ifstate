@@ -1,4 +1,4 @@
-# Example: Sysctl interface settings
+# Example: sysctl interface settings
 
 This example configures sysctl interface settings:
 - enable ip forwarding for *all* interfaces
