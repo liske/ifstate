@@ -35,7 +35,7 @@ interfaces:
 ```
 
 
-## manual
+## manually
 
 ```bash
 sysctl net.ipv6.conf.all.forwarding=1

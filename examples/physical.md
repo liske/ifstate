@@ -22,7 +22,7 @@ interfaces:
 ```
 
 
-## iproute2
+## manually
 
 ```bash
 ip link dev eth0 set down

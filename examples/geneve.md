@@ -34,7 +34,7 @@ interfaces:
 ```
 
 
-## iproute2
+## manually
 
 ```bash
 ip link add name br0 type bridge stp_state 0

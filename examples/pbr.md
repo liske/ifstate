@@ -47,7 +47,7 @@ routing:
 ```
 
 
-## iproute2
+## manually
 
 ```bash
 # enable ipv4 forwarding
