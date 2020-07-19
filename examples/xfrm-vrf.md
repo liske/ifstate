@@ -126,10 +126,10 @@ connections {
         remote_addrs = 203.0.113.1
 
         # Default inbound XFRM interface ID for children.
-        if_id_in = 101
+        if_id_in = 1
 
         # Default outbound XFRM interface ID for children.
-        if_id_out = 101
+        if_id_out = 1
 
         # Section for a local authentication round.
         local {
@@ -171,10 +171,10 @@ connections {
         remote_addrs = 203.0.113.1
 
         # Default inbound XFRM interface ID for children.
-        if_id_in = 102
+        if_id_in = 2
 
         # Default outbound XFRM interface ID for children.
-        if_id_out = 102
+        if_id_out = 2
 
         # Section for a local authentication round.
         local {
