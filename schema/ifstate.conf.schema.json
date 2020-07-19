@@ -752,17 +752,21 @@
                         "type": "object",
                         "properties": {
                             "pause": {
-                                "autoneg": {
-                                    "description": "enable pause autonegotiation",
-                                    "$ref": "#/definitions/iface-ethtool_onoff"
-                                },
-                                "rx": {
-                                    "description": "enable Rx pause",
-                                    "$ref": "#/definitions/iface-ethtool_onoff"
-                                },
-                                "tx": {
-                                    "description": "enable Tx pause",
-                                    "$ref": "#/definitions/iface-ethtool_onoff"
+                                "type": "object",
+                                "description": "pause parameters",
+                                "properties": {
+                                    "autoneg": {
+                                        "description": "enable pause autonegotiation",
+                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                    },
+                                    "rx": {
+                                        "description": "enable Rx pause",
+                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                    },
+                                    "tx": {
+                                        "description": "enable Tx pause",
+                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                    }
                                 }
                             },
                             "coalesce": {
