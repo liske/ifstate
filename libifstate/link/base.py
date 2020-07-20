@@ -285,7 +285,11 @@ class Link(ABC):
                 'ok', extra={'iface': self.settings['ifname'], 'style': LogStyle.OK})
 
     def depends(self):
-        return None
+        deps = []
+        for attr in self.attr_idx:
+            if attr in self.settings:
+                deps.append(attr)
+        return deps
 
     @classmethod
     def name2nla(self, name):

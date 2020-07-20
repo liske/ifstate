@@ -121,8 +121,8 @@ class IfState():
                                  extra={'iface': name})
                     applied.append(name)
                 else:
-                    dep = link.depends()
-                    if dep is None or dep in applied:
+                    deps = link.depends()
+                    if all(x in applied for x in deps):
                         self.sysctl.apply(name, do_apply)
                         link.apply(do_apply)
                         applied.append(name)
