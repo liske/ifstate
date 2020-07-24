@@ -116,6 +116,9 @@ class IfState():
         while len(applied) < len(self.links):
             last = len(applied)
             for name, link in self.links.items():
+                if name in applied:
+                    continue
+
                 if link is None:
                     logger.debug('skipped due to no link settings',
                                  extra={'iface': name})
