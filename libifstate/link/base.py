@@ -288,7 +288,7 @@ class Link(ABC):
         deps = []
         for attr in self.attr_idx:
             if attr in self.settings:
-                deps.append(attr)
+                deps.append(self.settings[attr])
         return deps
 
     @classmethod
