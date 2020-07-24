@@ -198,7 +198,8 @@ class Link(ABC):
             try:
                 state = self.settings.pop('state', None)
                 ipr.link('add', **(self.settings))
-                if not state is None:
+                self.idx = next(iter(ipr.link_lookup(ifname=self.settings['ifname'])), None)
+                if not state is None and not self.idx is None:
                     ipr.link('set', index=self.idx, state=state)
             except NetlinkError as err:
                 logger.warning('adding link {} failed: {}'.format(
