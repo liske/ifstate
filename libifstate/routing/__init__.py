@@ -211,7 +211,7 @@ class Tables(collections.abc.Mapping):
             for route in croutes:
                 if 'oif' in route and type(route['oif']) == str:
                     route['oif'] = next(
-                        iter(ipr.link_lookup(ifname=route['oif'])))
+                        iter(ipr.link_lookup(ifname=route['oif'])), None)
                 found = False
                 identical = False
                 for i, kroute in enumerate(kroutes):
