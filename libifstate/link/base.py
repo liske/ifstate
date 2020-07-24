@@ -196,7 +196,10 @@ class Link(ABC):
             " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
         if do_apply:
             try:
+                state = self.settings.pop('state', None)
                 ipr.link('add', **(self.settings))
+                if not state is None:
+                    ipr.link('set', index=self.idx, state=state)
             except NetlinkError as err:
                 logger.warning('adding link {} failed: {}'.format(
                     self.settings['ifname'], err.args[1]))
@@ -274,7 +277,10 @@ class Link(ABC):
                             'iface': self.settings['ifname'], 'style': LogStyle.CHG})
             if do_apply:
                 try:
+                    state = self.settings.pop('state', None)
                     ipr.link('set', index=self.idx, **(self.settings))
+                    if not state is None:
+                        ipr.link('set', index=self.idx, state=state)
                 except NetlinkError as err:
                     logger.warning('updating link {} failed: {}'.format(
                         self.settings['ifname'], err.args[1]))
