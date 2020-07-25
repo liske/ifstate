@@ -740,6 +740,70 @@
                                         "description": "lookup key to match xfrm policies"
                                     }
                                 }
+                            },
+                            {
+                                "description": "WireGuard interface",
+                                "type": "object",
+                                "required": [
+                                    "private-key",
+                                    "peers"
+                                ],
+                                "properties": {
+                                    "private-key": {
+                                        "description": "filename containing the local private key",
+                                        "type": "string"
+                                    },
+                                    "listen-ports": {
+                                        "description": "port for listening",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 65535
+                                    },
+                                    "fwmark": {
+                                        "description": "fwmark for outgoing packets",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 4294967295
+                                    },
+                                    "peers": {
+                                        "description": "list of peer definitions",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "required": [
+                                                "public-key"
+                                            ],
+                                            "properties": {
+                                                "public-key": {
+                                                    "description": "the peer's public key",
+                                                    "type": "string"
+                                                },
+                                                "preshared-key": {
+                                                    "description": "filename containing preshared key for post-quantum resistance",
+                                                    "type": "string"
+                                                },
+                                                "endpoint": {
+                                                    "description": "initial endpoint IP or hostname",
+                                                    "type": "string"
+                                                },
+                                                "persistent-keepalive": {
+                                                    "description": "keepalive interval seconds",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 65535
+                                                },
+                                                "allowedips": {
+                                                    "description": "list of prefixes in CIDR notation",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "format": "ipv4,ipv6"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         ]
                     },
