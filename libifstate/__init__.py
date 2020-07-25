@@ -4,6 +4,10 @@ from libifstate.address import Addresses
 from libifstate.routing import Tables, Rules
 from libifstate.sysctl import Sysctl
 from libifstate.parser import Parser
+try:
+    from libifstate.wireguard import WireGuard
+except ModuleNotFoundError:
+    pass
 from libifstate.util import logger, ipr, LogStyle
 from libifstate.exception import LinkCircularLinked, LinkNoConfigFound, NetlinkError, ParserValidationError
 from ipaddress import ip_network, ip_interface
@@ -29,13 +33,8 @@ class IfState():
             'link': True,
             'sysctl': os.access('/proc/sys/net', os.R_OK),
             'ethtool': not ethtool_path is None,
-            'wireguard': False,
+            'wireguard': not globals().get("WireGuard") is None,
         }
-
-        for c in Link.__subclasses__():
-            if c.__name__ == 'WireguardLink':
-                self.features['wireguard'] = True
-                break
 
         logger.debug('{}'.format(' '.join(sorted([x for x, y in self.features.items() if y]))), extra={'iface': 'features'})
 
