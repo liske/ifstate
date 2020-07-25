@@ -1,5 +1,5 @@
 from libifstate.exception import LinkDuplicate
-from libifstate.link.base import Link
+from libifstate.link.base import ethtool_path, Link
 from libifstate.address import Addresses
 from libifstate.routing import Tables, Rules
 from libifstate.sysctl import Sysctl
@@ -8,6 +8,7 @@ from libifstate.util import logger, ipr, LogStyle
 from libifstate.exception import LinkCircularLinked, LinkNoConfigFound, NetlinkError, ParserValidationError
 from ipaddress import ip_network, ip_interface
 from jsonschema import validate, ValidationError
+import os
 import pkgutil
 import re
 import json
@@ -24,6 +25,19 @@ class IfState():
         self.tables = None
         self.rules = None
         self.sysctl = Sysctl()
+        self.features = {
+            'link': True,
+            'sysctl': os.access('/proc/sys/net', os.R_OK),
+            'ethtool': not ethtool_path is None,
+            'wireguard': False,
+        }
+
+        for c in Link.__subclasses__():
+            if c.__name__ == 'WireguardLink':
+                self.features['wireguard'] = True
+                break
+
+        logger.debug('{}'.format(' '.join(sorted([x for x, y in self.features.items() if y]))), extra={'iface': 'features'})
 
     def update(self, ifstates):
         # check config schema

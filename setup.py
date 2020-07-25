@@ -34,6 +34,7 @@ setup(
         "pyroute2",
         "PyYAML",
         "jsonschema",
+        "wgnlpy",
     ],
     entry_points={
         "console_scripts": ["ifstatecli = ifstate.ifstate:main"]
