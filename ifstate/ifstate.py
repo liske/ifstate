@@ -2,7 +2,7 @@
 
 from libifstate.parser import YamlParser
 from libifstate import __version__, IfState
-from libifstate.exception import ParserValidationError
+from libifstate.exception import FeatureMissingError, ParserValidationError
 from libifstate.util import logger, LogStyle , AnsiColors
 from collections import namedtuple
 
@@ -94,6 +94,9 @@ def main():
 
         try:
             ifs.update(ifstates)
+        except FeatureMissingError as ex:
+            logger.error("Config uses unavailable feature: {}".format(ex.feature))
+            exit(1)
         except ParserValidationError as ex:
             logger.error("Config validation failed for {}".format(ex.detail))
             exit(1)

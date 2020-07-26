@@ -9,7 +9,7 @@ try:
 except ModuleNotFoundError:
     pass
 from libifstate.util import logger, ipr, LogStyle
-from libifstate.exception import LinkCircularLinked, LinkNoConfigFound, NetlinkError, ParserValidationError
+from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, NetlinkError, ParserValidationError
 from ipaddress import ip_network, ip_interface
 from jsonschema import validate, ValidationError
 import os
@@ -88,6 +88,9 @@ class IfState():
                 self.sysctl.add(name, ifstate['sysctl'])
 
             if 'wireguard' in ifstate:
+                if not self.features['wireguard']:
+                    raise FeatureMissingError("wireguard")
+
                 self.wireguard[name] = WireGuard(name, ifstate['wireguard'])
 
         # add routing from config
