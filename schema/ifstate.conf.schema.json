@@ -768,6 +768,7 @@
                         "properties": {
                             "pause": {
                                 "type": "object",
+                                "additionalProperties": false,
                                 "description": "pause parameters",
                                 "properties": {
                                     "autoneg": {
@@ -786,6 +787,7 @@
                             },
                             "coalesce": {
                                 "type": "object",
+                                "additionalProperties": false,
                                 "description": "interrupt coalescing",
                                 "properties": {
                                     "adaptive-rx": {
@@ -858,6 +860,7 @@
                             },
                             "ring": {
                                 "type": "object",
+                                "additionalProperties": false,
                                 "description": "rx/tx ring parameters",
                                 "properties": {
                                     "rx": {
@@ -880,6 +883,7 @@
                             },
                             "features": {
                                 "type": "object",
+                                "additionalProperties": false,
                                 "description": "offload parameters and other features",
                                 "properties": {
                                     "rx": {
@@ -934,6 +938,7 @@
                             },
                             "change": {
                                 "type": "object",
+                                "additionalProperties": false,
                                 "description": "device settings",
                                 "properties": {
                                     "speed": {
@@ -1046,6 +1051,7 @@
                             },
                             "channels": {
                                 "type": "object",
+                                "additionalProperties": false,
                                 "description": "number of channels",
                                 "properties": {
                                     "rx": {
@@ -1068,6 +1074,7 @@
                             },
                             "eee": {
                                 "type": "object",
+                                "additionalProperties": false,
                                 "description": "Energy-Efficient Ethernet (according to the IEEE 802.3az specifications)",
                                 "properties": {
                                     "eee": {
@@ -1090,6 +1097,7 @@
                             },
                             "phy-tunable": {
                                 "type": "object",
+                                "additionalProperties": false,
                                 "description": "PHY tunable parameters",
                                 "properties": {
                                     "downshift": {
@@ -1193,6 +1201,7 @@
                             },
                             "fec": {
                                 "type": "object",
+                                "additionalProperties": false,
                                 "description": "Forward Error Correction",
                                 "properties": {
                                     "encoding": {
