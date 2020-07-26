@@ -78,8 +78,8 @@ class WireGuard():
                             pchange |= collections.Counter(
                                 attr) != collections.Counter(peer[setting])
                         else:
-                            pchange |= peer[setting] != getattr(
-                                peers[pubkey], setting)
+                            pchange |= str(peer[setting]) != str(getattr(
+                                peers[pubkey], setting))
 
                     if pchange:
                         has_pchanges = True
