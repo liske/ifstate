@@ -461,6 +461,21 @@
                                 }
                             },
                             {
+                                "description": "Dummy network interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "dummy"
+                                        ]
+                                    }
+                                }
+                            },
+                            {
                                 "description": "VLAN interface",
                                 "required": [
                                     "kind",
