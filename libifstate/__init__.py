@@ -29,6 +29,7 @@ class IfState():
         self.tables = None
         self.rules = None
         self.sysctl = Sysctl()
+        self.wireguard = {}
         self.features = {
             'link': True,
             'sysctl': os.access('/proc/sys/net', os.R_OK),
@@ -85,6 +86,9 @@ class IfState():
 
             if 'sysctl' in ifstate:
                 self.sysctl.add(name, ifstate['sysctl'])
+
+            if 'wireguard' in ifstate:
+                self.wireguard[name] = WireGuard(name, ifstate['wireguard'])
 
         # add routing from config
         if 'routing' in ifstates:
@@ -200,6 +204,11 @@ class IfState():
 
         if not self.rules is None:
             self.rules.apply(self.ignore.get('rules', []), do_apply)
+
+        if len(self.wireguard):
+            logger.info("\nconfiguring WireGuard...")
+            for iface, wireguard in self.wireguard.items():
+                wireguard.apply(do_apply)
 
     def show(self):
         self.ipaddr_ignore = set()
