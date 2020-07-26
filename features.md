@@ -18,6 +18,7 @@ The following features are already available:
 - configure routing rules [≥ 0.7.0]
 - configure interface `sysctl` options [≥ 0.7.1]
 - configure interface driver and hardware settings via `ethtool` [≥ 0.7.2]
+- configure WireGuard settings [≥ 0.8.0]
 - ignore interfaces by patterns
 - ignore ip addresses by prefix lists
 - ignore routing table entries by protocol

@@ -43,6 +43,7 @@ http://dl-cdn.alpinelinux.org/alpine/v3.11/community
 - [pyroute2](https://pyroute2.org/) - Python Netlink library
 - [PyYAML](https://pyyaml.org/) - YAML parser and emitter for Python
 - [jsonschema](https://github.com/Julian/jsonschema) - An implementation of JSON Schema validation for Python
+- [wgnlpy](https://github.com/ArgosyLabs/wgnlpy) - Python netlink connector to WireGuard *(optional)*
 
 
 ## PyPI
