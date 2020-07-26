@@ -4,7 +4,9 @@ from abc import ABC, abstractmethod
 import os
 import subprocess
 import yaml
+import shutil
 
+ethtool_path = shutil.which("ethtool")
 
 class Link(ABC):
     _nla_prefix = 'IFLA_'
@@ -130,7 +132,7 @@ class Link(ABC):
             return
 
         for setting in settings:
-            cmd = ["ethtool"]
+            cmd = [ethtool_path]
             if setting in ['coalesce', 'features', 'pause', 'rxfh']:
                 cmd.append("--{}".format(setting))
             elif setting in ['nfc']:

@@ -707,6 +707,21 @@
                                 ]
                             },
                             {
+                                "description": "WireGuard interface; WireGuard settings can be configured using a `wireguard` block",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "wireguard"
+                                        ]
+                                    }
+                                }
+                            },
+                            {
                                 "description": "XFRM interface",
                                 "required": [
                                     "kind",
@@ -1201,6 +1216,71 @@
                                                 "BaseR",
                                                 "LLRS"
                                             ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "wireguard": {
+                        "description": "settings for WireGuard interfaces",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                            "private_key"
+                        ],
+                        "properties": {
+                            "private_key": {
+                                "description": "local private key (consider to use the `!include` tag to read the key from file)",
+                                "type": "string"
+                            },
+                            "listen_port": {
+                                "description": "port for listening",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 65535
+                            },
+                            "fwmark": {
+                                "description": "fwmark for outgoing packets",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            },
+                            "peers": {
+                                "description": "list of peer definitions",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "public_key"
+                                    ],
+                                    "properties": {
+                                        "public_key": {
+                                            "description": "the peer's public key",
+                                            "type": "string"
+                                        },
+                                        "preshared_key": {
+                                            "description": "preshared key for post-quantum resistance (consider to use the `!include` tag to read the key from file)",
+                                            "type": "string"
+                                        },
+                                        "endpoint": {
+                                            "description": "initial endpoint IP or hostname",
+                                            "type": "string"
+                                        },
+                                        "persistent_keepalive": {
+                                            "description": "keepalive interval seconds",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 65535
+                                        },
+                                        "allowedips": {
+                                            "description": "list of prefixes in CIDR notation",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "format": "ipv4,ipv6"
+                                            }
                                         }
                                     }
                                 }

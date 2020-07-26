@@ -1,13 +1,18 @@
 from libifstate.exception import LinkDuplicate
-from libifstate.link.base import Link
+from libifstate.link.base import ethtool_path, Link
 from libifstate.address import Addresses
 from libifstate.routing import Tables, Rules
 from libifstate.sysctl import Sysctl
 from libifstate.parser import Parser
+try:
+    from libifstate.wireguard import WireGuard
+except ModuleNotFoundError:
+    pass
 from libifstate.util import logger, ipr, LogStyle
 from libifstate.exception import LinkCircularLinked, LinkNoConfigFound, NetlinkError, ParserValidationError
 from ipaddress import ip_network, ip_interface
 from jsonschema import validate, ValidationError
+import os
 import pkgutil
 import re
 import json
@@ -24,6 +29,15 @@ class IfState():
         self.tables = None
         self.rules = None
         self.sysctl = Sysctl()
+        self.wireguard = {}
+        self.features = {
+            'link': True,
+            'sysctl': os.access('/proc/sys/net', os.R_OK),
+            'ethtool': not ethtool_path is None,
+            'wireguard': not globals().get("WireGuard") is None,
+        }
+
+        logger.debug('{}'.format(' '.join(sorted([x for x, y in self.features.items() if y]))), extra={'iface': 'features'})
 
     def update(self, ifstates):
         # check config schema
@@ -72,6 +86,9 @@ class IfState():
 
             if 'sysctl' in ifstate:
                 self.sysctl.add(name, ifstate['sysctl'])
+
+            if 'wireguard' in ifstate:
+                self.wireguard[name] = WireGuard(name, ifstate['wireguard'])
 
         # add routing from config
         if 'routing' in ifstates:
@@ -187,6 +204,11 @@ class IfState():
 
         if not self.rules is None:
             self.rules.apply(self.ignore.get('rules', []), do_apply)
+
+        if len(self.wireguard):
+            logger.info("\nconfiguring WireGuard...")
+            for iface, wireguard in self.wireguard.items():
+                wireguard.apply(do_apply)
 
     def show(self):
         self.ipaddr_ignore = set()
