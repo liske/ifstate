@@ -388,26 +388,123 @@
                 },
                 "routes": {
                     "description": "filter routes by options",
-                    "type": "object",
-                    "properties": {
-                        "protos": {
-                            "type": "array",
-                            "items": {
-                                "description": "protocol number (`/etc/iproute2/rt_protos`)",
-                                "type": "integer"
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "dev": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ]
+                            },
+                            "proto": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "default": "boot"
+                            },
+                            "realm": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ]
+                            },
+                            "scope": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ]
+                            },
+                            "table": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "default": "main"
+                            },
+                            "to": {
+                                "type": "string"
+                            },
+                            "via": {
+                                "type": "string"
                             }
                         }
                     }
                 },
                 "rules": {
                     "description": "filter rules by options",
-                    "type": "object",
-                    "properties": {
-                        "protos": {
-                            "type": "array",
-                            "items": {
-                                "description": "protocol number (`/etc/iproute2/rt_protos`)",
-                                "type": "integer"
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "action": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "description": "the type of this rule",
+                                "enum": [
+                                    "to_tbl",
+                                    "blackhole",
+                                    "unreachable",
+                                    "prohibit"
+                                ],
+                                "default": "to_tbl"
+                            },
+                            "table": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "minimum": 0,
+                                "maximum": 255
+                            },
+                            "priority": {
+                                "type": "integer",
+                                "description": "the priority of this rule",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            },
+                            "from": {
+                                "type": "string",
+                                "description": "select the source prefix to match",
+                                "format": "ipv4,ipv6"
+                            },
+                            "to": {
+                                "type": "string",
+                                "description": "select the destination prefix to match",
+                                "format": "ipv4,ipv6"
+                            },
+                            "iif": {
+                                "type": "string",
+                                "description": "select the incoming device to match"
+                            },
+                            "oif": {
+                                "type": "string",
+                                "description": "select the outgoing device to match"
+                            },
+                            "proto": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "default": "unspec",
+                                "description": "routing protocol number (`/etc/iproute2/rt_protos`)"
+                            },
+                            "fwmark": {
+                                "type": "integer",
+                                "description": "select the *fwmark* value to match"
+                            },
+                            "ipproto": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "description": "select the ip protocol to match"
                             }
                         }
                     }

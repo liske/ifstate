@@ -243,7 +243,12 @@ class Tables(collections.abc.Mapping):
                             route['dst'], err.args[1]))
 
             for route in kroutes:
-                if route['proto'] in ignores.get('protos', []):
+                ignore = False
+                for iroute in ignores:
+                    if route_matches(route, iroute, iroute.keys()):
+                        ignore = True
+                        break
+                if ignore:
                     continue
 
                 logger.info(
@@ -296,7 +301,7 @@ class Rules():
             'tos': rule.get('tos', 0),
         }
 
-        if type(rule['action']) == str:
+        if 'action' in rule and type(rule['action']) == str:
             ru['action'] = {
                 "to_tbl": "FR_ACT_TO_TBL",
                 "unicast": "FR_ACT_UNICAST",
@@ -342,7 +347,7 @@ class Rules():
             ru = {
                 'action': FR_ACT_VALUES.get(rule['action']),
                 'table': rule.get_attr('FRA_TABLE'),
-                'protocol': rule.get_attr('FRA_PROTOCOL'),
+                'proto': rule.get_attr('FRA_PROTOCOL'),
                 'priority': rule.get_attr('FRA_PRIORITY', 0),
                 'family': rule['family'],
                 'tos': rule['tos'],
@@ -391,7 +396,12 @@ class Rules():
                     logger.warning('rule setup failed: {}'.format(err.args[1]))
 
         for rule in krules:
-            if rule['protocol'] in ignores.get('protos', []):
+            ignore = False
+            for irule in ignores:
+                if rule_matches(rule, irule, irule.keys()):
+                    ignore = True
+                    break
+            if ignore:
                 continue
 
             logger.info(

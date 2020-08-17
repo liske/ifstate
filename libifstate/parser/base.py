@@ -6,8 +6,7 @@ class Parser(ABC):
     _default_ifstates = {
         'ignore': {
             'ipaddr': [
-                'fe80::/10',
-                'ff00::/8',
+                'fe80::/10'
             ],
             'ifname': [
                 r'^docker\d+',
@@ -18,12 +17,45 @@ class Parser(ABC):
                 r'^br-[\da-f]{12}',
                 r'^vrrp\d*\.\d+$',
             ],
-            'routes': {
-                'protos': [1, 2, 8, 9, 10, 11, 12, 13, 14, 15, 16, 42, 186, 187, 188, 189, 192],
-            },
-            'rules': {
-                'protos': [1, 2, 8, 9, 10, 11, 12, 13, 14, 15, 16, 42, 186, 187, 188, 189, 192],
-            },
+            'routes': [
+                { 'proto': 1 },
+                { 'proto': 2 },
+                { 'proto': 8 },
+                { 'proto': 9 },
+                { 'proto': 10 },
+                { 'proto': 11 },
+                { 'proto': 12 },
+                { 'proto': 13 },
+                { 'proto': 14 },
+                { 'proto': 15 },
+                { 'proto': 16 },
+                { 'proto': 42 },
+                { 'proto': 186 },
+                { 'proto': 187 },
+                { 'proto': 188 },
+                { 'proto': 189 },
+                { 'proto': 192 },
+                { 'to': 'ff00::/8' },
+            ],
+            'rules': [
+                { 'proto': 1 },
+                { 'proto': 2 },
+                { 'proto': 8 },
+                { 'proto': 9 },
+                { 'proto': 10 },
+                { 'proto': 11 },
+                { 'proto': 12 },
+                { 'proto': 13 },
+                { 'proto': 14 },
+                { 'proto': 15 },
+                { 'proto': 16 },
+                { 'proto': 42 },
+                { 'proto': 186 },
+                { 'proto': 187 },
+                { 'proto': 188 },
+                { 'proto': 189 },
+                { 'proto': 192 },
+            ],
         },
         'interfaces': {}
     }
