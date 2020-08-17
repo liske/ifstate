@@ -54,6 +54,7 @@
         "iface-sysctl": {
             "type": "object",
             "description": "configures [per interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt)",
+            "additionalProperties": false,
             "properties": {
                 "ipv4": {
                     "type": "object",
@@ -160,6 +161,7 @@
                 "ipv6": {
                     "type": "object",
                     "description": "settings in `/proc/sys/net/ipv6/*/conf/`",
+                    "additionalProperties": false,
                     "properties": {
                         "accept_dad": {
                             "type": "integer"
@@ -332,10 +334,12 @@
             ]
         }
     },
+    "additionalProperties": false,
     "properties": {
         "options": {
             "description": "global configuration settings",
             "type": "object",
+            "additionalProperties": false,
             "properties": {
                 "sysctl": {
                     "type": "object",
@@ -355,6 +359,7 @@
         "ignore": {
             "description": "ignore patterns to skip interface, ip address or routing objects",
             "type": "object",
+            "additionalProperties": false,
             "properties": {
                 "ipaddr": {
                     "description": "list of ip address prefixes to be ignored",
@@ -393,6 +398,19 @@
                             }
                         }
                     }
+                },
+                "rules": {
+                    "description": "filter rules by options",
+                    "type": "object",
+                    "properties": {
+                        "protos": {
+                            "type": "array",
+                            "items": {
+                                "description": "protocol number (`/etc/iproute2/rt_protos`)",
+                                "type": "integer"
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -404,6 +422,7 @@
                 "required": [
                     "name"
                 ],
+                "additionalProperties": false,
                 "properties": {
                     "name": {
                         "description": "name of the interface",
@@ -1374,6 +1393,7 @@
                             "table",
                             "priority"
                         ],
+                        "additionalProperties": false,
                         "properties": {
                             "action": {
                                 "type": [
