@@ -6,7 +6,7 @@ import subprocess
 import yaml
 import shutil
 
-ethtool_path = shutil.which("ethtool")
+ethtool_path = shutil.which("ethtool") or '/usr/sbin/ethtool'
 
 class Link(ABC):
     _nla_prefix = 'IFLA_'
