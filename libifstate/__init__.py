@@ -12,6 +12,7 @@ from libifstate.util import logger, ipr, LogStyle
 from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, NetlinkError, ParserValidationError
 from ipaddress import ip_network, ip_interface
 from jsonschema import validate, ValidationError
+from copy import deepcopy
 import os
 import pkgutil
 import re
@@ -214,6 +215,8 @@ class IfState():
                 wireguard.apply(do_apply)
 
     def show(self):
+        defaults = deepcopy(Parser._default_ifstates)
+
         self.ipaddr_ignore = set()
         for ip in Parser._default_ifstates.get('ignore').get('ipaddr'):
             self.ipaddr_ignore.add(ip_network(ip))
@@ -259,6 +262,7 @@ class IfState():
 
         routing = {
             'routes': Tables().show_routes(Parser._default_ifstates['ignore']['routes']),
+            'rules': Rules().show_rules(Parser._default_ifstates['ignore']['rules']),
         }
 
-        return {**Parser._default_ifstates, **{'interfaces': ifs_links, 'routing': routing}}
+        return {**defaults, **{'interfaces': ifs_links, 'routing': routing}}

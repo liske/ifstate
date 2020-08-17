@@ -120,7 +120,12 @@ class Tables(collections.abc.Mapping):
                 continue
 
             # skip ignored routes
-            if route['proto'] in ignores.get('protos', []):
+            ignore = False
+            for iroute in ignores:
+                if route_matches(route, iroute, iroute.keys()):
+                    ignore = True
+                    break
+            if ignore:
                 continue
 
             if route['dst_len'] > 0:
@@ -309,7 +314,7 @@ class Rules():
                 "unreachable": "FR_ACT_UNREACHABLE",
                 "prohibit": "FR_ACT_PROHIBIT",
                 "nat": "FR_ACT_NAT",
-            }.get(rule['action'])
+            }.get(rule['action'], rule['action'])
         else:
             ru['action'] = rule.get('action'.lower(), "FR_ACT_TO_TBL")
 
@@ -367,6 +372,47 @@ class Rules():
                     ru[field] = value
 
             rules.append(ru)
+        return rules
+
+    def show_rules(self, ignores):
+        rules = []
+        for rule in self.kernel_rules():
+            # skip ignored routes
+            ignore = False
+            for irule in ignores:
+                if 'proto' in irule:
+                    irule['protocol'] = irule['proto']
+                    del irule['proto']
+                if rule_matches(rule, irule, irule.keys()):
+                    ignore = True
+                    break
+            if ignore:
+                continue
+
+            rule['action'] = {
+                "FR_ACT_TO_TBL": "to_tbl",
+                "FR_ACT_UNICAST": "unicast",
+                "FR_ACT_BLACKHOLE": "blackhole",
+                "FR_ACT_UNREACHABLE": "unreachable",
+                "FR_ACT_PROHIBIT": "prohibit",
+                "FR_ACT_NAT": "nat",
+            }.get(rule['action'], rule['action'])
+
+
+            if 'protocol' in rule:
+                rule['proto'] = rule['protocol']
+                del rule['protocol']
+
+            if rule['src_len'] > 0:
+                rule['from'] = ip_network(
+                    '{}/{}'.format(rule['src'], rule['src_len'])).with_prefixlen
+            del rule['src']
+            del rule['src_len']
+            del rule['family']
+            del rule['tos']
+
+            rules.append(rule)
+
         return rules
 
     def apply(self, ignores, do_apply):
