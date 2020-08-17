@@ -16,7 +16,7 @@ def route_matches(r1, r2, fields=('dst', 'metric', 'proto'), verbose=False, inde
     return _matches(r1, r2, fields, verbose, indent)
 
 
-def rule_matches(r1, r2, fields=('priority', 'iif', 'oif', 'dst', 'metric', 'proto'), verbose=False, indent=""):
+def rule_matches(r1, r2, fields=('priority', 'iif', 'oif', 'dst', 'metric', 'protocol'), verbose=False, indent=""):
     return _matches(r1, r2, fields, verbose, indent)
 
 
@@ -347,7 +347,7 @@ class Rules():
             ru = {
                 'action': FR_ACT_VALUES.get(rule['action']),
                 'table': rule.get_attr('FRA_TABLE'),
-                'proto': rule.get_attr('FRA_PROTOCOL'),
+                'protocol': rule.get_attr('FRA_PROTOCOL'),
                 'priority': rule.get_attr('FRA_PRIORITY', 0),
                 'family': rule['family'],
                 'tos': rule['tos'],
@@ -398,6 +398,9 @@ class Rules():
         for rule in krules:
             ignore = False
             for irule in ignores:
+                if 'proto' in irule:
+                    irule['protocol'] = irule['proto']
+                    del irule['proto']
                 if rule_matches(rule, irule, irule.keys()):
                     ignore = True
                     break
