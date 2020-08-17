@@ -1486,10 +1486,24 @@
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": [
-                            "table",
-                            "priority"
-                        ],
+                        "if": {
+                            "properties": {
+                                "action": {
+                                    "const": "to_tbl"
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "table",
+                                "priority"
+                            ]
+                        },
+                        "else": {
+                            "required": [
+                                "priority"
+                            ]
+                        },
                         "additionalProperties": false,
                         "properties": {
                             "action": {
