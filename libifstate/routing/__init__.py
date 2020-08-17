@@ -311,7 +311,7 @@ class Rules():
                 "nat": "FR_ACT_NAT",
             }.get(rule['action'])
         else:
-            ru['action'] = rule.get('action'.lower(), "FR_ACTION_TO_TBL")
+            ru['action'] = rule.get('action'.lower(), "FR_ACT_TO_TBL")
 
         if 'fwmark' in rule:
             ru['fwmark'] = rule['fwmark']
