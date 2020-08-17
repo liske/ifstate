@@ -1,3 +1,4 @@
+from libifstate.util import logger
 from libifstate.link.base import Link
 from libifstate.exception import LinkCannotAdd
 
@@ -8,5 +9,5 @@ class PhysicalLink(Link):
         self.cap_ethtool = True
         self.ethtool = ethtool
  
-    def create(self):
-        raise LinkCannotAdd()
+    def create(self, do_apply, oper="add"):
+        logger.warning('Unable to create missing physical link: {}'.format(self.settings.get('ifname')))
