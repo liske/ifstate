@@ -30,3 +30,4 @@ The following features are already available:
 The following features a planned for a later release of *ifstate*:
 
 - support for hotplug interfaces
+- support for traffic control settings (`tc`)
