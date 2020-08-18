@@ -896,6 +896,7 @@
                     "ethtool": {
                         "description": "network driver and hardware settings via [ethtool(8)](https://man7.org/linux/man-pages/man8/ethtool.8.html)",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "pause": {
                                 "type": "object",
@@ -1432,6 +1433,7 @@
         },
         "routing": {
             "type": "object",
+            "additionalProperties": false,
             "properties": {
                 "routes": {
                     "type": "array",
@@ -1440,6 +1442,7 @@
                         "required": [
                             "to"
                         ],
+                        "additionalProperties": false,
                         "properties": {
                             "dev": {
                                 "type": [
