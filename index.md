@@ -2,10 +2,18 @@
 title: About
 ---
 
-*IfState* is a python library to configure (linux) host interfaces in a
+*IfState* is a python3 library to configure (linux) host interfaces in a
 declarative manner. It is a frontend for the kernel netlink protocol using
-[pyroute2](https://pyroute2.org/) and aims to be as powerful as the
-iproute2/bridge/ethtool commands.
+[pyroute2](https://pyroute2.org/) and aims to be as powerful as the following commands:
+
+- iproute2
+  - ip address
+  - ip link
+  - ip route
+  - ip rule
+- ethtool (wrapper)
+- sysctl (`/proc/sys/net/ipv[46]/conf/$IFACE/`)
+- wireguard
 
 It was written for interface configuration on lightweight software defined linux
 routers **without** using any additional network management daemon like
@@ -26,17 +34,17 @@ support for many virtual link types:
 - [FRR](https://frrouting.org/) - The FRRouting Protocol Suite
 - [Quagga](https://www.quagga.net/) - Routing Software Suite
 
-It is possible to skip ip address configuration by *IfState* if the routing
-daemon can handle it (*FRR*, *Quagga*).
+It is possible to skip different settings (addresses, routes, ...) in *IfState*
+completely if a routing daemon (*FRR*, *Quagga*) does handle it.
 
 
 # Installation
 
-*IfState* is already available in the following linux distributions:
+*IfState* is available in the following linux distributions:
 
 - [Alpine Linux](install.md#Alpine-Linux)
 
-Use *pip3* to install *IfState*:
+Alternatively you could use *pip3* to install *IfState*:
 
 ```bash
 pip3 install ifstate
