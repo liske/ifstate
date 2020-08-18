@@ -581,6 +581,7 @@
                                 "required": [
                                     "kind"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -604,6 +605,7 @@
                                     "link",
                                     "vlan_id"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -638,6 +640,7 @@
                                     "vxlan_id",
                                     "vxlan_link"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -672,6 +675,7 @@
                                     "ipip_remote",
                                     "ipip_local"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -701,6 +705,7 @@
                                     "sit_remote",
                                     "sit_local"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -730,6 +735,7 @@
                                     "gre_remote",
                                     "gre_local"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -763,6 +769,7 @@
                                     "ip6gre_remote",
                                     "ip6gre_local"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -795,6 +802,7 @@
                                     "kind",
                                     "geneve_id"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -848,6 +856,7 @@
                                 "required": [
                                     "kind"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -870,6 +879,7 @@
                                     "kind",
                                     "xfrm_link"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
