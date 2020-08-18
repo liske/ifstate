@@ -372,6 +372,11 @@
                         ]
                     }
                 },
+                "ipaddr_dynamic": {
+                    "description": "ignore dynamic assigned ip addresses",
+                    "type": "boolean",
+                    "default": true
+                },
                 "ifname": {
                     "description": "interface names matching this list of regex will be ignored",
                     "type": "array",

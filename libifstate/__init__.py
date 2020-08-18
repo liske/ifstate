@@ -199,7 +199,7 @@ class IfState():
                     logger.debug('skipped due to no address settings', extra={
                                  'iface': name})
                 else:
-                    addresses.apply(self.ipaddr_ignore, do_apply)
+                    addresses.apply(self.ipaddr_ignore, self.ignore.get('ipaddr_dynamic', True), do_apply)
         else:
             logger.info("\nno interface ip addressing to be applied")
 
