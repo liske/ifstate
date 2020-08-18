@@ -5,16 +5,19 @@ title: CLI
 # Usage
 
 ```bash
-usage: ifstatecli [-h] [-q | -v] [--version] [-c CONFIG] {apply,check,show}
+usage: ifstatecli [-h] [--version] [-v | -q] [-s] [-c CONFIG]
+                  {apply,check,show}
 
 positional arguments:
   {apply,check,show}    specifies the action to perform
 
 optional arguments:
   -h, --help            show this help message and exit
-  -q, --quiet           be more quiet, print only warnings and errors
-  -v, --verbose         be more verbose
   --version             show program's version number and exit
+  -v, --verbose         be more verbose
+  -q, --quiet           be more quiet, print only warnings and errors
+  -s, --soft-schema     ignore schema validation errors, expect ifstatecli to
+                        trigger internal exceptions
   -c CONFIG, --config CONFIG
                         configuration YaML filename
 ```
@@ -48,19 +51,59 @@ The *check* action will parse the config file and does a **dry run** of the *app
 
 ## show
 
-The `show` action will print a configuration for the running network config. The ouput might be used as a starting point for writing configurations.
+The `show` action will print a configuration for the running network config. The ouput might be used as a starting point for writing configurations and contains the default ignore settings.
 
 ```yaml
 # ifstatecli show
 ignore:
   ipaddr:
   - fe80::/10
+  ipaddr_dynamic: true
   ifname:
+  - ^br-[\da-f]{12}
   - ^docker\d+
   - ^lo$
   - ^ppp\d+$
   - ^veth
   - ^virbr\d+
+  - ^vrrp\d*\.\d+$
+  routes:
+  - proto: 1
+  - proto: 2
+  - proto: 8
+  - proto: 9
+  - proto: 10
+  - proto: 11
+  - proto: 12
+  - proto: 13
+  - proto: 14
+  - proto: 15
+  - proto: 16
+  - proto: 42
+  - proto: 186
+  - proto: 187
+  - proto: 188
+  - proto: 189
+  - proto: 192
+  - to: ff00::/8
+  rules:
+  - proto: 1
+  - proto: 2
+  - proto: 8
+  - proto: 9
+  - proto: 10
+  - proto: 11
+  - proto: 12
+  - proto: 13
+  - proto: 14
+  - proto: 15
+  - proto: 16
+  - proto: 42
+  - proto: 186
+  - proto: 187
+  - proto: 188
+  - proto: 189
+  - proto: 192
 interfaces:
 - name: eth0
   addresses: []
@@ -93,6 +136,9 @@ interfaces:
   link:
     kind: dummy
     state: up
+routing:
+  routes: []
+  rules: []
 ```
 
 You should consider removing any unnecessary options.

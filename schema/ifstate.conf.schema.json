@@ -372,6 +372,11 @@
                         ]
                     }
                 },
+                "ipaddr_dynamic": {
+                    "description": "ignore dynamic assigned ip addresses",
+                    "type": "boolean",
+                    "default": true
+                },
                 "ifname": {
                     "description": "interface names matching this list of regex will be ignored",
                     "type": "array",
@@ -568,11 +573,11 @@
                                             "vti6"
                                         ]
                                     },
-                                    "master": {
-                                        "$ref": "#/definitions/iface-link_master"
-                                    },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
                                     }
                                 }
                             },
@@ -581,6 +586,7 @@
                                 "required": [
                                     "kind"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -588,6 +594,12 @@
                                         "enum": [
                                             "dummy"
                                         ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
                                     }
                                 }
                             },
@@ -598,6 +610,7 @@
                                     "link",
                                     "vlan_id"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -632,6 +645,7 @@
                                     "vxlan_id",
                                     "vxlan_link"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -666,6 +680,7 @@
                                     "ipip_remote",
                                     "ipip_local"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -695,6 +710,7 @@
                                     "sit_remote",
                                     "sit_local"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -724,6 +740,7 @@
                                     "gre_remote",
                                     "gre_local"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -757,6 +774,7 @@
                                     "ip6gre_remote",
                                     "ip6gre_local"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -789,6 +807,7 @@
                                     "kind",
                                     "geneve_id"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -842,6 +861,7 @@
                                 "required": [
                                     "kind"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -849,6 +869,12 @@
                                         "enum": [
                                             "wireguard"
                                         ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
                                     }
                                 }
                             },
@@ -858,6 +884,7 @@
                                     "kind",
                                     "xfrm_link"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
