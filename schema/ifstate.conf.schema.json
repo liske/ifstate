@@ -588,6 +588,9 @@
                                         "enum": [
                                             "dummy"
                                         ]
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
                                     }
                                 }
                             },
@@ -849,6 +852,9 @@
                                         "enum": [
                                             "wireguard"
                                         ]
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
                                     }
                                 }
                             },
