@@ -568,11 +568,11 @@
                                             "vti6"
                                         ]
                                     },
-                                    "master": {
-                                        "$ref": "#/definitions/iface-link_master"
-                                    },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
                                     }
                                 }
                             },
@@ -588,6 +588,9 @@
                                         "enum": [
                                             "dummy"
                                         ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
@@ -852,6 +855,9 @@
                                         "enum": [
                                             "wireguard"
                                         ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
