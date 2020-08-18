@@ -8,6 +8,7 @@ class Parser(ABC):
             'ipaddr': [
                 'fe80::/10'
             ],
+            'ipaddr_dynamic': True,
             'ifname': [
                 r'^docker\d+',
                 r'^lo$',
