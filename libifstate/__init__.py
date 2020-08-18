@@ -40,7 +40,7 @@ class IfState():
 
         logger.debug('{}'.format(' '.join(sorted([x for x, y in self.features.items() if y]))), extra={'iface': 'features'})
 
-    def update(self, ifstates):
+    def update(self, ifstates, soft_schema):
         # check config schema
         schema = json.loads(pkgutil.get_data(
             "libifstate", "../schema/ifstate.conf.schema.json"))
@@ -59,7 +59,10 @@ class IfState():
                 detail = "{}: {}".format("".join(path), ex.message)
             else:
                 detail = ex.message
-            raise ParserValidationError(detail)
+            if soft_schema:
+                logger.error("Config validation failed for {}".format(detail))
+            else:
+                raise ParserValidationError(detail)
 
         # parse options
         if 'options' in ifstates:

@@ -66,9 +66,10 @@ def setup_logging(level):
 def main():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("-q", "--quiet", action="store_true", help="be more quiet, print only warnings and errors")
-    group.add_argument("-v", "--verbose", action="store_true", help="be more verbose")
     parser.add_argument('--version', action='version', version='%(prog)s {version}'.format(version=__version__))
+    group.add_argument("-v", "--verbose", action="store_true", help="be more verbose")
+    group.add_argument("-q", "--quiet", action="store_true", help="be more quiet, print only warnings and errors")
+    parser.add_argument("-s", "--soft-schema", action="store_true", help="ignore schema validation errors, expect ifstatecli to trigger internal exceptions")
     parser.add_argument("-c", "--config", type=str, default="/etc/ifstate/config.yml", help="configuration YaML filename")
     parser.add_argument("action", choices=list(a.lower() for a in dir(Actions) if not a.startswith('_')), help="specifies the action to perform")
 
@@ -93,7 +94,7 @@ def main():
         ifstates = parser.config()
 
         try:
-            ifs.update(ifstates)
+            ifs.update(ifstates, args.soft_schema)
         except FeatureMissingError as ex:
             logger.error("Config uses unavailable feature: {}".format(ex.feature))
             exit(1)
