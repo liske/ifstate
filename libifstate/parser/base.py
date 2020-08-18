@@ -10,13 +10,13 @@ class Parser(ABC):
             ],
             'ipaddr_dynamic': True,
             'ifname': [
+                r'^br-[\da-f]{12}',
                 r'^docker\d+',
                 r'^lo$',
                 r'^ppp\d+$',
                 r'^veth',
                 r'^virbr\d+',
-                r'^br-[\da-f]{12}',
-                r'^vrrp\d*\.\d+$',
+                r'^vrrp\d*\.\d+$'
             ],
             'routes': [
                 { 'proto': 1 },
