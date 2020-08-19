@@ -1,12 +1,14 @@
 from libifstate.util import logger, ipr, LogStyle
-from libifstate.exception import LinkTypeUnknown, NetlinkError
+from libifstate.exception import ExceptionCollector, LinkTypeUnknown, NetlinkError
 from abc import ABC, abstractmethod
 import os
 import subprocess
 import yaml
 import shutil
+import copy
 
 ethtool_path = shutil.which("ethtool") or '/usr/sbin/ethtool'
+
 
 class Link(ABC):
     _nla_prefix = 'IFLA_'
@@ -162,6 +164,9 @@ class Link(ABC):
                 logger.warning('failed write `{}`: {}'.format(fn, err.args[1]))
 
     def apply(self, do_apply):
+        excpts = ExceptionCollector()
+        osettings = copy.deepcopy(self.settings)
+
         # lookup for attributes requiring a interface index
         for attr in self.attr_idx:
             if attr in self.settings:
@@ -182,15 +187,19 @@ class Link(ABC):
                 except NetlinkError as err:
                     logger.warning('renaming link {} failed: {}'.format(
                         self.settings['ifname'], err.args[1]))
+                    excpts.add('set', err, state='down', ifname='{}!')
 
             if self.cap_create and self.get_if_attr('kind') != self.settings['kind']:
-                self.recreate(do_apply)
+                self.recreate(do_apply, excpts)
             else:
-                self.update(do_apply)
+                self.update(do_apply, excpts)
         else:
-            self.create(do_apply)
+            self.create(do_apply, excpts)
 
-    def create(self, do_apply, oper="add"):
+        self.settings = osettings
+        return excpts
+
+    def create(self, do_apply, excpts, oper="add"):
         logger.info(
             oper, extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
 
@@ -200,19 +209,26 @@ class Link(ABC):
             try:
                 state = self.settings.pop('state', None)
                 ipr.link('add', **(self.settings))
-                self.idx = next(iter(ipr.link_lookup(ifname=self.settings['ifname'])), None)
+                self.idx = next(iter(ipr.link_lookup(
+                    ifname=self.settings['ifname'])), None)
                 if not state is None and not self.idx is None:
-                    ipr.link('set', index=self.idx, state=state)
+                    try:
+                        ipr.link('set', index=self.idx, state=state)
+                    except NetlinkError as err:
+                        logger.warning('setting link state {} failed: {}'.format(
+                            self.settings['ifname'], err.args[1]))
+                        excpts.add('set', err, state=state)
             except NetlinkError as err:
                 logger.warning('adding link {} failed: {}'.format(
                     self.settings['ifname'], err.args[1]))
+                excpts.add('add', err, **(self.settings))
 
         if not self.ethtool is None:
             logger.debug("ethtool: {}".format(self.ethtool))
             self.set_ethtool_state(
                 self.settings['ifname'], self.ethtool.keys(), do_apply)
 
-    def recreate(self, do_apply):
+    def recreate(self, do_apply, excpts):
         logger.debug('has wrong link kind %s, removing', self.settings['kind'], extra={
                      'iface': self.settings['ifname']})
         if do_apply:
@@ -221,10 +237,11 @@ class Link(ABC):
             except NetlinkError as err:
                 logger.warning('removing link {} failed: {}'.format(
                     self.settings['ifname'], err.args[1]))
+                excpts.add('del', err)
         self.idx = None
         self.create(do_apply, "replace")
 
-    def update(self, do_apply):
+    def update(self, do_apply, excpts):
         logger.debug('checking link', extra={'iface': self.settings['ifname']})
 
         old_state = self.iface['state']
@@ -266,6 +283,7 @@ class Link(ABC):
                     except NetlinkError as err:
                         logger.warning('shutting down link {} failed: {}'.format(
                             self.settings['ifname'], err.args[1]))
+                        excpts.add('set', err, state='down')
                 if not 'state' in self.settings:
                     self.settings['state'] = 'up'
 
@@ -287,6 +305,7 @@ class Link(ABC):
                 except NetlinkError as err:
                     logger.warning('updating link {} failed: {}'.format(
                         self.settings['ifname'], err.args[1]))
+                    excpts.add('set', err, state=state)
         else:
             self.set_ethtool_state(self.get_if_attr(
                 'ifname'), has_ethtool_changes, do_apply)

@@ -1,6 +1,26 @@
 from pyroute2.netlink.exceptions import NetlinkError
 
 
+class ExceptionCollector():
+    def __init__(self):
+        self.excpts = []
+
+    def add(self, op, excpt, **kwargs):
+        self.excpts.append({
+            'op': op,
+            'excpt': excpt,
+            'args': kwargs,
+        })
+
+    def has_errno(self, errno):
+        for e in self.excpts:
+            if e['excpt'].code == errno:
+                return True
+        return False
+
+    def get_all(self):
+        return self.excpts
+
 class FeatureMissingError(Exception):
     def __init__(self, feature):
         self.feature = feature

@@ -17,6 +17,7 @@ import os
 import pkgutil
 import re
 import json
+import errno
 
 __version__ = "0.9.0"
 
@@ -38,7 +39,8 @@ class IfState():
             'wireguard': not globals().get("WireGuard") is None,
         }
 
-        logger.debug('{}'.format(' '.join(sorted([x for x, y in self.features.items() if y]))), extra={'iface': 'features'})
+        logger.debug('{}'.format(' '.join(sorted(
+            [x for x, y in self.features.items() if y]))), extra={'iface': 'features'})
 
     def update(self, ifstates, soft_schema):
         # check config schema
@@ -79,7 +81,8 @@ class IfState():
             if name in self.links:
                 raise LinkDuplicate()
             if 'link' in ifstate:
-                self.links[name] = Link(name, ifstate['link'], ifstate.get('ethtool'))
+                self.links[name] = Link(
+                    name, ifstate['link'], ifstate.get('ethtool'))
             else:
                 self.links[name] = None
 
@@ -134,59 +137,70 @@ class IfState():
                 logger.info("\nconfiguring {} interface sysctl".format(iface))
                 self.sysctl.apply(iface, do_apply)
 
-        logger.info("\nconfiguring interface links")
+        for stage in range(2):
+            if stage == 0:
+                logger.info("\nconfiguring interface links")
+            else:
+                logger.info("\nconfiguring interface links (stage 2)")
 
-        applied = []
-        while len(applied) < len(self.links):
-            last = len(applied)
-            for name, link in self.links.items():
-                if name in applied:
-                    continue
+            retry = False
+            applied = []
+            while len(applied) < len(self.links):
+                last = len(applied)
+                for name, link in self.links.items():
+                    if name in applied:
+                        continue
 
-                if link is None:
-                    logger.debug('skipped due to no link settings',
-                                 extra={'iface': name})
-                    applied.append(name)
-                else:
-                    deps = link.depends()
-                    if all(x in applied for x in deps):
-                        self.sysctl.apply(name, do_apply)
-                        link.apply(do_apply)
+                    if link is None:
+                        logger.debug('skipped due to no link settings',
+                                     extra={'iface': name})
                         applied.append(name)
-            if last == len(applied):
-                raise LinkCircularLinked()
-
-        for link in ipr.get_links():
-            name = link.get_attr('IFLA_IFNAME')
-            # skip links on ignore list
-            if not name in self.links and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
-                info = link.get_attr('IFLA_LINKINFO')
-                # remove virtual interface
-                if info is not None:
-                    kind = info.get_attr('IFLA_INFO_KIND')
-                    logger.info(
-                        'del', extra={'iface': name, 'style': LogStyle.DEL})
-                    if do_apply:
-                        try:
-                            ipr.link('set', index=link.get('index'), state='down')
-                            ipr.link('del', index=link.get('index'))
-                        except NetlinkError as err:
-                            logger.warning('removing link {} failed: {}'.format(
-                                name, err.args[1]))
-                # shutdown physical interfaces
-                else:
-                    if link.get('state') == 'down':
-                        logger.warning('orphan', extra={
-                                       'iface': name, 'style': LogStyle.OK})
                     else:
-                        logger.warning('orphan', extra={
-                                       'iface': name, 'style': LogStyle.CHG})
+                        deps = link.depends()
+                        if all(x in applied for x in deps):
+                            self.sysctl.apply(name, do_apply)
+                            excpts = link.apply(do_apply)
+                            if excpts.has_errno(errno.EEXIST):
+                                retry = True
+                            applied.append(name)
+                if last == len(applied):
+                    raise LinkCircularLinked()
+
+            for link in ipr.get_links():
+                name = link.get_attr('IFLA_IFNAME')
+                # skip links on ignore list
+                if not name in self.links and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
+                    info = link.get_attr('IFLA_LINKINFO')
+                    # remove virtual interface
+                    if info is not None:
+                        kind = info.get_attr('IFLA_INFO_KIND')
+                        logger.info(
+                            'del', extra={'iface': name, 'style': LogStyle.DEL})
                         if do_apply:
                             try:
-                                ipr.link('set', index=link.get('index'), state='down')
+                                ipr.link('set', index=link.get(
+                                    'index'), state='down')
+                                ipr.link('del', index=link.get('index'))
                             except NetlinkError as err:
-                                logger.warning('updating link {} failed: {}'.format(
+                                logger.warning('removing link {} failed: {}'.format(
                                     name, err.args[1]))
+                    # shutdown physical interfaces
+                    else:
+                        if link.get('state') == 'down':
+                            logger.warning('orphan', extra={
+                                'iface': name, 'style': LogStyle.OK})
+                        else:
+                            logger.warning('orphan', extra={
+                                'iface': name, 'style': LogStyle.CHG})
+                            if do_apply:
+                                try:
+                                    ipr.link('set', index=link.get(
+                                        'index'), state='down')
+                                except NetlinkError as err:
+                                    logger.warning('updating link {} failed: {}'.format(
+                                        name, err.args[1]))
+            if not retry:
+                break
 
         if any(not x is None for x in self.addresses.values()):
             logger.info("\nconfiguring interface ip addresses...")
@@ -202,7 +216,8 @@ class IfState():
                     logger.debug('skipped due to no address settings', extra={
                                  'iface': name})
                 else:
-                    addresses.apply(self.ipaddr_ignore, self.ignore.get('ipaddr_dynamic', True), do_apply)
+                    addresses.apply(self.ipaddr_ignore, self.ignore.get(
+                        'ipaddr_dynamic', True), do_apply)
         else:
             logger.info("\nno interface ip addressing to be applied")
 
