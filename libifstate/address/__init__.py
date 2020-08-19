@@ -35,7 +35,6 @@ class Addresses():
                 if do_apply:
                     ipr.addr("add", index=idx, address=ip, mask=addr.network.prefixlen)
 
-        print(ign_dynamic)
         for ip, addr in ipr_addr.items():
             if not any(ip in net for net in ignore):
                 if not ign_dynamic or ipr_addr[ip]['flags'] & IFA_F_PERMANENT == IFA_F_PERMANENT:
