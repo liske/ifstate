@@ -14,7 +14,7 @@ class ExceptionCollector():
 
     def has_errno(self, errno):
         for e in self.excpts:
-            if e['excpt'].code == errno:
+            if type(e['excpt']) == NetlinkError and e['excpt'].code == errno:
                 return True
         return False
 
