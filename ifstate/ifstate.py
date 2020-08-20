@@ -2,7 +2,7 @@
 
 from libifstate.parser import YamlParser
 from libifstate import __version__, IfState
-from libifstate.exception import FeatureMissingError, ParserValidationError, ParserIncludeError
+from libifstate.exception import FeatureMissingError, ParserValidationError, ParserOpenError, ParserIncludeError
 from libifstate.util import logger, IfStateLogging
 from collections import namedtuple
 
@@ -50,27 +50,31 @@ def main():
     if args.action in [Actions.CHECK, Actions.APPLY]:
         try:
             parser = YamlParser(args.config)
+        except ParserOpenError as ex:
+            logger.error("Config loading from {} failed: {}".format(ex.fn, ex.msg))
+            ifslog.quit()
+            exit(1)
         except yaml.parser.ParserError as ex:
             logger.error("Config parsing failed:\n\n{}".format(str(ex)))
             ifslog.quit()
-            exit(1)
+            exit(2)
         except ParserIncludeError as ex:
             logger.error("Config include file {} failed: {}".format(ex.fn, ex.msg))
             ifslog.quit()
-            exit(1)
+            exit(3)
 
         ifstates = parser.config()
 
         try:
             ifs.update(ifstates, args.soft_schema)
-        except FeatureMissingError as ex:
-            logger.error("Config uses unavailable feature: {}".format(ex.feature))
-            ifslog.quit()
-            exit(3)
         except ParserValidationError as ex:
             logger.error("Config validation failed for {}".format(ex.detail))
             ifslog.quit()
-            exit(2)
+            exit(4)
+        except FeatureMissingError as ex:
+            logger.error("Config uses unavailable feature: {}".format(ex.feature))
+            ifslog.quit()
+            exit(5)
 
         if args.action == Actions.CHECK:
             ifs.check()

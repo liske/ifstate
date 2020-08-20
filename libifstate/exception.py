@@ -45,15 +45,20 @@ class LinkCircularLinked(Exception):
 class LinkNoConfigFound(Exception):
     pass
 
-
 class ParserValidationError(Exception):
     def __init__(self, detail):
         self.detail = detail
 
-class ParserIncludeError(Exception):
+class ParserOSError(Exception):
     def __init__(self, oserr):
         self.fn = oserr.filename
         self.msg = oserr.strerror
+
+class ParserOpenError(ParserOSError):
+    pass
+
+class ParserIncludeError(ParserOSError):
+    pass
 
 class RouteDupblicate(Exception):
     pass
