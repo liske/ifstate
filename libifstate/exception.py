@@ -50,6 +50,10 @@ class ParserValidationError(Exception):
     def __init__(self, detail):
         self.detail = detail
 
+class ParserIncludeError(Exception):
+    def __init__(self, oserr):
+        self.fn = oserr.filename
+        self.msg = oserr.strerror
 
 class RouteDupblicate(Exception):
     pass

@@ -2,7 +2,7 @@
 
 from libifstate.parser import YamlParser
 from libifstate import __version__, IfState
-from libifstate.exception import FeatureMissingError, ParserValidationError
+from libifstate.exception import FeatureMissingError, ParserValidationError, ParserIncludeError
 from libifstate.util import logger, IfStateLogging
 from collections import namedtuple
 
@@ -52,6 +52,10 @@ def main():
             parser = YamlParser(args.config)
         except yaml.parser.ParserError as ex:
             logger.error("Config parsing failed:\n\n{}".format(str(ex)))
+            ifslog.quit()
+            exit(1)
+        except ParserIncludeError as ex:
+            logger.error("Config include file {} failed: {}".format(ex.fn, ex.msg))
             ifslog.quit()
             exit(1)
 

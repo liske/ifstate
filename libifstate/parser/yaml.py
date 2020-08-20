@@ -1,19 +1,33 @@
 from libifstate.util import logger
 from libifstate.parser.base import Parser
+from libifstate.exception import ParserIncludeError
 import yaml
 import os
 
 
 class Loader(yaml.SafeLoader):
     def __init__(self, stream):
-        self._basedir = os.path.split(stream.name)[0]
+        try:
+            self._basedir = os.path.split(stream.name)[0]
+        except AttributeError:
+            pass
+
+        if not self._basedir:
+            self._basedir = os.path.curdir
+
         super(Loader, self).__init__(stream)
         self.add_constructor('!include', self.include)
 
     def include(self, id, node):
-        filename = os.path.join(self._basedir, self.construct_scalar(node))
-        with open(filename, 'r') as fh:
-            return yaml.load(fh, Loader)
+        filename = self.construct_scalar(node)
+        if not os.path.isabs(filename):
+            filename = os.path.join(self._basedir, filename)
+
+        try:
+            with open(filename, 'r') as fh:
+                return yaml.load(fh, Loader)
+        except OSError as ex:
+            raise ParserIncludeError(ex)
 
 
 class YamlParser(Parser):
