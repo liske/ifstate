@@ -3,65 +3,18 @@
 from libifstate.parser import YamlParser
 from libifstate import __version__, IfState
 from libifstate.exception import FeatureMissingError, ParserValidationError
-from libifstate.util import logger, LogStyle , AnsiColors
+from libifstate.util import logger, setup_logging
 from collections import namedtuple
 
 import argparse
 import logging
 import signal
-import sys
 import yaml
 
 class Actions():
     CHECK = "check"
     APPLY = "apply"
     SHOW = "show"
-
-class LogFilter(logging.Filter):
-    def __init__(self, terminal):
-        super().__init__()
-        self.terminal = terminal
-
-    def filter(self, record):
-        record.levelshort = record.levelname[:1]
-        if hasattr(record, 'iface'):
-            record.prefix = " {:15} ".format(record.iface)
-        else:
-            record.prefix = ''
-
-        if self.terminal:
-            if record.levelno >= logging.ERROR:
-                record.bol = AnsiColors.RED
-            elif record.levelno >= logging.WARNING:
-                record.bol = AnsiColors.MAGENTA
-            else:
-                record.bol = ''
-            record.eol = AnsiColors.RESET
-        else:
-            record.bol = ''
-            record.eol = ''
-
-        if hasattr(record, 'style'):
-            if self.terminal:
-                record.style = LogStyle.colorize(record.style)
-            else:
-                record.style = ""
-        else:
-            record.style = ""
-
-        return True
-
-def setup_logging(level):
-    if level != logging.DEBUG:
-        sys.tracebacklimit = 0
-
-    logging.basicConfig(
-        level=level,
-        format='%(bol)s%(prefix)s%(style)s%(message)s%(eol)s',
-    )
-
-    f = LogFilter(sys.stderr.isatty())
-    logger.addFilter(f)
 
 def main():
     parser = argparse.ArgumentParser()
