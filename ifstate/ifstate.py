@@ -48,7 +48,13 @@ def main():
         exit(0)
 
     if args.action in [Actions.CHECK, Actions.APPLY]:
-        parser = YamlParser(args.config)
+        try:
+            parser = YamlParser(args.config)
+        except yaml.parser.ParserError as ex:
+            logger.error("Config parsing failed:\n\n{}".format(str(ex)))
+            ifslog.quit()
+            exit(1)
+
         ifstates = parser.config()
 
         try:
@@ -56,11 +62,11 @@ def main():
         except FeatureMissingError as ex:
             logger.error("Config uses unavailable feature: {}".format(ex.feature))
             ifslog.quit()
-            exit(1)
+            exit(3)
         except ParserValidationError as ex:
             logger.error("Config validation failed for {}".format(ex.detail))
             ifslog.quit()
-            exit(1)
+            exit(2)
 
         if args.action == Actions.CHECK:
             ifs.check()
