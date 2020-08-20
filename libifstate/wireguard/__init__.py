@@ -1,4 +1,4 @@
-from libifstate.util import logger, LogStyle
+from libifstate.util import logger, IfStateLogging
 from libifstate.exception import NetlinkError
 from wgnlpy import WireGuard as WG
 from ipaddress import ip_network
@@ -39,7 +39,7 @@ class WireGuard():
 
         if has_changes:
             logger.info('change [iface]', extra={
-                        'iface': self.iface, 'style': LogStyle.CHG})
+                        'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
             if do_apply:
                 try:
                     wg.set_interface(self.iface, **self.wireguard)
@@ -48,7 +48,7 @@ class WireGuard():
                         self.iface, err.args[1]))
         else:
             logger.info('ok [iface]', extra={
-                        'iface': self.iface, 'style': LogStyle.OK})
+                        'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
 
         # check peers list if provided
         if 'peers' in self.wireguard:
@@ -101,7 +101,7 @@ class WireGuard():
                                 self.iface, err.args[1]))
             if has_pchanges:
                 logger.info('change [peers]', extra={
-                            'iface': self.iface, 'style': LogStyle.CHG})
+                            'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
             else:
                 logger.info('ok [peers]', extra={
-                            'iface': self.iface, 'style': LogStyle.OK})
+                            'iface': self.iface, 'style': IfStateLogging.STYLE_OK})

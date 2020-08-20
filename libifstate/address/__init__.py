@@ -1,4 +1,4 @@
-from libifstate.util import logger, ipr, LogStyle
+from libifstate.util import logger, ipr, IfStateLogging
 from ipaddress import ip_interface
 from pyroute2.netlink.rtnl.ifaddrmsg import IFA_F_PERMANENT
 
@@ -28,16 +28,16 @@ class Addresses():
         for addr in self.addresses:
             ip = str(addr.ip)
             if addr in ipr_addr:
-                logger.info('%s', addr.with_prefixlen, extra={'iface': self.iface, 'style': LogStyle.OK})
+                logger.info('%s', addr.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
                 del ipr_addr[addr]
             else:
-                logger.info('%s', addr.with_prefixlen, extra={'iface': self.iface, 'style': LogStyle.CHG})
+                logger.info('%s', addr.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
                 if do_apply:
                     ipr.addr("add", index=idx, address=ip, mask=addr.network.prefixlen)
 
         for ip, addr in ipr_addr.items():
             if not any(ip in net for net in ignore):
                 if not ign_dynamic or ipr_addr[ip]['flags'] & IFA_F_PERMANENT == IFA_F_PERMANENT:
-                    logger.info('%s', ip.with_prefixlen, extra={'iface': self.iface, 'style': LogStyle.DEL})
+                    logger.info('%s', ip.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_DEL})
                     if do_apply:
                         ipr.addr("del", index=idx, address=str(ip.ip), mask=ip.network.prefixlen)

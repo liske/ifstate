@@ -1,4 +1,4 @@
-from libifstate.util import logger, ipr, LogStyle
+from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import RouteDupblicate
 from ipaddress import ip_address, ip_network
 from pyroute2.netlink.exceptions import NetlinkError
@@ -229,14 +229,14 @@ class Tables(collections.abc.Mapping):
 
                 if identical:
                     logger.info(
-                        'ok', extra={'iface': route['dst'], 'style': LogStyle.OK})
+                        'ok', extra={'iface': route['dst'], 'style': IfStateLogging.STYLE_OK})
                 else:
                     if found:
                         logger.info('change', extra={
-                                    'iface': route['dst'], 'style': LogStyle.CHG})
+                                    'iface': route['dst'], 'style': IfStateLogging.STYLE_CHG})
                     else:
                         logger.info(
-                            'add', extra={'iface': route['dst'], 'style': LogStyle.CHG})
+                            'add', extra={'iface': route['dst'], 'style': IfStateLogging.STYLE_CHG})
 
                     logger.debug("ip route replace: {}".format(
                         " ".join("{}={}".format(k, v) for k, v in route.items())))
@@ -257,7 +257,7 @@ class Tables(collections.abc.Mapping):
                     continue
 
                 logger.info(
-                    'del', extra={'iface': route['dst'], 'style': LogStyle.DEL})
+                    'del', extra={'iface': route['dst'], 'style': IfStateLogging.STYLE_DEL})
                 try:
                     if do_apply:
                         ipr.route('del', **route)
@@ -428,10 +428,10 @@ class Rules():
 
             if found:
                 logger.info(
-                    'ok', extra={'iface': '#{}'.format(rule['priority']), 'style': LogStyle.OK})
+                    'ok', extra={'iface': '#{}'.format(rule['priority']), 'style': IfStateLogging.STYLE_OK})
             else:
                 logger.info(
-                    'add', extra={'iface': '#{}'.format(rule['priority']), 'style': LogStyle.CHG})
+                    'add', extra={'iface': '#{}'.format(rule['priority']), 'style': IfStateLogging.STYLE_CHG})
 
                 logger.debug("ip rule add: {}".format(
                     " ".join("{}={}".format(k, v) for k, v in rule.items())))
@@ -454,7 +454,7 @@ class Rules():
                 continue
 
             logger.info(
-                'del', extra={'iface': '#{}'.format(rule['priority']), 'style': LogStyle.DEL})
+                'del', extra={'iface': '#{}'.format(rule['priority']), 'style': IfStateLogging.STYLE_DEL})
             try:
                 if do_apply:
                     ipr.rule('del', **rule)

@@ -8,7 +8,7 @@ try:
     from libifstate.wireguard import WireGuard
 except ModuleNotFoundError:
     pass
-from libifstate.util import logger, ipr, LogStyle
+from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, NetlinkError, ParserValidationError
 from ipaddress import ip_network, ip_interface
 from jsonschema import validate, ValidationError
@@ -175,7 +175,7 @@ class IfState():
                     if info is not None:
                         kind = info.get_attr('IFLA_INFO_KIND')
                         logger.info(
-                            'del', extra={'iface': name, 'style': LogStyle.DEL})
+                            'del', extra={'iface': name, 'style': IfStateLogging.STYLE_DEL})
                         if do_apply:
                             try:
                                 ipr.link('set', index=link.get(
@@ -188,10 +188,10 @@ class IfState():
                     else:
                         if link.get('state') == 'down':
                             logger.warning('orphan', extra={
-                                'iface': name, 'style': LogStyle.OK})
+                                'iface': name, 'style': IfStateLogging.STYLE_OK})
                         else:
                             logger.warning('orphan', extra={
-                                'iface': name, 'style': LogStyle.CHG})
+                                'iface': name, 'style': IfStateLogging.STYLE_CHG})
                             if do_apply:
                                 try:
                                     ipr.link('set', index=link.get(

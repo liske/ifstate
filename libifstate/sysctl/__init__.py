@@ -1,4 +1,4 @@
-from libifstate.util import logger, LogStyle
+from libifstate.util import logger, IfStateLogging
 
 import os
 
@@ -16,10 +16,10 @@ class Sysctl():
             current = fh.readline().rstrip()
         if current == str(val):
             logger.info(
-                'ok', extra={'iface': "{}/{}".format(family, key), 'style': LogStyle.OK})
+                'ok', extra={'iface': "{}/{}".format(family, key), 'style': IfStateLogging.STYLE_OK})
         else:
             logger.info(
-                'set', extra={'iface': "{}/{}".format(family, key), 'style': LogStyle.CHG})
+                'set', extra={'iface': "{}/{}".format(family, key), 'style': IfStateLogging.STYLE_CHG})
             if do_apply:
                 try:
                     with open(fn, 'w') as fh:

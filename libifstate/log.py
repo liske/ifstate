@@ -5,7 +5,7 @@ import sys
 
 logger = logging.getLogger('ifstate')
 
-class LogFilter(logging.Filter):
+class IfStateLogFilter(logging.Filter):
     def __init__(self, terminal):
         super().__init__()
         self.terminal = terminal
@@ -19,19 +19,19 @@ class LogFilter(logging.Filter):
 
         if self.terminal:
             if record.levelno >= logging.ERROR:
-                record.bol = AnsiColors.RED
+                record.bol = IfStateLogging.ANSI_RED
             elif record.levelno >= logging.WARNING:
-                record.bol = AnsiColors.MAGENTA
+                record.bol = IfStateLogging.ANSI_MAGENTA
             else:
                 record.bol = ''
-            record.eol = AnsiColors.RESET
+            record.eol = IfStateLogging.ANSI_RESET
         else:
             record.bol = ''
             record.eol = ''
 
         if hasattr(record, 'style'):
             if self.terminal:
-                record.style = LogStyle.colorize(record.style)
+                record.style = IfStateLogging.colorize(record.style)
             else:
                 record.style = ""
         else:
@@ -39,42 +39,44 @@ class LogFilter(logging.Filter):
 
         return True
 
-class LogStyle():
-    OK = "ok"
-    CHG = "chg"
-    DEL = "del"
+class IfStateLogging:
+    STYLE_OK = "ok"
+    STYLE_CHG = "chg"
+    STYLE_DEL = "del"
+
+    ANSI_GREEN = "\033[32m"
+    ANSI_RED = "\033[31m"
+    ANSI_MAGENTA = "\033[35m"
+    ANSI_YELLOW = "\033[33m"
+    ANSI_RESET = "\033[0m"
+    ANSI_BOLD = "\033[1m"
 
     @staticmethod
     def colorize(style):
-        if style == LogStyle.OK:
-            return AnsiColors.GREEN
-        if style == LogStyle.CHG:
-            return AnsiColors.YELLOW
-        if style == LogStyle.DEL:
-            return AnsiColors.YELLOW
+        if style == IfStateLogging.STYLE_OK:
+            return IfStateLogging.ANSI_GREEN
+        if style == IfStateLogging.STYLE_CHG:
+            return IfStateLogging.ANSI_YELLOW
+        if style == IfStateLogging.STYLE_DEL:
+            return IfStateLogging.ANSI_YELLOW
         return ""
 
-class AnsiColors():
-    GREEN = "\033[32m"
-    RED = "\033[31m"
-    MAGENTA = "\033[35m"
-    YELLOW = "\033[33m"
-    RESET = "\033[0m"
-    BOLD = "\033[1m"
+    def __init__(self, level, handlers=[]):
+        if level != logging.DEBUG:
+            sys.tracebacklimit = 0
 
-def setup_logging(level, handlers=[]):
-    if level != logging.DEBUG:
-        sys.tracebacklimit = 0
+        logging.basicConfig(
+            level=level,
+            format='%(bol)s%(prefix)s%(style)s%(message)s%(eol)s',
+        )
 
-    logging.basicConfig(
-        level=level,
-        format='%(bol)s%(prefix)s%(style)s%(message)s%(eol)s',
-    )
+        f = IfStateLogFilter(sys.stderr.isatty())
+        logger.addFilter(f)
 
-    f = LogFilter(sys.stderr.isatty())
-    logger.addFilter(f)
+        qu = queue.SimpleQueue()
+        logger.addHandler(QueueHandler(qu))
+        self.listener = QueueListener(qu, *handlers, respect_handler_level=True)
+        self.listener.start()
 
-    qu = queue.SimpleQueue()
-    logger.addHandler(QueueHandler(qu))
-    listener = QueueListener(qu, *handlers, respect_handler_level=True)
-    listener.start()
+    def quit(self):
+        self.listener.stop()

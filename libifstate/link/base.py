@@ -1,4 +1,4 @@
-from libifstate.util import logger, ipr, LogStyle
+from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import ExceptionCollector, LinkTypeUnknown, NetlinkError
 from abc import ABC, abstractmethod
 import os
@@ -128,7 +128,7 @@ class Link(ABC):
             return
 
         logger.info(
-            'change (ethtool)', extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
+            'change (ethtool)', extra={'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
 
         if not do_apply:
             return
@@ -201,7 +201,7 @@ class Link(ABC):
 
     def create(self, do_apply, excpts, oper="add"):
         logger.info(
-            oper, extra={'iface': self.settings['ifname'], 'style': LogStyle.CHG})
+            oper, extra={'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
 
         logger.debug("ip link add: {}".format(
             " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
@@ -292,10 +292,10 @@ class Link(ABC):
 
             if self.get_if_attr('ifname') == self.settings['ifname']:
                 logger.info('change', extra={
-                            'iface': self.settings['ifname'], 'style': LogStyle.CHG})
+                            'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
             else:
                 logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={
-                            'iface': self.settings['ifname'], 'style': LogStyle.CHG})
+                            'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
             if do_apply:
                 try:
                     state = self.settings.pop('state', None)
@@ -310,7 +310,7 @@ class Link(ABC):
             self.set_ethtool_state(self.get_if_attr(
                 'ifname'), has_ethtool_changes, do_apply)
             logger.info(
-                'ok', extra={'iface': self.settings['ifname'], 'style': LogStyle.OK})
+                'ok', extra={'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_OK})
 
     def depends(self):
         deps = []

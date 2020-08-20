@@ -3,12 +3,13 @@
 from libifstate.parser import YamlParser
 from libifstate import __version__, IfState
 from libifstate.exception import FeatureMissingError, ParserValidationError
-from libifstate.util import logger, setup_logging
+from libifstate.util import logger, IfStateLogging
 from collections import namedtuple
 
 import argparse
 import logging
 import signal
+import sys
 import yaml
 
 class Actions():
@@ -28,12 +29,13 @@ def main():
 
     args = parser.parse_args()
     if args.verbose:
-        setup_logging(logging.DEBUG)
+        lvl = logging.DEBUG
     elif args.quiet:
-        setup_logging(logging.ERROR)
+        lvl = logging.ERROR
     else:
-        setup_logging(logging.INFO)
+        lvl = logging.INFO
 
+    ifslog = IfStateLogging(lvl)
     ifs = IfState()
 
     if args.action == Actions.SHOW:
@@ -41,6 +43,9 @@ def main():
         if sys.version_info >= (3,7):
             yaml.add_representer(dict, lambda self, data: yaml.representer.SafeRepresenter.represent_dict(self, data.items()))
         print(yaml.dump(ifs.show()))
+
+        ifslog.quit()
+        exit(0)
 
     if args.action in [Actions.CHECK, Actions.APPLY]:
         parser = YamlParser(args.config)
@@ -50,9 +55,11 @@ def main():
             ifs.update(ifstates, args.soft_schema)
         except FeatureMissingError as ex:
             logger.error("Config uses unavailable feature: {}".format(ex.feature))
+            ifslog.quit()
             exit(1)
         except ParserValidationError as ex:
             logger.error("Config validation failed for {}".format(ex.detail))
+            ifslog.quit()
             exit(1)
 
         if args.action == Actions.CHECK:
@@ -63,6 +70,8 @@ def main():
             signal.signal(signal.SIGPIPE, signal.SIG_IGN)
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
             ifs.apply()
+
+        ifslog.quit()
 
 if __name__ == "__main__":
     main()
