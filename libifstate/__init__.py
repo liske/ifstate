@@ -4,6 +4,7 @@ from libifstate.address import Addresses
 from libifstate.routing import Tables, Rules
 from libifstate.sysctl import Sysctl
 from libifstate.parser import Parser
+from libifstate.tc import TC
 try:
     from libifstate.wireguard import WireGuard
 except ModuleNotFoundError:
@@ -31,11 +32,13 @@ class IfState():
         self.tables = None
         self.rules = None
         self.sysctl = Sysctl()
+        self.tc = {}
         self.wireguard = {}
         self.features = {
             'link': True,
             'sysctl': os.access('/proc/sys/net', os.R_OK),
             'ethtool': not ethtool_path is None,
+            'tc': True,
             'wireguard': not globals().get("WireGuard") is None,
         }
 
@@ -93,6 +96,10 @@ class IfState():
 
             if 'sysctl' in ifstate:
                 self.sysctl.add(name, ifstate['sysctl'])
+
+            if 'tc' in ifstate:
+                self.tc[name] = TC(
+                    name, ifstate['tc'])
 
             if 'wireguard' in ifstate:
                 if not self.features['wireguard']:
@@ -201,6 +208,16 @@ class IfState():
                                         name, err.args[1]))
             if not retry:
                 break
+
+        if any(not x is None for x in self.tc.values()):
+            logger.info("\nconfiguring interface traffic control...")
+
+            for name, tc in self.tc.items():
+                if tc is None:
+                    logger.debug('skipped due to no tc settings', extra={
+                                 'iface': name})
+                else:
+                    tc.apply(do_apply)
 
         if any(not x is None for x in self.addresses.values()):
             logger.info("\nconfiguring interface ip addresses...")

@@ -332,6 +332,363 @@
                 true,
                 false
             ]
+        },
+        "iface-tc_qid": {
+            "type": "string",
+            "description": "qdisc id",
+            "format": "^(root|[0-9a-f]+:[0-9a-f]*)$"
+        },
+        "iface-tc_protocol": {
+            "type": [
+                "string",
+                "integer"
+            ],
+            "description": "protocol selector",
+            "minLength": 2,
+            "minimum": 0,
+            "maximum": 255
+        },
+        "iface-tc_prio": {
+            "type": "integer",
+            "description": "priority",
+            "minimum": 0,
+            "maximum": 65535
+        },
+        "iface-tc_qdisc": {
+            "description": "traffic control queueing discipline",
+            "type": "object",
+            "required": [
+                "handle"
+            ],
+            "properties": {
+                "parent": {
+                    "description": "parent where to attach this qdisc",
+                    "$ref": "#/definitions/iface-tc_qid"
+                },
+                "handle": {
+                    "description": "unique id",
+                    "$ref": "#/definitions/iface-tc_qid"
+                }
+            },
+            "oneOf": [
+                {
+                    "description": "generic classless qdisc",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "gred",
+                                "hhf",
+                                "ingress",
+                                "mqprio",
+                                "multiq",
+                                "netem",
+                                "pfifo_fast",
+                                "pie",
+                                "red",
+                                "sfb",
+                                "sfq",
+                                "tbf"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "description": "[cake](https://man7.org/linux/man-pages/man8/tc-cake.8.html) - common applications kept enhanced (CAKE)",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "cake"
+                            ]
+                        },
+                        "handle": {
+                            "description": "unique id",
+                            "$ref": "#/definitions/iface-tc_qid"
+                        },
+                        "ack_filter": {
+                            "description": "ACKnowledge filter",
+                            "type": [
+                                "boolean",
+                                "string"
+                            ],
+                            "enum": [
+                                "aggressive",
+                                true,
+                                false
+                            ]
+                        },
+                        "atm_mode": {
+                            "description": "ATM mode",
+                            "type": [
+                                "boolean",
+                                "string"
+                            ],
+                            "enum": [
+                                "ptm",
+                                true,
+                                false
+                            ]
+                        },
+                        "autorate": {
+                            "type": "boolean",
+                            "description": "autorate-ingress"
+                        },
+                        "diffserv_mode": {
+                            "type": "string",
+                            "description": "diffserv mode",
+                            "enum": [
+                                "diffserv3",
+                                "diffserv4",
+                                "diffserv8",
+                                "besteffort",
+                                "precedence"
+                            ]
+                        },
+                        "ingress": {
+                            "description": "ingress",
+                            "type": "boolean"
+                        },
+                        "overhead": {
+                            "description": "overhead",
+                            "type": "integer",
+                            "minimum": -64,
+                            "maximum": 256
+                        },
+                        "flow_mode": {
+                            "description": "flow mode",
+                            "type": "string",
+                            "enum": [
+                                "flowblind",
+                                "srchost",
+                                "dsthost",
+                                "hosts",
+                                "flows",
+                                "dual-srchost",
+                                "dual-dsthost",
+                                "triple-isolated"
+                            ]
+                        },
+                        "fwmark": {
+                            "description": "fwmark",
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "memlimit": {
+                            "description": "memlimit",
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "mpu": {
+                            "description": "MPU",
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 256
+                        },
+                        "nat": {
+                            "description": "NAT",
+                            "type": "boolean"
+                        },
+                        "raw": {
+                            "description": "RAW",
+                            "type": "boolean"
+                        },
+                        "rtt": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "description": "well-known RTT",
+                                    "enum": [
+                                        "datacentre",
+                                        "lan",
+                                        "metro",
+                                        "regional",
+                                        "internet",
+                                        "oceanic",
+                                        "satellite",
+                                        "interplanetary"
+                                    ]
+                                },
+                                {
+                                    "type": "integer",
+                                    "description": "manually specify an RTT (us)",
+                                    "minimum": 1
+                                }
+                            ]
+                        },
+                        "split_gso": {
+                            "description": "split GSO",
+                            "type": "boolean"
+                        },
+                        "target": {
+                            "type": "integer",
+                            "description": "target",
+                            "minimum": 1
+                        },
+                        "wash": {
+                            "description": "wash",
+                            "type": "boolean"
+                        }
+                    }
+                },
+                {
+                    "description": "[choke](https://man7.org/linux/man-pages/man8/tc-choke.8.html) - choose and keep scheduler",
+                    "required": [
+                        "kind",
+                        "limit",
+                        "min",
+                        "max",
+                        "avpkt",
+                        "burst",
+                        "probability"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "choke"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "description": "[CoDel](https://man7.org/linux/man-pages/man8/tc-codel.8.html) - Controlled-Delay Active Queue Management algorithm",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "codel"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "description": "[bfifo](https://man7.org/linux/man-pages/man8/tc-bfifo.8.html) - Byte limited First In, First Out queue; [pfifo](https://man7.org/linux/man-pages/man8/tc-pfifo.8.html) - Packet limited First In, First Out queue",
+                    "required": [
+                        "kind"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "bfifo",
+                                "pfifo"
+                            ]
+                        },
+                        "limit": {
+                            "type": "number",
+                            "description": "queue size in bytes or packets"
+                        }
+                    }
+                },
+                {
+                    "description": "[fq](https://man7.org/linux/man-pages/man8/tc-fq.8.html) - Fair Queue traffic policing",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "fq"
+                            ]
+                        },
+                        "limit": {
+                            "type": "number",
+                            "description": "hard limit on the real queue size (number of packets)"
+                        },
+                        "flow_limit": {
+                            "type": "number",
+                            "description": "hard limit on the max number of packets per flow"
+                        }
+                    }
+                },
+                {
+                    "description": "[fq_codel](https://man7.org/linux/man-pages/man8/tc-fq_codel.8.html) - Fair Queuing (FQ) with Controlled Delay (CoDel)",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "fq_codel"
+                            ]
+                        },
+                        "limit": {
+                            "type": "number",
+                            "description": "hard limit on the real queue size (number of packets)"
+                        },
+                        "flows": {
+                            "type": "number",
+                            "description": "number of flows"
+                        }
+                    }
+                },
+                {
+                    "description": "generic classful qdisc",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "atm",
+                                "cbq",
+                                "drr",
+                                "dsmark",
+                                "hfsc",
+                                "htb",
+                                "prio",
+                                "qfq"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "description": "classful multiqueue dummy scheduler",
+                    "required": [
+                        "kind",
+                        "children"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "mq"
+                            ]
+                        },
+                        "children": {
+                            "description": "list child qdiscs for each device TX queue",
+                            "type": "array",
+                            "items": {
+                                "description": "child qdiscs for the nth device TX queue",
+                                "$ref": "#/definitions/iface-tc_qdisc"
+                            }
+                        }
+                    }
+                }
+            ]
         }
     },
     "additionalProperties": false,
@@ -1387,6 +1744,273 @@
                                         }
                                     }
                                 }
+                            }
+                        }
+                    },
+                    "tc": {
+                        "description": "settings for traffic control",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "qdisc": {
+                                "description": "root queueing disciplines",
+                                "$ref": "#/definitions/iface-tc_qdisc"
+                            },
+                            "filter": {
+                                "description": "filter used by qdiscs",
+                                "oneOf": [
+                                    {
+                                        "description": "basic filter",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "kind",
+                                            "protocol",
+                                            "prio"
+                                        ],
+                                        "properties": {
+                                            "kind": {
+                                                "type": "string",
+                                                "description": "filter type",
+                                                "enum": [
+                                                    "basic"
+                                                ]
+                                            },
+                                            "protocol": {
+                                                "$ref": "#/definitions/iface-tc_protocol"
+                                            },
+                                            "prio": {
+                                                "$ref": "#/definitions/iface-tc_prio"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "(e)BPF filter",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "kind",
+                                            "protocol",
+                                            "prio"
+                                        ],
+                                        "properties": {
+                                            "kind": {
+                                                "type": "string",
+                                                "description": "filter type",
+                                                "enum": [
+                                                    "bpf"
+                                                ]
+                                            },
+                                            "protocol": {
+                                                "$ref": "#/definitions/iface-tc_protocol"
+                                            },
+                                            "prio": {
+                                                "$ref": "#/definitions/iface-tc_prio"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "cgroup filter",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "kind",
+                                            "protocol",
+                                            "prio"
+                                        ],
+                                        "properties": {
+                                            "kind": {
+                                                "type": "string",
+                                                "description": "filter type",
+                                                "enum": [
+                                                    "cgroup"
+                                                ]
+                                            },
+                                            "protocol": {
+                                                "$ref": "#/definitions/iface-tc_protocol"
+                                            },
+                                            "prio": {
+                                                "$ref": "#/definitions/iface-tc_prio"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "flow, flower filter",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "kind",
+                                            "protocol",
+                                            "prio"
+                                        ],
+                                        "properties": {
+                                            "kind": {
+                                                "type": "string",
+                                                "description": "filter type",
+                                                "enum": [
+                                                    "flow",
+                                                    "flower"
+                                                ]
+                                            },
+                                            "protocol": {
+                                                "$ref": "#/definitions/iface-tc_protocol"
+                                            },
+                                            "prio": {
+                                                "$ref": "#/definitions/iface-tc_prio"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "fwmark filter",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "kind",
+                                            "protocol",
+                                            "prio"
+                                        ],
+                                        "properties": {
+                                            "kind": {
+                                                "type": "string",
+                                                "description": "filter type",
+                                                "enum": [
+                                                    "fw"
+                                                ]
+                                            },
+                                            "protocol": {
+                                                "$ref": "#/definitions/iface-tc_protocol"
+                                            },
+                                            "prio": {
+                                                "$ref": "#/definitions/iface-tc_prio"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "route filter",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "kind",
+                                            "protocol",
+                                            "prio"
+                                        ],
+                                        "properties": {
+                                            "kind": {
+                                                "type": "string",
+                                                "description": "filter type",
+                                                "enum": [
+                                                    "route"
+                                                ]
+                                            },
+                                            "protocol": {
+                                                "$ref": "#/definitions/iface-tc_protocol"
+                                            },
+                                            "prio": {
+                                                "$ref": "#/definitions/iface-tc_prio"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "rsvp filter",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "kind",
+                                            "protocol",
+                                            "prio"
+                                        ],
+                                        "properties": {
+                                            "kind": {
+                                                "type": "string",
+                                                "description": "filter type",
+                                                "enum": [
+                                                    "rsvp"
+                                                ]
+                                            },
+                                            "protocol": {
+                                                "$ref": "#/definitions/iface-tc_protocol"
+                                            },
+                                            "prio": {
+                                                "$ref": "#/definitions/iface-tc_prio"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "traffic control index filter",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "kind",
+                                            "protocol",
+                                            "prio"
+                                        ],
+                                        "properties": {
+                                            "kind": {
+                                                "type": "string",
+                                                "description": "filter type",
+                                                "enum": [
+                                                    "tcindex"
+                                                ]
+                                            },
+                                            "protocol": {
+                                                "$ref": "#/definitions/iface-tc_protocol"
+                                            },
+                                            "prio": {
+                                                "$ref": "#/definitions/iface-tc_prio"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "u32 filter",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "kind",
+                                            "protocol",
+                                            "prio"
+                                        ],
+                                        "properties": {
+                                            "kind": {
+                                                "type": "string",
+                                                "description": "filter type",
+                                                "enum": [
+                                                    "u32"
+                                                ]
+                                            },
+                                            "protocol": {
+                                                "$ref": "#/definitions/iface-tc_protocol"
+                                            },
+                                            "prio": {
+                                                "$ref": "#/definitions/iface-tc_prio"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "matchall filter",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "kind",
+                                            "protocol",
+                                            "prio"
+                                        ],
+                                        "properties": {
+                                            "kind": {
+                                                "type": "string",
+                                                "description": "filter type",
+                                                "enum": [
+                                                    "matchall"
+                                                ]
+                                            },
+                                            "protocol": {
+                                                "$ref": "#/definitions/iface-tc_protocol"
+                                            },
+                                            "prio": {
+                                                "$ref": "#/definitions/iface-tc_prio"
+                                            }
+                                        }
+                                    }
+                                ]
                             }
                         }
                     },
