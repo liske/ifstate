@@ -114,25 +114,22 @@ class TC():
         # apply qdisc tree
         ipr_qdiscs = ipr.get_qdiscs(index=self.idx)
         logger.debug('checking qdisc tree', extra={'iface': self.iface})
-        if self.apply_qtree(self.tc["qdisc"], self.get_qroot(
-            ipr_qdiscs), ipr_qdiscs, TC.ROOT_HANDLE, excpts, do_apply):
+        if self.apply_qtree(
+                self.tc["qdisc"],
+                self.get_qroot(ipr_qdiscs),
+                ipr_qdiscs,
+                TC.ROOT_HANDLE,
+                excpts,
+                do_apply):
             changes.append("qdisc")
-
-
 
         if len(changes) > 0:
             logger.info(
-                'change ({})'.format(", ".join(changes)), extra={'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
+                'change ({})'.format(", ".join(changes)),
+                extra={'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
         else:
             logger.info(
-                'ok', extra={'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
+                'ok',
+                extra={'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
 
         return excpts
-
-        # get classes
-        ipr_classes = {}
-        for klasse in ipr.get_classes(index=self.idx):
-            print("")
-            print(klasse)
-#            ip = ip_interface(addr.get_attr('IFA_ADDRESS') + '/' + str(addr['prefixlen']))
- #           ipr_addr[ip] = addr
