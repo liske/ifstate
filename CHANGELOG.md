@@ -3,8 +3,8 @@
 ## 1.0.0
 
 Changes:
-- add dynamic ip addresses by default and make it configurable
-- logging: make it async to prevent lockup while running ifstatecli from remote connectinos
+- ignore dynamic ip addresses by default and make it configurable
+- logging: make it async to prevent lockup while running ifstatecli from remote connections
 - netlink: handle exceptions more gracefully (`EEXIST`)
 - parser: handle pyyaml exceptions more gracefully
 - parser: improve `!include` tag
