@@ -689,6 +689,64 @@
                     }
                 }
             ]
+        },
+        "iface-tc_action": {
+            "description": "traffic control filter action",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "kind"
+                ],
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "mirred"
+                        ]
+                    }
+                },
+                "oneOf": [
+                    {
+                        "description": "[mirred](https://man7.org/linux/man-pages/man8/tc-mirred.8.html) - mirror/redirect action",
+                        "additionalProperties": false,
+                        "required": [
+                            "direction",
+                            "action",
+                            "dev"
+                        ],
+                        "properties": {
+                            "kind": {
+                                "type": "string",
+                                "enum": [
+                                    "mirred"
+                                ]
+                            },
+                            "direction": {
+                                "type": "string",
+                                "enum": [
+                                    "ingress",
+                                    "egress"
+                                ]
+                            },
+                            "action": {
+                                "type": "string",
+                                "enum": [
+                                    "mirror",
+                                    "redirect"
+                                ]
+                            },
+                            "dev": {
+                                "$ref": "#/definitions/iface-link_link"
+                            },
+                            "index": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        }
+                    }
+                ]
+            }
         }
     },
     "additionalProperties": false,
@@ -1758,259 +1816,245 @@
                             },
                             "filter": {
                                 "description": "filter used by qdiscs",
-                                "oneOf": [
-                                    {
-                                        "description": "basic filter",
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "kind",
-                                            "protocol",
-                                            "prio"
-                                        ],
-                                        "properties": {
-                                            "kind": {
-                                                "type": "string",
-                                                "description": "filter type",
-                                                "enum": [
-                                                    "basic"
-                                                ]
-                                            },
-                                            "protocol": {
-                                                "$ref": "#/definitions/iface-tc_protocol"
-                                            },
-                                            "prio": {
-                                                "$ref": "#/definitions/iface-tc_prio"
-                                            }
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "kind"
+                                    ],
+                                    "properties": {
+                                        "kind": {
+                                            "type": "string",
+                                            "description": "filter type",
+                                            "enum": [
+                                                "basic",
+                                                "bpf",
+                                                "cgroup",
+                                                "flow",
+                                                "flower",
+                                                "fw",
+                                                "route",
+                                                "rvsp",
+                                                "tcindex",
+                                                "u32",
+                                                "matchall"
+                                            ]
                                         }
                                     },
-                                    {
-                                        "description": "(e)BPF filter",
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "kind",
-                                            "protocol",
-                                            "prio"
-                                        ],
-                                        "properties": {
-                                            "kind": {
-                                                "type": "string",
-                                                "description": "filter type",
-                                                "enum": [
-                                                    "bpf"
-                                                ]
-                                            },
-                                            "protocol": {
-                                                "$ref": "#/definitions/iface-tc_protocol"
-                                            },
-                                            "prio": {
-                                                "$ref": "#/definitions/iface-tc_prio"
+                                    "oneOf": [
+                                        {
+                                            "description": "basic filter",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "basic"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "(e)BPF filter",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "bpf"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "cgroup filter",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "cgroup"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "flow, flower filter",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "flow",
+                                                        "flower"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "fwmark filter",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "fw"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "route filter",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "route"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "rsvp filter",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "rsvp"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "traffic control index filter",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "tcindex"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "u32 filter",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "u32"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "matchall filter",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "matchall"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                }
                                             }
                                         }
-                                    },
-                                    {
-                                        "description": "cgroup filter",
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "kind",
-                                            "protocol",
-                                            "prio"
-                                        ],
-                                        "properties": {
-                                            "kind": {
-                                                "type": "string",
-                                                "description": "filter type",
-                                                "enum": [
-                                                    "cgroup"
-                                                ]
-                                            },
-                                            "protocol": {
-                                                "$ref": "#/definitions/iface-tc_protocol"
-                                            },
-                                            "prio": {
-                                                "$ref": "#/definitions/iface-tc_prio"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "description": "flow, flower filter",
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "kind",
-                                            "protocol",
-                                            "prio"
-                                        ],
-                                        "properties": {
-                                            "kind": {
-                                                "type": "string",
-                                                "description": "filter type",
-                                                "enum": [
-                                                    "flow",
-                                                    "flower"
-                                                ]
-                                            },
-                                            "protocol": {
-                                                "$ref": "#/definitions/iface-tc_protocol"
-                                            },
-                                            "prio": {
-                                                "$ref": "#/definitions/iface-tc_prio"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "description": "fwmark filter",
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "kind",
-                                            "protocol",
-                                            "prio"
-                                        ],
-                                        "properties": {
-                                            "kind": {
-                                                "type": "string",
-                                                "description": "filter type",
-                                                "enum": [
-                                                    "fw"
-                                                ]
-                                            },
-                                            "protocol": {
-                                                "$ref": "#/definitions/iface-tc_protocol"
-                                            },
-                                            "prio": {
-                                                "$ref": "#/definitions/iface-tc_prio"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "description": "route filter",
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "kind",
-                                            "protocol",
-                                            "prio"
-                                        ],
-                                        "properties": {
-                                            "kind": {
-                                                "type": "string",
-                                                "description": "filter type",
-                                                "enum": [
-                                                    "route"
-                                                ]
-                                            },
-                                            "protocol": {
-                                                "$ref": "#/definitions/iface-tc_protocol"
-                                            },
-                                            "prio": {
-                                                "$ref": "#/definitions/iface-tc_prio"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "description": "rsvp filter",
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "kind",
-                                            "protocol",
-                                            "prio"
-                                        ],
-                                        "properties": {
-                                            "kind": {
-                                                "type": "string",
-                                                "description": "filter type",
-                                                "enum": [
-                                                    "rsvp"
-                                                ]
-                                            },
-                                            "protocol": {
-                                                "$ref": "#/definitions/iface-tc_protocol"
-                                            },
-                                            "prio": {
-                                                "$ref": "#/definitions/iface-tc_prio"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "description": "traffic control index filter",
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "kind",
-                                            "protocol",
-                                            "prio"
-                                        ],
-                                        "properties": {
-                                            "kind": {
-                                                "type": "string",
-                                                "description": "filter type",
-                                                "enum": [
-                                                    "tcindex"
-                                                ]
-                                            },
-                                            "protocol": {
-                                                "$ref": "#/definitions/iface-tc_protocol"
-                                            },
-                                            "prio": {
-                                                "$ref": "#/definitions/iface-tc_prio"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "description": "u32 filter",
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "kind",
-                                            "protocol",
-                                            "prio"
-                                        ],
-                                        "properties": {
-                                            "kind": {
-                                                "type": "string",
-                                                "description": "filter type",
-                                                "enum": [
-                                                    "u32"
-                                                ]
-                                            },
-                                            "protocol": {
-                                                "$ref": "#/definitions/iface-tc_protocol"
-                                            },
-                                            "prio": {
-                                                "$ref": "#/definitions/iface-tc_prio"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "description": "matchall filter",
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "kind",
-                                            "protocol",
-                                            "prio"
-                                        ],
-                                        "properties": {
-                                            "kind": {
-                                                "type": "string",
-                                                "description": "filter type",
-                                                "enum": [
-                                                    "matchall"
-                                                ]
-                                            },
-                                            "protocol": {
-                                                "$ref": "#/definitions/iface-tc_protocol"
-                                            },
-                                            "prio": {
-                                                "$ref": "#/definitions/iface-tc_prio"
-                                            }
-                                        }
-                                    }
-                                ]
+                                    ]
+                                }
                             }
                         }
                     },

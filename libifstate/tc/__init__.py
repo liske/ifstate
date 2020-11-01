@@ -1,6 +1,5 @@
 from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import ExceptionCollector, NetlinkError
-from pprint import pprint
 
 
 class TC():
@@ -99,6 +98,66 @@ class TC():
 
         return changes
 
+    def apply_filter(self, tc, ipr_filters, excpts, do_apply):
+        tc_filters = {}
+        # assign prio numbers if missing
+        for i in range(len(tc)):
+            tc[i]["prio"] = 0xc001 - len(tc) + i
+            tc_filters[tc[i]["prio"]] = tc[i]
+
+        changes = False
+        # remove unreferenced filters
+        removed = []
+        for ipr_filter in ipr_filters:
+            prio = ipr_filter["info"] >> 16
+
+            if prio not in tc_filters and prio not in removed:
+                changes = True
+                removed.append(prio)
+                if do_apply:
+                    opts = {
+                        "index": self.idx,
+                        "info": ipr_filter["info"],
+                    }
+                    try:
+                        ipr.del_filter_by_info(**opts)
+                    except NetlinkError as err:
+                        logger.warning('deleting filter #{} on {} failed: {}'.format(
+                            prio, self.iface, err.args[1]))
+                        excpts.add('del', err, **opts)
+
+        if do_apply:
+            for tc_filter in tc_filters.values():
+                tc_filter['index'] = self.idx
+                if "action" in tc_filter:
+                    for action in tc_filter["action"]:
+                        if action["kind"] == "mirred":
+                            # get ifindex
+                            action["ifindex"] = next(
+                                iter(ipr.link_lookup(ifname=action["dev"])), None)
+
+                            if self.idx == None:
+                                logger.warning("filter #{} references unknown interface {}".format(
+                                    tc_filter["prio"], action["dev"]), extra={'iface': self.iface})
+                                continue
+                try:
+                    try:
+                        ipr.tc("replace-filter", **tc_filter)
+                    except NetlinkError as err:
+                        if err.args[0] == 17:
+                            changes = True
+                            ipr.del_filter_by_info(
+                                index=self.idx, info=tc_filter["prio"] << 16)
+                            ipr.tc("add-filter", **tc_filter)
+                        else:
+                            raise
+
+                except NetlinkError as err:
+                    logger.warning('replace filter #{} on {} failed: {}'.format(
+                        tc_filter['prio'], self.iface, err.args[1]))
+                    excpts.add('replace', err, **tc_filter)
+        return changes
+
     def apply(self, do_apply):
         excpts = ExceptionCollector()
 
@@ -112,16 +171,28 @@ class TC():
         changes = []
 
         # apply qdisc tree
-        ipr_qdiscs = ipr.get_qdiscs(index=self.idx)
-        logger.debug('checking qdisc tree', extra={'iface': self.iface})
-        if self.apply_qtree(
-                self.tc["qdisc"],
-                self.get_qroot(ipr_qdiscs),
-                ipr_qdiscs,
-                TC.ROOT_HANDLE,
-                excpts,
-                do_apply):
-            changes.append("qdisc")
+        if "qdisc" in self.tc:
+            ipr_qdiscs = ipr.get_qdiscs(index=self.idx)
+            logger.debug('checking qdisc tree', extra={'iface': self.iface})
+            if self.apply_qtree(
+                    self.tc["qdisc"],
+                    self.get_qroot(ipr_qdiscs),
+                    ipr_qdiscs,
+                    TC.ROOT_HANDLE,
+                    excpts,
+                    do_apply):
+                changes.append("qdisc")
+
+        # apply filters
+        if "filter" in self.tc:
+            ipr_filters = ipr.get_filters(index=self.idx)
+            logger.debug('checking filters', extra={'iface': self.iface})
+            if self.apply_filter(
+                    self.tc["filter"],
+                    ipr_filters,
+                    excpts,
+                    do_apply):
+                changes.append("filter")
 
         if len(changes) > 0:
             logger.info(

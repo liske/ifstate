@@ -1,5 +1,12 @@
 # ChangeLog
 
+## 1.1.0
+
+Changes:
+- add experimental traffic control support
+  - tc qdisc
+  - tc filter
+
 ## 1.0.0
 
 Changes:
