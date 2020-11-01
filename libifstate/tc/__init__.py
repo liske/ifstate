@@ -144,13 +144,12 @@ class TC():
                     try:
                         ipr.tc("replace-filter", **tc_filter)
                     except NetlinkError as err:
-                        if err.args[0] == 17:
-                            changes = True
-                            ipr.del_filter_by_info(
-                                index=self.idx, info=tc_filter["prio"] << 16)
-                            ipr.tc("add-filter", **tc_filter)
-                        else:
-                            raise
+                        # something failed... try again
+                        # after removing the filter
+                        changes = True
+                        ipr.del_filter_by_info(
+                            index=self.idx, info=tc_filter["prio"] << 16)
+                        ipr.tc("add-filter", **tc_filter)
 
                 except NetlinkError as err:
                     logger.warning('replace filter #{} on {} failed: {}'.format(

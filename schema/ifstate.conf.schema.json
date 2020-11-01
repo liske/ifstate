@@ -346,7 +346,8 @@
             "description": "protocol selector",
             "minLength": 2,
             "minimum": 0,
-            "maximum": 255
+            "maximum": 255,
+            "default": 3
         },
         "iface-tc_prio": {
             "type": "integer",
@@ -1833,22 +1834,15 @@
                                             "description": "filter type",
                                             "enum": [
                                                 "basic",
-                                                "bpf",
-                                                "cgroup",
                                                 "flow",
-                                                "flower",
                                                 "fw",
-                                                "route",
-                                                "rvsp",
-                                                "tcindex",
-                                                "u32",
                                                 "matchall"
                                             ]
                                         }
                                     },
                                     "oneOf": [
                                         {
-                                            "description": "basic filter",
+                                            "description": "[basic](https://man7.org/linux/man-pages/man8/tc-basic.8.html) - basic traffic control filter",
                                             "additionalProperties": false,
                                             "properties": {
                                                 "kind": {
@@ -1865,17 +1859,20 @@
                                                 },
                                                 "action": {
                                                     "$ref": "#/definitions/iface-tc_action"
+                                                },
+                                                "match": {
+                                                    "description": "match packets using the [extended match infrastructure](https://man7.org/linux/man-pages/man8/tc-ematch.8.html)",
+                                                    "type": "object"
                                                 }
                                             }
                                         },
                                         {
-                                            "description": "(e)BPF filter",
-                                            "additionalProperties": false,
+                                            "description": "[flow](https://man7.org/linux/man-pages/man8/tc-flow.8.html) - flow based traffic control filter",
                                             "properties": {
                                                 "kind": {
                                                     "type": "string",
                                                     "enum": [
-                                                        "bpf"
+                                                        "flow"
                                                     ]
                                                 },
                                                 "protocol": {
@@ -1886,55 +1883,144 @@
                                                 },
                                                 "action": {
                                                     "$ref": "#/definitions/iface-tc_action"
+                                                },
+                                                "baseclass": {
+                                                    "description": "offset for the class ID calculation",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 65535,
+                                                    "default": 1
+                                                },
+                                                "divisor": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "or": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "and": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "xor": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "rshift": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "addend": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
                                                 }
-                                            }
+                                            },
+                                            "oneOf": [
+                                                {
+                                                    "required": [
+                                                        "kind",
+                                                        "mode",
+                                                        "key"
+                                                    ],
+                                                    "properties": {
+                                                        "mode": {
+                                                            "description": "filter mode",
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "map"
+                                                            ]
+                                                        },
+                                                        "key": {
+                                                            "description": "map to class ID by key",
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "src",
+                                                                "dst",
+                                                                "proto",
+                                                                "proto-src",
+                                                                "proto-dst",
+                                                                "iif",
+                                                                "priority",
+                                                                "mark",
+                                                                "nfct",
+                                                                "nfct-src",
+                                                                "nfct-dst",
+                                                                "nfct-proto-src",
+                                                                "nfct-proto-dst",
+                                                                "rt-classid",
+                                                                "sk-uid",
+                                                                "sk-gid",
+                                                                "vlan-tag",
+                                                                "rxhash"
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "required": [
+                                                        "kind",
+                                                        "mode",
+                                                        "keys"
+                                                    ],
+                                                    "properties": {
+                                                        "mode": {
+                                                            "description": "filter mode",
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "hash"
+                                                            ]
+                                                        },
+                                                        "keys": {
+                                                            "description": "hash over keys for class ID calculation",
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "src",
+                                                                    "dst",
+                                                                    "proto",
+                                                                    "proto-src",
+                                                                    "proto-dst",
+                                                                    "iif",
+                                                                    "priority",
+                                                                    "mark",
+                                                                    "nfct",
+                                                                    "nfct-src",
+                                                                    "nfct-dst",
+                                                                    "nfct-proto-src",
+                                                                    "nfct-proto-dst",
+                                                                    "rt-classid",
+                                                                    "sk-uid",
+                                                                    "sk-gid",
+                                                                    "vlan-tag",
+                                                                    "rxhash"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "perturb": {
+                                                            "description": "rehashing interval (in seconds)",
+                                                            "type": "integer",
+                                                            "minimum": 0,
+                                                            "maximum": 294967295
+                                                        }
+                                                    }
+                                                }
+                                            ]
                                         },
                                         {
-                                            "description": "cgroup filter",
+                                            "description": "[fw](https://man7.org/linux/man-pages/man8/tc-fw.8.html) - fwmark traffic control filter",
                                             "additionalProperties": false,
-                                            "properties": {
-                                                "kind": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "cgroup"
-                                                    ]
-                                                },
-                                                "protocol": {
-                                                    "$ref": "#/definitions/iface-tc_protocol"
-                                                },
-                                                "prio": {
-                                                    "$ref": "#/definitions/iface-tc_prio"
-                                                },
-                                                "action": {
-                                                    "$ref": "#/definitions/iface-tc_action"
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "description": "flow, flower filter",
-                                            "additionalProperties": false,
-                                            "properties": {
-                                                "kind": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "flow",
-                                                        "flower"
-                                                    ]
-                                                },
-                                                "protocol": {
-                                                    "$ref": "#/definitions/iface-tc_protocol"
-                                                },
-                                                "prio": {
-                                                    "$ref": "#/definitions/iface-tc_prio"
-                                                },
-                                                "action": {
-                                                    "$ref": "#/definitions/iface-tc_action"
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "description": "fwmark filter",
-                                            "additionalProperties": false,
+                                            "required": [
+                                                "kind",
+                                                "handle"
+                                            ],
                                             "properties": {
                                                 "kind": {
                                                     "type": "string",
@@ -1950,95 +2036,16 @@
                                                 },
                                                 "action": {
                                                     "$ref": "#/definitions/iface-tc_action"
+                                                },
+                                                "handle": {
+                                                    "description": "fwmark (iptables) to match",
+                                                    "type": "integer",
+                                                    "minimum": 0
                                                 }
                                             }
                                         },
                                         {
-                                            "description": "route filter",
-                                            "additionalProperties": false,
-                                            "properties": {
-                                                "kind": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "route"
-                                                    ]
-                                                },
-                                                "protocol": {
-                                                    "$ref": "#/definitions/iface-tc_protocol"
-                                                },
-                                                "prio": {
-                                                    "$ref": "#/definitions/iface-tc_prio"
-                                                },
-                                                "action": {
-                                                    "$ref": "#/definitions/iface-tc_action"
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "description": "rsvp filter",
-                                            "additionalProperties": false,
-                                            "properties": {
-                                                "kind": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "rsvp"
-                                                    ]
-                                                },
-                                                "protocol": {
-                                                    "$ref": "#/definitions/iface-tc_protocol"
-                                                },
-                                                "prio": {
-                                                    "$ref": "#/definitions/iface-tc_prio"
-                                                },
-                                                "action": {
-                                                    "$ref": "#/definitions/iface-tc_action"
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "description": "traffic control index filter",
-                                            "additionalProperties": false,
-                                            "properties": {
-                                                "kind": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "tcindex"
-                                                    ]
-                                                },
-                                                "protocol": {
-                                                    "$ref": "#/definitions/iface-tc_protocol"
-                                                },
-                                                "prio": {
-                                                    "$ref": "#/definitions/iface-tc_prio"
-                                                },
-                                                "action": {
-                                                    "$ref": "#/definitions/iface-tc_action"
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "description": "u32 filter",
-                                            "additionalProperties": false,
-                                            "properties": {
-                                                "kind": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "u32"
-                                                    ]
-                                                },
-                                                "protocol": {
-                                                    "$ref": "#/definitions/iface-tc_protocol"
-                                                },
-                                                "prio": {
-                                                    "$ref": "#/definitions/iface-tc_prio"
-                                                },
-                                                "action": {
-                                                    "$ref": "#/definitions/iface-tc_action"
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "description": "matchall filter",
+                                            "description": "[matchall](https://man7.org/linux/man-pages/man8/tc-matchall.8.html) - traffic control filter that matches every packet",
                                             "additionalProperties": false,
                                             "properties": {
                                                 "kind": {
@@ -2055,6 +2062,18 @@
                                                 },
                                                 "action": {
                                                     "$ref": "#/definitions/iface-tc_action"
+                                                },
+                                                "classid": {
+                                                    "description": "push matching packets into class",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "flags": {
+                                                    "description": "process flags (1: SKIP_HW, 2: SKIP_SW)",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
                                                 }
                                             }
                                         }
