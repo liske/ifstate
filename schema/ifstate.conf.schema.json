@@ -723,6 +723,7 @@
                                 ]
                             },
                             "direction": {
+                                "description": "packet direction",
                                 "type": "string",
                                 "enum": [
                                     "ingress",
@@ -730,6 +731,7 @@
                                 ]
                             },
                             "action": {
+                                "description": "copy (`mirror`) or move (`redirect`) packets to the destination interface",
                                 "type": "string",
                                 "enum": [
                                     "mirror",
@@ -737,11 +739,14 @@
                                 ]
                             },
                             "dev": {
+                                "description": "destination interface where packets are redirected or mirrored to",
                                 "$ref": "#/definitions/iface-link_link"
                             },
                             "index": {
+                                "description": "unique action ID",
                                 "type": "integer",
-                                "minimum": 0
+                                "minimum": 0,
+                                "maximum": 4294967295
                             }
                         }
                     }
