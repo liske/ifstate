@@ -19,6 +19,7 @@ The following features are already available:
 - configure interface `sysctl` options [≥ 0.7.1]
 - configure interface driver and hardware settings via `ethtool` [≥ 0.7.2]
 - configure WireGuard settings [≥ 0.8.0]
+- configure traffic control (`tc`) qdisc and filters (*experimental*) [≥ 1.1.0]
 - ignore interfaces by patterns
 - ignore ip addresses by prefix lists
 - ignore routing table entries by protocol
@@ -29,5 +30,5 @@ The following features are already available:
 
 The following features a planned for a later release of *ifstate*:
 
+- extend support for traffic control (`tc`)
 - support for hotplug interfaces
-- support for traffic control settings (`tc`)

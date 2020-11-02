@@ -332,6 +332,427 @@
                 true,
                 false
             ]
+        },
+        "iface-tc_qid": {
+            "type": "string",
+            "description": "qdisc id",
+            "format": "^(root|[0-9a-f]+:[0-9a-f]*)$"
+        },
+        "iface-tc_protocol": {
+            "type": [
+                "string",
+                "integer"
+            ],
+            "description": "protocol selector",
+            "minLength": 2,
+            "minimum": 0,
+            "maximum": 255,
+            "default": 3
+        },
+        "iface-tc_prio": {
+            "type": "integer",
+            "description": "priority",
+            "minimum": 0,
+            "maximum": 65535
+        },
+        "iface-tc_qdisc": {
+            "description": "traffic control queueing discipline",
+            "type": "object",
+            "required": [
+                "handle"
+            ],
+            "properties": {
+                "parent": {
+                    "description": "parent where to attach this qdisc",
+                    "$ref": "#/definitions/iface-tc_qid"
+                },
+                "handle": {
+                    "description": "unique id",
+                    "$ref": "#/definitions/iface-tc_qid"
+                }
+            },
+            "oneOf": [
+                {
+                    "description": "generic classless qdisc",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "gred",
+                                "hhf",
+                                "ingress",
+                                "mqprio",
+                                "multiq",
+                                "netem",
+                                "pfifo_fast",
+                                "pie",
+                                "red",
+                                "sfb",
+                                "sfq",
+                                "tbf"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "description": "[cake](https://man7.org/linux/man-pages/man8/tc-cake.8.html) - common applications kept enhanced (CAKE)",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "cake"
+                            ]
+                        },
+                        "handle": {
+                            "description": "unique id",
+                            "$ref": "#/definitions/iface-tc_qid"
+                        },
+                        "ack_filter": {
+                            "description": "ACKnowledge filter",
+                            "type": [
+                                "boolean",
+                                "string"
+                            ],
+                            "enum": [
+                                "aggressive",
+                                true,
+                                false
+                            ]
+                        },
+                        "atm_mode": {
+                            "description": "ATM mode",
+                            "type": [
+                                "boolean",
+                                "string"
+                            ],
+                            "enum": [
+                                "ptm",
+                                true,
+                                false
+                            ]
+                        },
+                        "autorate": {
+                            "type": "boolean",
+                            "description": "autorate-ingress"
+                        },
+                        "diffserv_mode": {
+                            "type": "string",
+                            "description": "diffserv mode",
+                            "enum": [
+                                "diffserv3",
+                                "diffserv4",
+                                "diffserv8",
+                                "besteffort",
+                                "precedence"
+                            ]
+                        },
+                        "ingress": {
+                            "description": "ingress",
+                            "type": "boolean"
+                        },
+                        "overhead": {
+                            "description": "overhead",
+                            "type": "integer",
+                            "minimum": -64,
+                            "maximum": 256
+                        },
+                        "flow_mode": {
+                            "description": "flow mode",
+                            "type": "string",
+                            "enum": [
+                                "flowblind",
+                                "srchost",
+                                "dsthost",
+                                "hosts",
+                                "flows",
+                                "dual-srchost",
+                                "dual-dsthost",
+                                "triple-isolated"
+                            ]
+                        },
+                        "fwmark": {
+                            "description": "fwmark",
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "memlimit": {
+                            "description": "memlimit",
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "mpu": {
+                            "description": "MPU",
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 256
+                        },
+                        "nat": {
+                            "description": "NAT",
+                            "type": "boolean"
+                        },
+                        "raw": {
+                            "description": "RAW",
+                            "type": "boolean"
+                        },
+                        "rtt": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "description": "well-known RTT",
+                                    "enum": [
+                                        "datacentre",
+                                        "lan",
+                                        "metro",
+                                        "regional",
+                                        "internet",
+                                        "oceanic",
+                                        "satellite",
+                                        "interplanetary"
+                                    ]
+                                },
+                                {
+                                    "type": "integer",
+                                    "description": "manually specify an RTT (us)",
+                                    "minimum": 1
+                                }
+                            ]
+                        },
+                        "split_gso": {
+                            "description": "split GSO",
+                            "type": "boolean"
+                        },
+                        "target": {
+                            "type": "integer",
+                            "description": "target",
+                            "minimum": 1
+                        },
+                        "wash": {
+                            "description": "wash",
+                            "type": "boolean"
+                        }
+                    }
+                },
+                {
+                    "description": "[choke](https://man7.org/linux/man-pages/man8/tc-choke.8.html) - choose and keep scheduler",
+                    "required": [
+                        "kind",
+                        "limit",
+                        "min",
+                        "max",
+                        "avpkt",
+                        "burst",
+                        "probability"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "choke"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "description": "[CoDel](https://man7.org/linux/man-pages/man8/tc-codel.8.html) - Controlled-Delay Active Queue Management algorithm",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "codel"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "description": "[bfifo](https://man7.org/linux/man-pages/man8/tc-bfifo.8.html) - Byte limited First In, First Out queue; [pfifo](https://man7.org/linux/man-pages/man8/tc-pfifo.8.html) - Packet limited First In, First Out queue",
+                    "required": [
+                        "kind"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "bfifo",
+                                "pfifo"
+                            ]
+                        },
+                        "limit": {
+                            "type": "number",
+                            "description": "queue size in bytes or packets"
+                        }
+                    }
+                },
+                {
+                    "description": "[fq](https://man7.org/linux/man-pages/man8/tc-fq.8.html) - Fair Queue traffic policing",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "fq"
+                            ]
+                        },
+                        "limit": {
+                            "type": "number",
+                            "description": "hard limit on the real queue size (number of packets)"
+                        },
+                        "flow_limit": {
+                            "type": "number",
+                            "description": "hard limit on the max number of packets per flow"
+                        }
+                    }
+                },
+                {
+                    "description": "[fq_codel](https://man7.org/linux/man-pages/man8/tc-fq_codel.8.html) - Fair Queuing (FQ) with Controlled Delay (CoDel)",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "fq_codel"
+                            ]
+                        },
+                        "limit": {
+                            "type": "number",
+                            "description": "hard limit on the real queue size (number of packets)"
+                        },
+                        "flows": {
+                            "type": "number",
+                            "description": "number of flows"
+                        }
+                    }
+                },
+                {
+                    "description": "generic classful qdisc",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "atm",
+                                "cbq",
+                                "drr",
+                                "dsmark",
+                                "hfsc",
+                                "htb",
+                                "prio",
+                                "qfq"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "description": "classful multiqueue dummy scheduler",
+                    "required": [
+                        "kind",
+                        "children"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "mq"
+                            ]
+                        },
+                        "children": {
+                            "description": "list child qdiscs for each device TX queue",
+                            "type": "array",
+                            "items": {
+                                "description": "child qdiscs for the nth device TX queue",
+                                "$ref": "#/definitions/iface-tc_qdisc"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "iface-tc_action": {
+            "description": "traffic control filter action",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "kind"
+                ],
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "mirred"
+                        ]
+                    }
+                },
+                "oneOf": [
+                    {
+                        "description": "[mirred](https://man7.org/linux/man-pages/man8/tc-mirred.8.html) - mirror/redirect action",
+                        "additionalProperties": false,
+                        "required": [
+                            "direction",
+                            "action",
+                            "dev"
+                        ],
+                        "properties": {
+                            "kind": {
+                                "type": "string",
+                                "enum": [
+                                    "mirred"
+                                ]
+                            },
+                            "direction": {
+                                "description": "packet direction",
+                                "type": "string",
+                                "enum": [
+                                    "ingress",
+                                    "egress"
+                                ]
+                            },
+                            "action": {
+                                "description": "copy (`mirror`) or move (`redirect`) packets to the destination interface",
+                                "type": "string",
+                                "enum": [
+                                    "mirror",
+                                    "redirect"
+                                ]
+                            },
+                            "dev": {
+                                "description": "destination interface where packets are redirected or mirrored to",
+                                "$ref": "#/definitions/iface-link_link"
+                            },
+                            "index": {
+                                "description": "unique action ID",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            }
+                        }
+                    }
+                ]
+            }
         }
     },
     "additionalProperties": false,
@@ -1386,6 +1807,277 @@
                                             ]
                                         }
                                     }
+                                }
+                            }
+                        }
+                    },
+                    "tc": {
+                        "description": "settings for traffic control",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "qdisc": {
+                                "description": "root queueing disciplines",
+                                "$ref": "#/definitions/iface-tc_qdisc"
+                            },
+                            "filter": {
+                                "description": "filter used by qdiscs",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "kind"
+                                    ],
+                                    "properties": {
+                                        "kind": {
+                                            "type": "string",
+                                            "description": "filter type",
+                                            "enum": [
+                                                "basic",
+                                                "flow",
+                                                "fw",
+                                                "matchall"
+                                            ]
+                                        }
+                                    },
+                                    "oneOf": [
+                                        {
+                                            "description": "[basic](https://man7.org/linux/man-pages/man8/tc-basic.8.html) - basic traffic control filter",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "basic"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                },
+                                                "match": {
+                                                    "description": "match packets using the [extended match infrastructure](https://man7.org/linux/man-pages/man8/tc-ematch.8.html)",
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "[flow](https://man7.org/linux/man-pages/man8/tc-flow.8.html) - flow based traffic control filter",
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "flow"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                },
+                                                "baseclass": {
+                                                    "description": "offset for the class ID calculation",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 65535,
+                                                    "default": 1
+                                                },
+                                                "divisor": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "or": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "and": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "xor": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "rshift": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "addend": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                }
+                                            },
+                                            "oneOf": [
+                                                {
+                                                    "required": [
+                                                        "kind",
+                                                        "mode",
+                                                        "key"
+                                                    ],
+                                                    "properties": {
+                                                        "mode": {
+                                                            "description": "filter mode",
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "map"
+                                                            ]
+                                                        },
+                                                        "key": {
+                                                            "description": "map to class ID by key",
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "src",
+                                                                "dst",
+                                                                "proto",
+                                                                "proto-src",
+                                                                "proto-dst",
+                                                                "iif",
+                                                                "priority",
+                                                                "mark",
+                                                                "nfct",
+                                                                "nfct-src",
+                                                                "nfct-dst",
+                                                                "nfct-proto-src",
+                                                                "nfct-proto-dst",
+                                                                "rt-classid",
+                                                                "sk-uid",
+                                                                "sk-gid",
+                                                                "vlan-tag",
+                                                                "rxhash"
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "required": [
+                                                        "kind",
+                                                        "mode",
+                                                        "keys"
+                                                    ],
+                                                    "properties": {
+                                                        "mode": {
+                                                            "description": "filter mode",
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "hash"
+                                                            ]
+                                                        },
+                                                        "keys": {
+                                                            "description": "hash over keys for class ID calculation",
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "src",
+                                                                    "dst",
+                                                                    "proto",
+                                                                    "proto-src",
+                                                                    "proto-dst",
+                                                                    "iif",
+                                                                    "priority",
+                                                                    "mark",
+                                                                    "nfct",
+                                                                    "nfct-src",
+                                                                    "nfct-dst",
+                                                                    "nfct-proto-src",
+                                                                    "nfct-proto-dst",
+                                                                    "rt-classid",
+                                                                    "sk-uid",
+                                                                    "sk-gid",
+                                                                    "vlan-tag",
+                                                                    "rxhash"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "perturb": {
+                                                            "description": "rehashing interval (in seconds)",
+                                                            "type": "integer",
+                                                            "minimum": 0,
+                                                            "maximum": 294967295
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "description": "[fw](https://man7.org/linux/man-pages/man8/tc-fw.8.html) - fwmark traffic control filter",
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "kind",
+                                                "handle"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "fw"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                },
+                                                "handle": {
+                                                    "description": "fwmark (iptables) to match",
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "[matchall](https://man7.org/linux/man-pages/man8/tc-matchall.8.html) - traffic control filter that matches every packet",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "matchall"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/definitions/iface-tc_action"
+                                                },
+                                                "classid": {
+                                                    "description": "push matching packets into class",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "flags": {
+                                                    "description": "process flags (1: SKIP_HW, 2: SKIP_SW)",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                }
+                                            }
+                                        }
+                                    ]
                                 }
                             }
                         }
