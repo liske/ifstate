@@ -13,3 +13,4 @@ This is a collection of configuration examples for different interface link type
 - [sysctl interface settings](examples/sysctl.md)
 - [ethtool hardware settings](examples/ethtool.md)
 - [WireGuard tunnel](examples/wireguard.md)
+- [traffic control shaping](examples/tc-shaping.md)
