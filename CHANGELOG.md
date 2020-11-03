@@ -3,9 +3,11 @@
 ## 1.1.0
 
 Changes:
-- add experimental traffic control support
+- link: add ifb support
+- tc: add experimental support
   - tc qdisc
   - tc filter
+- wireguard: catch exception if wireguard netlink support is missing
 
 ## 1.0.0
 
