@@ -5,10 +5,17 @@ from libifstate.routing import Tables, Rules
 from libifstate.sysctl import Sysctl
 from libifstate.parser import Parser
 from libifstate.tc import TC
+
+from pyroute2.netlink.exceptions import NetlinkError
 try:
     from libifstate.wireguard import WireGuard
 except ModuleNotFoundError:
+    # ignore missing plugin
     pass
+except NetlinkError:
+    # ignore plugin failure if kmod is not loaded
+    pass
+
 from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, NetlinkError, ParserValidationError
 from ipaddress import ip_network, ip_interface
