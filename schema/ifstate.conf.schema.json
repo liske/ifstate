@@ -980,6 +980,7 @@
                                             "bond",
                                             "bridge",
                                             "gtp",
+                                            "ifb",
                                             "ip6tnl",
                                             "ipoib",
                                             "ipvlan",
