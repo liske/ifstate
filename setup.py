@@ -24,7 +24,7 @@ setup(
     author_email="thomas@fiasko-nw.net",
     long_description=readme(),
     long_description_content_type="text/markdown",
-    url="https://github.com/liske/ifstate",
+    url="https://ifstate.net/",
     license="GPL3+",
     packages=find_packages(),
     package_data={
