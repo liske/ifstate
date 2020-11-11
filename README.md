@@ -16,4 +16,4 @@ Can be used with deployment and automation tools like
 [ansible](https://github.com/ansible/ansible) since it's declarative and
 operates idempotent.
 
-[More...](https://liske.github.io/ifstate/)
+[More...](https://ifstate.net/)
