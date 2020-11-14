@@ -1,5 +1,15 @@
 # ChangeLog
 
+## 1.2.0
+
+Changes:
+- ignore: move defaults to builtin keys to make them
+  extendable by the config
+- update project & schema url to new domain (ifstate.net)
+
+Fixes:
+- handle empty configs more gracefully
+
 ## 1.1.0
 
 Changes:
