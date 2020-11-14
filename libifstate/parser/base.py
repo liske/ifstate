@@ -1,15 +1,16 @@
 from libifstate.util import logger
+from libifstate.exception import ParserValidationError
 from abc import ABC, abstractmethod
 
 
 class Parser(ABC):
     _default_ifstates = {
         'ignore': {
-            'ipaddr': [
+            'ipaddr_builtin': [
                 'fe80::/10'
             ],
             'ipaddr_dynamic': True,
-            'ifname': [
+            'ifname_builtin': [
                 r'^br-[\da-f]{12}',
                 r'^docker\d+',
                 r'^lo$',
@@ -18,47 +19,46 @@ class Parser(ABC):
                 r'^virbr\d+',
                 r'^vrrp\d*\.\d+$'
             ],
-            'routes': [
-                { 'proto': 1 },
-                { 'proto': 2 },
-                { 'proto': 8 },
-                { 'proto': 9 },
-                { 'proto': 10 },
-                { 'proto': 11 },
-                { 'proto': 12 },
-                { 'proto': 13 },
-                { 'proto': 14 },
-                { 'proto': 15 },
-                { 'proto': 16 },
-                { 'proto': 42 },
-                { 'proto': 186 },
-                { 'proto': 187 },
-                { 'proto': 188 },
-                { 'proto': 189 },
-                { 'proto': 192 },
-                { 'to': 'ff00::/8' },
+            'routes_builtin': [
+                {'proto': 1},
+                {'proto': 2},
+                {'proto': 8},
+                {'proto': 9},
+                {'proto': 10},
+                {'proto': 11},
+                {'proto': 12},
+                {'proto': 13},
+                {'proto': 14},
+                {'proto': 15},
+                {'proto': 16},
+                {'proto': 42},
+                {'proto': 186},
+                {'proto': 187},
+                {'proto': 188},
+                {'proto': 189},
+                {'proto': 192},
+                {'to': 'ff00::/8'},
             ],
-            'rules': [
-                { 'proto': 1 },
-                { 'proto': 2 },
-                { 'proto': 8 },
-                { 'proto': 9 },
-                { 'proto': 10 },
-                { 'proto': 11 },
-                { 'proto': 12 },
-                { 'proto': 13 },
-                { 'proto': 14 },
-                { 'proto': 15 },
-                { 'proto': 16 },
-                { 'proto': 42 },
-                { 'proto': 186 },
-                { 'proto': 187 },
-                { 'proto': 188 },
-                { 'proto': 189 },
-                { 'proto': 192 },
+            'rules_builtin': [
+                {'proto': 1},
+                {'proto': 2},
+                {'proto': 8},
+                {'proto': 9},
+                {'proto': 10},
+                {'proto': 11},
+                {'proto': 12},
+                {'proto': 13},
+                {'proto': 14},
+                {'proto': 15},
+                {'proto': 16},
+                {'proto': 42},
+                {'proto': 186},
+                {'proto': 187},
+                {'proto': 188},
+                {'proto': 189},
+                {'proto': 192},
             ],
-        },
-        'interfaces': {}
+        }
     }
 
     @abstractmethod
@@ -79,4 +79,27 @@ class Parser(ABC):
         return a
 
     def config(self):
-        return (self.merge(self._default_ifstates, self.ifstates))
+        # merge builtin defaults with config
+        cfg = (self.merge(self._default_ifstates, self.ifstates))
+
+        # 'ignore' should still be an object
+        try:
+            iter(cfg["ignore"])
+        except TypeError:
+            raise ParserValidationError("$.ignore: is not of type 'object'")
+
+        # merge builtin defaults
+        for k in list(cfg["ignore"]):
+            if k.endswith("_builtin"):
+                n = k[:-8]
+                if n in cfg["ignore"]:
+                    try:
+                        cfg["ignore"][n] += cfg["ignore"][k]
+                    except TypeError:
+                        raise ParserValidationError("$.ignore.{}: is not of type '{}'".format(
+                            n, type(cfg["ignore"][k]).__name__))
+                else:
+                    cfg["ignore"][n] = cfg["ignore"][k]
+                del(cfg["ignore"][k])
+
+        return cfg

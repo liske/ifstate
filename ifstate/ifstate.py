@@ -63,9 +63,8 @@ def main():
             ifslog.quit()
             exit(3)
 
-        ifstates = parser.config()
-
         try:
+            ifstates = parser.config()
             ifs.update(ifstates, args.soft_schema)
         except ParserValidationError as ex:
             logger.error("Config validation failed for {}".format(ex.detail))
