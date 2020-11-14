@@ -67,14 +67,15 @@ class Parser(ABC):
         pass
 
     def merge(self, a, b):
-        for key in b:
-            if key in a:
-                if isinstance(a[key], dict) and isinstance(b[key], dict):
-                    self.merge(a[key], b[key])
+        if not b is None:
+            for key in b:
+                if key in a:
+                    if isinstance(a[key], dict) and isinstance(b[key], dict):
+                        self.merge(a[key], b[key])
+                    else:
+                        a[key] = b[key]
                 else:
                     a[key] = b[key]
-            else:
-                a[key] = b[key]
         return a
 
     def config(self):

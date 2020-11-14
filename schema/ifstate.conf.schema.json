@@ -4,6 +4,9 @@
     "title": "ifstate.conf",
     "description": "IfState Configuration Schema",
     "type": "object",
+    "required": [
+        "interfaces"
+    ],
     "definitions": {
         "iface-link_link": {
             "type": [
