@@ -44,8 +44,6 @@ class Link(ABC):
         if 'address' in self.settings:
             self.idx = next(iter(ipr.link_lookup(
                 address=self.settings['address'])), None)
-        if self.idx is None:
-            self.idx = next(iter(ipr.link_lookup(ifname=name)), None)
 
     def _drill_attr(self, data, keys):
         key = keys[0]
@@ -173,6 +171,9 @@ class Link(ABC):
                 self.settings[attr] = next(iter(ipr.link_lookup(
                     ifname=self.settings[attr])), self.settings[attr])
 
+        self.idx = next(iter(ipr.link_lookup(
+            ifname=self.settings['ifname'])), None)
+
         if self.idx is not None:
             self.iface = next(iter(ipr.get_links(self.idx)), None)
 
@@ -246,12 +247,17 @@ class Link(ABC):
 
         old_state = self.iface['state']
         has_link_changes = False
+        has_state_changes = False
         for setting in self.settings.keys():
             logger.debug('  %s: %s => %s', setting, self.get_if_attr(
                 setting), self.settings[setting], extra={'iface': self.settings['ifname']})
-            if setting != 'kind' or self.cap_create:
-                has_link_changes |= self.get_if_attr(
+            if setting == "state":
+                has_state_changes = self.get_if_attr(
                     setting) != self.settings[setting]
+            else:
+                if setting != 'kind' or self.cap_create:
+                    has_link_changes |= self.get_if_attr(
+                        setting) != self.settings[setting]
 
         has_ethtool_changes = set()
         if not self.ethtool is None:
@@ -300,17 +306,36 @@ class Link(ABC):
                 try:
                     state = self.settings.pop('state', None)
                     ipr.link('set', index=self.idx, **(self.settings))
+                except NetlinkError as err:
+                    logger.warning('updating link {} failed: {}'.format(
+                        self.settings['ifname'], err.args[1]))
+                    excpts.add('set', err, state=state)
+
+                try:
                     if not state is None:
                         ipr.link('set', index=self.idx, state=state)
                 except NetlinkError as err:
-                    logger.warning('updating link {} failed: {}'.format(
+                    logger.warning('updating link state {} failed: {}'.format(
                         self.settings['ifname'], err.args[1]))
                     excpts.add('set', err, state=state)
         else:
             self.set_ethtool_state(self.get_if_attr(
                 'ifname'), has_ethtool_changes, do_apply)
-            logger.info(
-                'ok', extra={'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_OK})
+
+            if has_state_changes:
+                try:
+                    ipr.link('set', index=self.idx,
+                             state=self.settings["state"])
+                except NetlinkError as err:
+                    logger.warning('updating link state {} failed: {}'.format(
+                        self.settings['ifname'], err.args[1]))
+                    excpts.add('set', err, state=state)
+                logger.info('change', extra={
+                            'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
+
+            else:
+                logger.info(
+                    'ok', extra={'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_OK})
 
     def depends(self):
         deps = []

@@ -9,6 +9,7 @@ Changes:
 
 Fixes:
 - handle empty configs more gracefully
+- add quirks to make veth links work
 
 ## 1.1.0
 
