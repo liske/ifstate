@@ -1019,7 +1019,6 @@
                                             "physical",
                                             "team",
                                             "tuntap",
-                                            "veth",
                                             "vrf",
                                             "vti",
                                             "vti6"
@@ -1046,6 +1045,33 @@
                                         "enum": [
                                             "dummy"
                                         ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "VETH/VXCAN interface",
+                                "required": [
+                                    "kind",
+                                    "peer"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "veth",
+                                            "vxcan"
+                                        ]
+                                    },
+                                    "peer": {
+                                        "$ref": "#/definitions/iface-link_link"
                                     },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
