@@ -4,6 +4,8 @@ from libifstate.exception import ExceptionCollector, NetlinkError
 
 class TC():
     ROOT_HANDLE = 0xFFFFFFFF
+    INGRESS_HANDLE = 0xFFFF0000
+    INGRESS_PARENT = 0xFFFFFFF1
     HMASK_MAJOR = 0xFFFF0000
     HMASK_MINOR = 0x0000FFFF
 
@@ -19,6 +21,9 @@ class TC():
         return ":".join((maj, mi))
 
     def handle2int(s):
+        if isinstance(s, int):
+            return s
+
         if s == "root":
             return TC.ROOT_HANDLE
 
@@ -26,22 +31,55 @@ class TC():
         if l[1] == "":
             l[1] = "0"
 
-        return int(l[0]) << 16 | int(l[1])
+        return int(l[0], 16) << 16 | int(l[1], 16)
 
     def __init__(self, iface, tc):
         self.iface = iface
         self.idx = None
         self.tc = tc
 
-    def get_qroot(self, ipr_qdiscs):
+    def get_qdisc(self, ipr_qdiscs, parent):
         for qdisc in ipr_qdiscs:
-            if qdisc['parent'] == TC.ROOT_HANDLE:
+            if qdisc['parent'] == parent:
                 return qdisc
 
     def get_qchild(self, ipr_qdiscs, parent, slot):
         for qdisc in ipr_qdiscs:
             if qdisc['parent'] == parent | slot:
                 return qdisc
+
+    def apply_ingress(self, ingress, qdisc, excpts, do_apply):
+        logger.debug('checking ingress qdisc', extra={'iface': self.iface})
+        if not ingress:
+            if qdisc:
+                if do_apply:
+                    opts = {
+                        "index": self.idx,
+                        "parent": TC.INGRESS_PARENT,
+                    }
+                    try:
+                        ipr.tc("del", **opts)
+                    except NetlinkError as err:
+                        logger.warning('removing ingress qdisc on {} failed: {}'.format(
+                            self.iface, err.args[1]))
+                        excpts.add('del', err, **opts)
+                return True
+        else:
+            if not qdisc:
+                if do_apply:
+                    opts = {
+                        "index": self.idx,
+                        "kind": "ingress",
+                    }
+                    try:
+                        ipr.tc("add", **opts)
+                    except NetlinkError as err:
+                        logger.warning('adding ingress qdisc on {} failed: {}'.format(
+                            self.iface, err.args[1]))
+                        excpts.add('add', err, **opts)
+                return True
+
+        return False
 
     def apply_qtree(self, tc, qdisc, ipr_qdiscs, parent, excpts, do_apply, recreate=False):
         if qdisc is None:
@@ -102,22 +140,35 @@ class TC():
         tc_filters = {}
         # assign prio numbers if missing
         for i in range(len(tc)):
-            tc[i]["prio"] = 0xc001 - len(tc) + i
-            tc_filters[tc[i]["prio"]] = tc[i]
+            if not "prio" in tc[i]:
+                tc[i]["prio"] = 0xc001 - len(tc) + i
+
+            parent = TC.handle2int(tc[i].get("parent", 0))
+            if not parent in tc_filters:
+                tc_filters[parent] = {}
+
+            tc_filters[parent][tc[i]["prio"]] = tc[i]
 
         changes = False
         # remove unreferenced filters
-        removed = []
+        removed = {}
         for ipr_filter in ipr_filters:
             prio = ipr_filter["info"] >> 16
 
-            if prio not in tc_filters and prio not in removed:
+            parent = TC.handle2int(ipr_filter.get("parent", 0))
+            rm = not parent in tc_filters
+            rm |= parent in tc_filters and \
+                prio not in tc_filters[parent]
+            if rm and prio not in removed.get(parent, []):
                 changes = True
-                removed.append(prio)
+                if not parent in removed:
+                    removed[parent] = []
+                removed[parent].append(prio)
                 if do_apply:
                     opts = {
                         "index": self.idx,
                         "info": ipr_filter["info"],
+                        "parent": parent,
                     }
                     try:
                         ipr.del_filter_by_info(**opts)
@@ -127,34 +178,45 @@ class TC():
                         excpts.add('del', err, **opts)
 
         if do_apply:
-            for tc_filter in tc_filters.values():
-                tc_filter['index'] = self.idx
-                if "action" in tc_filter:
-                    for action in tc_filter["action"]:
-                        if action["kind"] == "mirred":
-                            # get ifindex
-                            action["ifindex"] = next(
-                                iter(ipr.link_lookup(ifname=action["dev"])), None)
+            for parent in tc_filters.keys():
+                for tc_filter in tc_filters[parent].values():
+                    tc_filter['index'] = self.idx
+                    if "action" in tc_filter:
+                        for action in tc_filter["action"]:
+                            if action["kind"] == "mirred":
+                                # get ifindex
+                                action["ifindex"] = next(
+                                    iter(ipr.link_lookup(ifname=action["dev"])), None)
 
-                            if self.idx == None:
-                                logger.warning("filter #{} references unknown interface {}".format(
-                                    tc_filter["prio"], action["dev"]), extra={'iface': self.iface})
-                                continue
-                try:
+                                if self.idx == None:
+                                    logger.warning("filter #{} references unknown interface {}".format(
+                                        tc_filter["prio"], action["dev"]), extra={'iface': self.iface})
+                                    continue
+                    if "parent" in tc_filter:
+                        tc_filter["parent"] = TC.handle2int(tc_filter["parent"])
                     try:
-                        ipr.tc("replace-filter", **tc_filter)
-                    except NetlinkError as err:
-                        # something failed... try again
-                        # after removing the filter
-                        changes = True
-                        ipr.del_filter_by_info(
-                            index=self.idx, info=tc_filter["prio"] << 16)
-                        ipr.tc("add-filter", **tc_filter)
+                        try:
+                            ipr.tc("replace-filter", **tc_filter)
+                            # replace seems only to work if there is no filter
+                            # => something has changed
+                            changes = True
+                        except NetlinkError as err:
+                            # replace does not work, supress changes result
+                            # for now
+                            #changes = True
+                            opts = {
+                                "index": self.idx,
+                                "info": tc_filter["prio"] << 16,
+                                "parent": parent,
+                            }
+                            ipr.del_filter_by_info(**opts)
+                            ipr.tc("add-filter", **tc_filter)
 
-                except NetlinkError as err:
-                    logger.warning('replace filter #{} on {} failed: {}'.format(
-                        tc_filter['prio'], self.iface, err.args[1]))
-                    excpts.add('replace', err, **tc_filter)
+                    except NetlinkError as err:
+                        logger.warning('replace filter #{} on {} failed: {}'.format(
+                            tc_filter['prio'], self.iface, err.args[1]))
+                        excpts.add('replace', err, **tc_filter)
+
         return changes
 
     def apply(self, do_apply):
@@ -168,14 +230,26 @@ class TC():
             return
 
         changes = []
+        ipr_qdiscs = None
+
+        # apply ingress qdics
+        if "ingress" in self.tc:
+            ipr_qdiscs = ipr.get_qdiscs(index=self.idx)
+            if self.apply_ingress(self.tc["ingress"],
+                                  self.get_qdisc(
+                                      ipr_qdiscs, TC.INGRESS_PARENT),
+                                  excpts,
+                                  do_apply):
+                changes.append("ingress")
 
         # apply qdisc tree
         if "qdisc" in self.tc:
-            ipr_qdiscs = ipr.get_qdiscs(index=self.idx)
+            if ipr_qdiscs is None:
+                ipr_qdiscs = ipr.get_qdiscs(index=self.idx)
             logger.debug('checking qdisc tree', extra={'iface': self.iface})
             if self.apply_qtree(
                     self.tc["qdisc"],
-                    self.get_qroot(ipr_qdiscs),
+                    self.get_qdisc(ipr_qdiscs, TC.ROOT_HANDLE),
                     ipr_qdiscs,
                     TC.ROOT_HANDLE,
                     excpts,
@@ -184,7 +258,8 @@ class TC():
 
         # apply filters
         if "filter" in self.tc:
-            ipr_filters = ipr.get_filters(index=self.idx)
+            ipr_filters = ipr.get_filters(
+                index=self.idx) + ipr.get_filters(index=self.idx, parent=TC.INGRESS_HANDLE)
             logger.debug('checking filters', extra={'iface': self.iface})
             if self.apply_filter(
                     self.tc["filter"],

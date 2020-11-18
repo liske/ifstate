@@ -516,10 +516,6 @@
                 "handle"
             ],
             "properties": {
-                "parent": {
-                    "description": "parent where to attach this qdisc",
-                    "$ref": "#/definitions/iface-tc_qid"
-                },
                 "handle": {
                     "description": "unique id",
                     "$ref": "#/definitions/iface-tc_qid"
@@ -538,7 +534,6 @@
                             "enum": [
                                 "gred",
                                 "hhf",
-                                "ingress",
                                 "mqprio",
                                 "multiq",
                                 "netem",
@@ -1873,6 +1868,10 @@
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
+                            "ingress": {
+                                "description": "enable the ingress qdisc for policing and shaping in ingress",
+                                "type": "boolean"
+                            },
                             "qdisc": {
                                 "description": "root queueing disciplines",
                                 "$ref": "#/definitions/iface-tc_qdisc"
@@ -2110,6 +2109,9 @@
                                                     "enum": [
                                                         "matchall"
                                                     ]
+                                                },
+                                                "parent": {
+                                                    "$ref": "#/definitions/iface-tc_qid"
                                                 },
                                                 "protocol": {
                                                     "$ref": "#/definitions/iface-tc_protocol"

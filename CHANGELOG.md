@@ -6,6 +6,7 @@ Changes:
 - ignore: move defaults to builtin keys to make them
   extendable by the config
 - update project & schema url to new domain (ifstate.net)
+- improve tc implementation, support ingress qdisc
 
 Fixes:
 - handle empty configs more gracefully
