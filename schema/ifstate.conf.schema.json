@@ -4,7 +4,161 @@
     "title": "ifstate.conf",
     "description": "IfState Configuration Schema",
     "type": "object",
+    "required": [
+        "interfaces"
+    ],
     "definitions": {
+        "ignore-ipaddr": {
+            "description": "list of ip address prefixes to be ignored",
+            "type": "array",
+            "items": {
+                "description": "ip address with prefix length",
+                "type": "string",
+                "examples": [
+                    "fe80::/10"
+                ]
+            }
+        },
+        "ignore-ifname": {
+            "description": "interface names matching this list of regex will be ignored",
+            "type": "array",
+            "items": {
+                "description": "regex to match interface name",
+                "examples": [
+                    "^br-[\\da-f]{12}",
+                    "^docker\\d+",
+                    "^lo$",
+                    "^ppp\\d+$",
+                    "^veth",
+                    "^virbr\\d+",
+                    "^vrrp\\d*\\.\\d+$"
+                ],
+                "type": "string"
+            }
+        },
+        "ignore-routes": {
+            "description": "filter routes by options",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "dev": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ]
+                    },
+                    "proto": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "default": "boot"
+                    },
+                    "realm": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ]
+                    },
+                    "scope": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ]
+                    },
+                    "table": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "default": "main"
+                    },
+                    "to": {
+                        "type": "string"
+                    },
+                    "via": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "ignore-rules": {
+            "description": "filter rules by options",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "action": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "description": "the type of this rule",
+                        "enum": [
+                            "to_tbl",
+                            "blackhole",
+                            "unreachable",
+                            "prohibit"
+                        ],
+                        "default": "to_tbl"
+                    },
+                    "table": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "priority": {
+                        "type": "integer",
+                        "description": "the priority of this rule",
+                        "minimum": 0,
+                        "maximum": 4294967295
+                    },
+                    "from": {
+                        "type": "string",
+                        "description": "select the source prefix to match",
+                        "format": "ipv4,ipv6"
+                    },
+                    "to": {
+                        "type": "string",
+                        "description": "select the destination prefix to match",
+                        "format": "ipv4,ipv6"
+                    },
+                    "iif": {
+                        "type": "string",
+                        "description": "select the incoming device to match"
+                    },
+                    "oif": {
+                        "type": "string",
+                        "description": "select the outgoing device to match"
+                    },
+                    "proto": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "default": "unspec",
+                        "description": "routing protocol number (`/etc/iproute2/rt_protos`)"
+                    },
+                    "fwmark": {
+                        "type": "integer",
+                        "description": "select the *fwmark* value to match"
+                    },
+                    "ipproto": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "description": "select the ip protocol to match"
+                    }
+                }
+            }
+        },
         "iface-link_link": {
             "type": [
                 "integer",
@@ -362,10 +516,6 @@
                 "handle"
             ],
             "properties": {
-                "parent": {
-                    "description": "parent where to attach this qdisc",
-                    "$ref": "#/definitions/iface-tc_qid"
-                },
                 "handle": {
                     "description": "unique id",
                     "$ref": "#/definitions/iface-tc_qid"
@@ -384,7 +534,6 @@
                             "enum": [
                                 "gred",
                                 "hhf",
-                                "ingress",
                                 "mqprio",
                                 "multiq",
                                 "netem",
@@ -782,158 +931,34 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
+                "ipaddr_builtin": {
+                    "$ref": "#/definitions/ignore-ipaddr"
+                },
                 "ipaddr": {
-                    "description": "list of ip address prefixes to be ignored",
-                    "type": "array",
-                    "items": {
-                        "description": "ip address with prefix length",
-                        "type": "string",
-                        "examples": [
-                            "fe80::/10"
-                        ]
-                    }
+                    "$ref": "#/definitions/ignore-ipaddr"
                 },
                 "ipaddr_dynamic": {
                     "description": "ignore dynamic assigned ip addresses",
                     "type": "boolean",
                     "default": true
                 },
+                "ifname_builtin": {
+                    "$ref": "#/definitions/ignore-ifname"
+                },
                 "ifname": {
-                    "description": "interface names matching this list of regex will be ignored",
-                    "type": "array",
-                    "items": {
-                        "description": "regex to match interface name",
-                        "examples": [
-                            "^docker\\d+",
-                            "^lo$",
-                            "^ppp\\d+$",
-                            "^veth"
-                        ],
-                        "type": "string"
-                    }
+                    "$ref": "#/definitions/ignore-ifname"
+                },
+                "routes_builtin": {
+                    "$ref": "#/definitions/ignore-routes"
                 },
                 "routes": {
-                    "description": "filter routes by options",
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                            "dev": {
-                                "type": [
-                                    "integer",
-                                    "string"
-                                ]
-                            },
-                            "proto": {
-                                "type": [
-                                    "integer",
-                                    "string"
-                                ],
-                                "default": "boot"
-                            },
-                            "realm": {
-                                "type": [
-                                    "integer",
-                                    "string"
-                                ]
-                            },
-                            "scope": {
-                                "type": [
-                                    "integer",
-                                    "string"
-                                ]
-                            },
-                            "table": {
-                                "type": [
-                                    "integer",
-                                    "string"
-                                ],
-                                "default": "main"
-                            },
-                            "to": {
-                                "type": "string"
-                            },
-                            "via": {
-                                "type": "string"
-                            }
-                        }
-                    }
+                    "$ref": "#/definitions/ignore-routes"
+                },
+                "rules_builtin": {
+                    "$ref": "#/definitions/ignore-rules"
                 },
                 "rules": {
-                    "description": "filter rules by options",
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                            "action": {
-                                "type": [
-                                    "integer",
-                                    "string"
-                                ],
-                                "description": "the type of this rule",
-                                "enum": [
-                                    "to_tbl",
-                                    "blackhole",
-                                    "unreachable",
-                                    "prohibit"
-                                ],
-                                "default": "to_tbl"
-                            },
-                            "table": {
-                                "type": [
-                                    "integer",
-                                    "string"
-                                ],
-                                "minimum": 0,
-                                "maximum": 255
-                            },
-                            "priority": {
-                                "type": "integer",
-                                "description": "the priority of this rule",
-                                "minimum": 0,
-                                "maximum": 4294967295
-                            },
-                            "from": {
-                                "type": "string",
-                                "description": "select the source prefix to match",
-                                "format": "ipv4,ipv6"
-                            },
-                            "to": {
-                                "type": "string",
-                                "description": "select the destination prefix to match",
-                                "format": "ipv4,ipv6"
-                            },
-                            "iif": {
-                                "type": "string",
-                                "description": "select the incoming device to match"
-                            },
-                            "oif": {
-                                "type": "string",
-                                "description": "select the outgoing device to match"
-                            },
-                            "proto": {
-                                "type": [
-                                    "integer",
-                                    "string"
-                                ],
-                                "default": "unspec",
-                                "description": "routing protocol number (`/etc/iproute2/rt_protos`)"
-                            },
-                            "fwmark": {
-                                "type": "integer",
-                                "description": "select the *fwmark* value to match"
-                            },
-                            "ipproto": {
-                                "type": [
-                                    "integer",
-                                    "string"
-                                ],
-                                "description": "select the ip protocol to match"
-                            }
-                        }
-                    }
+                    "$ref": "#/definitions/ignore-rules"
                 }
             }
         },
@@ -989,7 +1014,6 @@
                                             "physical",
                                             "team",
                                             "tuntap",
-                                            "veth",
                                             "vrf",
                                             "vti",
                                             "vti6"
@@ -1016,6 +1040,33 @@
                                         "enum": [
                                             "dummy"
                                         ]
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "VETH/VXCAN interface",
+                                "required": [
+                                    "kind",
+                                    "peer"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "veth",
+                                            "vxcan"
+                                        ]
+                                    },
+                                    "peer": {
+                                        "$ref": "#/definitions/iface-link_link"
                                     },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
@@ -1817,6 +1868,10 @@
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
+                            "ingress": {
+                                "description": "enable the ingress qdisc for policing and shaping in ingress",
+                                "type": "boolean"
+                            },
                             "qdisc": {
                                 "description": "root queueing disciplines",
                                 "$ref": "#/definitions/iface-tc_qdisc"
@@ -2054,6 +2109,9 @@
                                                     "enum": [
                                                         "matchall"
                                                     ]
+                                                },
+                                                "parent": {
+                                                    "$ref": "#/definitions/iface-tc_qid"
                                                 },
                                                 "protocol": {
                                                     "$ref": "#/definitions/iface-tc_protocol"

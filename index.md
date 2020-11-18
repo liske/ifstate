@@ -6,16 +6,11 @@ title: About
 declarative manner. It is a frontend for the kernel netlink protocol using
 [pyroute2](https://pyroute2.org/) and aims to be as powerful as the following commands:
 
-- iproute2:
-  - `ip address`
-  - `ip link`
-  - `ip route`
-  - `ip rule`
+- iproute2
+- bridge
 - ethtool
 - sysctl for interface settings (`/proc/sys/net/ipv[46]/conf/$IFACE/`)
-- traffic control
-  - `tc qdisc`
-  - `tc filter`
+- tc (*experimental*)
 - wireguard
 
 It was written for interface configuration on lightweight software defined linux
