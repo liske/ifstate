@@ -20,6 +20,7 @@ interfaces:
   tc:
     qdisc:
       kind: cake
+      handle: "1:"
       bandwidth: 80mbit
 - name: eth0
   addresses:
@@ -31,6 +32,7 @@ interfaces:
     ingress: true
     qdisc:
       kind: cake
+      handle: "1:"
       bandwidth: 30mbit
     filter:
       - kind: matchall
@@ -50,7 +52,7 @@ ip link add name ifb0 type ifb
 ip link set ifb0 up
 ip address add 192.0.2.1/24 dev eth0
 ip link set eth0 up
-tc qdisc add dev ifb0 parent root cake bandwidth 80mbit
-tc qdisc add dev eth0 parent root cake bandwidth 30mbit
+tc qdisc add dev ifb0 parent root handle 1: cake bandwidth 80mbit
+tc qdisc add dev eth0 parent root handle 1: cake bandwidth 30mbit
 tc filter add dev eth0 parent ffff: matchall action mirred egress redirect dev ifb0
 ```
