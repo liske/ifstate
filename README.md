@@ -5,7 +5,7 @@
 A python library to configure (linux) host interfaces in a declarative manner.
 It is a frontend for the kernel netlink protocol using
 [pyroute2](https://pyroute2.org/) and aims to be as powerful as the
-iproute2/bridge/ethtool commands.
+iproute2/bridge/ethtool/tc/wireguard commands.
 
 It was written for interface configuration on lightweight software defined linux
 routers **without** using any additional network management daemon like
