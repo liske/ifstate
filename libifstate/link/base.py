@@ -171,8 +171,9 @@ class Link(ABC):
                 self.settings[attr] = next(iter(ipr.link_lookup(
                     ifname=self.settings[attr])), self.settings[attr])
 
-        self.idx = next(iter(ipr.link_lookup(
-            ifname=self.settings['ifname'])), None)
+        if self.idx is None:
+            self.idx = next(iter(ipr.link_lookup(
+                ifname=self.settings['ifname'])), None)
 
         if self.idx is not None:
             self.iface = next(iter(ipr.get_links(self.idx)), None)

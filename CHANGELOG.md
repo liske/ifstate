@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.2.1
+
+Fixes:
+- fix link lookup by mac address
+
 ## 1.2.0
 
 Changes:
