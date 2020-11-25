@@ -181,6 +181,10 @@
                 "down"
             ]
         },
+        "iface-link_ifalias": {
+            "type": "string",
+            "description": "symbolic name for easy reference"
+        },
         "iface-link_tun-remote4": {
             "type": "string",
             "description": "remote IPv4 address of the tunnel",
@@ -1024,6 +1028,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
                                     }
                                 }
                             },
@@ -1046,6 +1053,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
                                     }
                                 }
                             },
@@ -1073,6 +1083,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
                                     }
                                 }
                             },
@@ -1097,6 +1110,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
                                     },
                                     "link": {
                                         "$ref": "#/definitions/iface-link_link"
@@ -1133,6 +1149,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
+                                    },
                                     "vxlan_id": {
                                         "type": [
                                             "integer"
@@ -1168,6 +1187,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
+                                    },
                                     "ipip_remote": {
                                         "$ref": "#/definitions/iface-link_tun-remote4"
                                     },
@@ -1197,6 +1219,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
                                     },
                                     "sit_remote": {
                                         "$ref": "#/definitions/iface-link_tun-remote4"
@@ -1228,6 +1253,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
                                     },
                                     "gre_remote": {
                                         "$ref": "#/definitions/iface-link_tun-remote4"
@@ -1263,6 +1291,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
+                                    },
                                     "ip6gre_remote": {
                                         "$ref": "#/definitions/iface-link_tun-remote4"
                                     },
@@ -1294,6 +1325,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
                                     },
                                     "geneve_id": {
                                         "type": [
@@ -1348,6 +1382,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
                                     }
                                 }
                             },
@@ -1371,6 +1408,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
                                     },
                                     "xfrm_link": {
                                         "$ref": "#/definitions/iface-link_tun-dev",
