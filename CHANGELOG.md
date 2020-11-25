@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.2.2
+
+Changes:
+- support prefered src address on routes
+
 ## 1.2.1
 
 Changes:

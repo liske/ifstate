@@ -107,6 +107,9 @@ class Tables(collections.abc.Mapping):
         if 'via' in route:
             rt['gateway'] = str(ip_address(route['via']))
 
+        if 'src' in route:
+            rt['prefsrc'] = route['src']
+
         if not rt['table'] in self.tables:
             self.tables[rt['table']] = []
         self.tables[rt['table']].append(rt)
@@ -162,6 +165,9 @@ class Tables(collections.abc.Mapping):
             if route['tos'] != 0:
                 rt['tos'] = route['tos']
 
+            if 'prefsrc' in route:
+                rt['src'] = route['prefsrc']
+
             routes.append(rt)
 
         return routes
@@ -202,6 +208,10 @@ class Tables(collections.abc.Mapping):
             pref = route.get_attr('RTA_PREF')
             if not pref is None:
                 rt['pref'] = pref
+
+            prefsrc = route.get_attr('RTA_PREFSRC')
+            if not prefsrc is None:
+                rt['prefsrc'] = prefsrc
 
             routes.append(rt)
         return routes
