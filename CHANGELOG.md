@@ -2,6 +2,9 @@
 
 ## 1.2.1
 
+Changes:
+- add schema support for ifalias
+
 Fixes:
 - fix link lookup by mac address
 
