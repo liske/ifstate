@@ -259,9 +259,9 @@ class IfState():
     def show(self):
         defaults = deepcopy(Parser._default_ifstates)
 
-        self.ipaddr_ignore = set()
-        for ip in Parser._default_ifstates.get('ignore').get('ipaddr'):
-            self.ipaddr_ignore.add(ip_network(ip))
+        ipaddr_ignore = []
+        for ip in Parser._default_ifstates.get('ignore').get('ipaddr_builtin'):
+            ipaddr_ignore.append(ip_network(ip))
 
         ifs_links = []
         for ipr_link in ipr.get_links():
@@ -279,7 +279,7 @@ class IfState():
                 for addr in ipr.get_addr(index=ipr_link['index']):
                     ip = ip_interface(addr.get_attr(
                         'IFA_ADDRESS') + '/' + str(addr['prefixlen']))
-                    if not any(ip in net for net in self.ipaddr_ignore):
+                    if not any(ip in net for net in ipaddr_ignore):
                         ifs_link['addresses'].append(ip.with_prefixlen)
 
                 info = ipr_link.get_attr('IFLA_LINKINFO')
@@ -303,8 +303,8 @@ class IfState():
                 ifs_links.append(ifs_link)
 
         routing = {
-            'routes': Tables().show_routes(Parser._default_ifstates['ignore']['routes']),
-            'rules': Rules().show_rules(Parser._default_ifstates['ignore']['rules']),
+            'routes': Tables().show_routes(Parser._default_ifstates['ignore']['routes_builtin']),
+            'rules': Rules().show_rules(Parser._default_ifstates['ignore']['rules_builtin']),
         }
 
         return {**defaults, **{'interfaces': ifs_links, 'routing': routing}}

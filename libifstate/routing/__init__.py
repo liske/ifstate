@@ -409,17 +409,17 @@ class Rules():
             }.get(rule['action'], rule['action'])
 
 
-            if 'protocol' in rule:
+            if 'protocol' in rule and rule['protocol'] > 0:
                 rule['proto'] = rule['protocol']
                 del rule['protocol']
 
-            if rule['src_len'] > 0:
+            if 'src_len' in rule and rule['src_len'] > 0:
                 rule['from'] = ip_network(
                     '{}/{}'.format(rule['src'], rule['src_len'])).with_prefixlen
-            del rule['src']
-            del rule['src_len']
-            del rule['family']
-            del rule['tos']
+
+            for key in ['src', 'src_len', 'tos', 'protocol']:
+                if key in rule:
+                    del rule[key]
 
             rules.append(rule)
 
