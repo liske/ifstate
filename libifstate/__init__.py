@@ -256,8 +256,11 @@ class IfState():
             for iface, wireguard in self.wireguard.items():
                 wireguard.apply(do_apply)
 
-    def show(self):
-        defaults = deepcopy(Parser._default_ifstates)
+    def show(self, showall=False):
+        if showall:
+            defaults = deepcopy(Parser._default_ifstates)
+        else:
+            defaults = {}
 
         ipaddr_ignore = []
         for ip in Parser._default_ifstates.get('ignore').get('ipaddr_builtin'):

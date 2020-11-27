@@ -17,6 +17,7 @@ class Actions():
     CHECK = "check"
     APPLY = "apply"
     SHOW = "show"
+    SHOWALL = "showall"
 
 
 def main():
@@ -46,12 +47,12 @@ def main():
     ifslog = IfStateLogging(lvl)
     ifs = IfState()
 
-    if args.action == Actions.SHOW:
+    if args.action in [Actions.SHOW, Actions.SHOWALL]:
         # preserve dict order on python 3.7+
         if sys.version_info >= (3, 7):
             yaml.add_representer(
                 dict, lambda self, data: yaml.representer.SafeRepresenter.represent_dict(self, data.items()))
-        print(yaml.dump(ifs.show()))
+        print(yaml.dump(ifs.show(args.action == Actions.SHOWALL)))
 
         ifslog.quit()
         exit(0)
