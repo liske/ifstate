@@ -302,6 +302,12 @@ class IfState():
                     addr = ipr_link.get_attr('IFLA_ADDRESS')
                     if not addr is None:
                         ifs_link['link']['address'] = addr
+                    permaddr = ipr.get_permaddr(name)
+                    if not permaddr is None:
+                        if addr is None:
+                            ifs_link['link']['addr'] = permaddr
+                        elif addr != permaddr:
+                            ifs_link['link']['permaddr'] = permaddr
 
                 ifs_links.append(ifs_link)
 

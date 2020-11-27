@@ -7,7 +7,17 @@ from pyroute2.netlink import NLM_F_REQUEST
 from pyroute2.netlink import NLM_F_ACK
 from pyroute2.netlink import NLM_F_CREATE
 from pyroute2.netlink import NLM_F_EXCL
+from pyroute2.ethtool.ioctl import SIOCETHTOOL
 
+import socket
+import fcntl
+import struct
+import array
+
+# ethtool helper
+ETHTOOL_GPERMADDR = 0x00000020 # Get permanent hardware address
+L2_ADDRLENGTH = 6 # L2 address length
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 class IPRouteExt(IPRoute):
     def del_filter_by_info(self, index=0, handle=0, info=0, parent=0):
@@ -24,6 +34,35 @@ class IPRouteExt(IPRoute):
             msg_flags=NLM_F_REQUEST |
             NLM_F_ACK | NLM_F_CREATE | NLM_F_EXCL
         ))
+
+    def get_permaddr(self, ifname):
+        data = array.array("B", struct.pack("II", ETHTOOL_GPERMADDR, L2_ADDRLENGTH))
+        data.extend(b'\x00' * L2_ADDRLENGTH)
+
+        ifr = struct.pack('16sP', ifname.encode("utf-8"), data.buffer_info()[0])
+
+        try:
+            r = fcntl.ioctl(sock.fileno(), SIOCETHTOOL, ifr)
+        except OSError:
+            return None
+
+        l2addr = ":".join(format(x, "02x") for x in data[8:])
+        if l2addr == "00:00:00:00:00:00":
+            return None
+
+        return l2addr
+
+    def get_iface_by_permaddr(self, permaddr):
+        ifaces = {}
+
+        for iface in iter(self.get_links()):
+            ifname = iface.get_attr('IFLA_IFNAME')
+            addr = self.get_permaddr(ifname)
+
+            if addr and addr == permaddr:
+                return iface['index']
+
+        return None
 
 
 ipr = IPRouteExt()

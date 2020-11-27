@@ -42,8 +42,12 @@ class Link(ABC):
         self.idx = None
 
         if 'address' in self.settings:
+            self.settings['address'] = self.settings['address'].lower()
             self.idx = next(iter(ipr.link_lookup(
                 address=self.settings['address'])), None)
+        if 'permaddr' in self.settings:
+            self.settings['permaddr'] = self.settings['permaddr'].lower()
+            self.idx = ipr.get_iface_by_permaddr(self.settings['permaddr'])
 
     def _drill_attr(self, data, keys):
         key = keys[0]
