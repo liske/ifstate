@@ -13,7 +13,7 @@ import socket
 from socket import AF_INET, AF_INET6
 
 
-def route_matches(r1, r2, fields=('dst', 'metric', 'proto'), verbose=False, indent=""):
+def route_matches(r1, r2, fields=('dst', 'priority', 'proto'), verbose=False, indent=""):
     return _matches(r1, r2, fields, verbose, indent)
 
 
@@ -101,6 +101,7 @@ class Tables(collections.abc.Mapping):
             'proto': RTLookups.protos.lookup_id(route.get('proto', 3)),
             'realm': RTLookups.realms.lookup_id(route.get('realm', 0)),
             'tos': route.get('tos', 0),
+            'priority': 0
         }
 
         if type(rt['type']) == str:
@@ -114,6 +115,9 @@ class Tables(collections.abc.Mapping):
 
         if 'src' in route:
             rt['prefsrc'] = route['src']
+
+        if 'preference' in route:
+            rt['priority'] = route['preference']
 
         if not rt['table'] in self.tables:
             self.tables[rt['table']] = []
@@ -184,6 +188,10 @@ class Tables(collections.abc.Mapping):
             if rtype != 1:
                 rt['type'] = rt_type[rtype]
 
+            priority = route.get_attr('RTA_PRIORITY')
+            if priority:
+                rt['preference'] = priority
+
             routes.append(rt)
 
         return routes
@@ -212,6 +220,7 @@ class Tables(collections.abc.Mapping):
                 'proto': route['proto'],
                 'realm': route.get_attr('RTA_FLOW', 0),
                 'tos': route['tos'],
+                'priority': 0
             }
 
             gateway = route.get_attr('RTA_GATEWAY')
@@ -229,6 +238,10 @@ class Tables(collections.abc.Mapping):
             prefsrc = route.get_attr('RTA_PREFSRC')
             if not prefsrc is None:
                 rt['prefsrc'] = prefsrc
+
+            priority = route.get_attr('RTA_PRIORITY')
+            if not priority is None:
+                rt['priority'] = priority
 
             routes.append(rt)
         return routes
