@@ -178,6 +178,12 @@
             ],
             "description": "specifies a master device name or index"
         },
+        "iface-link_mtu": {
+            "type": "integer",
+            "description": "change the mtu of the device",
+            "minimum": 552,
+            "maximum": 65536
+        },
         "iface-link_state": {
             "type": "string",
             "description": "set device state",
@@ -1036,6 +1042,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     }
@@ -1067,6 +1076,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     }
@@ -1094,6 +1106,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
                                     },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
@@ -1128,6 +1143,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     }
@@ -1157,6 +1175,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
                                     },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
@@ -1199,6 +1220,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     },
@@ -1240,6 +1264,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     },
@@ -1275,6 +1302,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
                                     },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
@@ -1312,6 +1342,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
                                     },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
@@ -1353,6 +1386,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     },
@@ -1390,6 +1426,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
                                     },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
@@ -1451,6 +1490,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     }
@@ -1479,6 +1521,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
                                     },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"

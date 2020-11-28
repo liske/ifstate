@@ -310,6 +310,10 @@ class IfState():
                         elif addr != permaddr:
                             ifs_link['link']['permaddr'] = permaddr
 
+                mtu = ipr_link.get_attr('IFLA_MTU')
+                if not mtu is None and not mtu in [1500, 65536]:
+                    ifs_link['link']['mtu'] = mtu
+
                 ifs_links.append(ifs_link)
 
         routing = {
