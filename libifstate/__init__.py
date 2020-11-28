@@ -294,11 +294,10 @@ class IfState():
 
                     data = info.get_attr('IFLA_INFO_DATA')
                     # unsupported link type, fallback to raw encoding
-                    if type(data) == str:
-                        ifs_link['link']["info_data"] = data
-                    elif data is not None:
+                    if data is not None and type(data) != str:
                         for k, v in data['attrs']:
-                            ifs_link['link'][ipr_link.nla2name(k)] = v
+                            if k != "UNKNOWN" and v != 0:
+                                ifs_link['link'][ipr_link.nla2name(k)] = v
                 else:
                     ifs_link['link']['kind'] = 'physical'
                     addr = ipr_link.get_attr('IFLA_ADDRESS')
