@@ -438,6 +438,8 @@ class Rules():
                 "FR_ACT_NAT": "nat",
             }.get(rule['action'], rule['action'])
 
+            if rule['action'] == "to_tbl":
+                del rule['action']
 
             if 'protocol' in rule and rule['protocol'] > 0:
                 rule['proto'] = rule['protocol']
