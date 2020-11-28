@@ -6,10 +6,11 @@ title: CLI
 
 ```bash
 usage: ifstatecli [-h] [--version] [-v | -q] [-s] [-c CONFIG]
-                  {apply,check,show}
+                  {apply,check,show,showall}
 
 positional arguments:
-  {apply,check,show}    specifies the action to perform
+  {apply,check,show,showall}
+                        specifies the action to perform
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -51,59 +52,10 @@ The *check* action will parse the config file and does a **dry run** of the *app
 
 ## show
 
-The `show` action will print a configuration for the running network config. The ouput might be used as a starting point for writing configurations and contains the default ignore settings.
+The `show` action will print a configuration for the running network config. The ouput might be used as a starting point for writing configurations.
 
 ```yaml
 # ifstatecli show
-ignore:
-  ipaddr:
-  - fe80::/10
-  ipaddr_dynamic: true
-  ifname:
-  - ^br-[\da-f]{12}
-  - ^docker\d+
-  - ^lo$
-  - ^ppp\d+$
-  - ^veth
-  - ^virbr\d+
-  - ^vrrp\d*\.\d+$
-  routes:
-  - proto: 1
-  - proto: 2
-  - proto: 8
-  - proto: 9
-  - proto: 10
-  - proto: 11
-  - proto: 12
-  - proto: 13
-  - proto: 14
-  - proto: 15
-  - proto: 16
-  - proto: 42
-  - proto: 186
-  - proto: 187
-  - proto: 188
-  - proto: 189
-  - proto: 192
-  - to: ff00::/8
-  rules:
-  - proto: 1
-  - proto: 2
-  - proto: 8
-  - proto: 9
-  - proto: 10
-  - proto: 11
-  - proto: 12
-  - proto: 13
-  - proto: 14
-  - proto: 15
-  - proto: 16
-  - proto: 42
-  - proto: 186
-  - proto: 187
-  - proto: 188
-  - proto: 189
-  - proto: 192
 interfaces:
 - name: eth0
   addresses: []
@@ -137,8 +89,15 @@ interfaces:
     kind: dummy
     state: up
 routing:
-  routes: []
-  rules: []
+  routes:
+  - to: 0.0.0.0/0
+    table: main
+    dev: eno1
 ```
 
 You should consider removing any unnecessary options.
+
+## showall
+
+The `showall` action will print a configuration for the running network config
+including internal default settings from the `ignore` section.

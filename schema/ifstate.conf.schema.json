@@ -159,6 +159,11 @@
                 }
             }
         },
+        "iface-link_address": {
+            "type": "string",
+            "description": "link mac address (xx:xx:xx:xx:xx:xx)",
+            "pattern": "^([a-f0-9]{2}:){5}[a-f0-9]{2}$"
+        },
         "iface-link_link": {
             "type": [
                 "integer",
@@ -1015,13 +1020,46 @@
                                             "ipvlan",
                                             "macvlan",
                                             "macvtap",
-                                            "physical",
                                             "team",
                                             "tuntap",
                                             "vrf",
                                             "vti",
                                             "vti6"
                                         ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Physical network interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "physical"
+                                        ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
+                                    },
+                                    "permaddr": {
+                                        "$ref": "#/definitions/iface-link_address"
                                     },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
@@ -1047,6 +1085,9 @@
                                         "enum": [
                                             "dummy"
                                         ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
                                     },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
@@ -1074,6 +1115,9 @@
                                             "veth",
                                             "vxcan"
                                         ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
                                     },
                                     "peer": {
                                         "$ref": "#/definitions/iface-link_link"
@@ -1104,6 +1148,9 @@
                                         "enum": [
                                             "vlan"
                                         ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
                                     },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
@@ -1143,6 +1190,9 @@
                                             "vxlan"
                                         ]
                                     },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
+                                    },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
                                     },
@@ -1181,6 +1231,9 @@
                                             "ipip"
                                         ]
                                     },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
+                                    },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
                                     },
@@ -1213,6 +1266,9 @@
                                         "enum": [
                                             "sit"
                                         ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
                                     },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
@@ -1247,6 +1303,9 @@
                                             "gre",
                                             "gretap"
                                         ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
                                     },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
@@ -1285,6 +1344,9 @@
                                             "ip6gretap"
                                         ]
                                     },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
+                                    },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
                                     },
@@ -1319,6 +1381,9 @@
                                         "enum": [
                                             "geneve"
                                         ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
                                     },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
@@ -1377,6 +1442,9 @@
                                             "wireguard"
                                         ]
                                     },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
+                                    },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
                                     },
@@ -1402,6 +1470,9 @@
                                         "enum": [
                                             "xfrm"
                                         ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
                                     },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
@@ -2262,6 +2333,29 @@
                         ],
                         "additionalProperties": false,
                         "properties": {
+                            "type": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "description": "the type of this route",
+                                "enum": [
+                                    "unicast",
+                                    "local",
+                                    "broadcast",
+                                    "anycast",
+                                    "multicast",
+                                    "blackhole",
+                                    "unreachable",
+                                    "prohibit",
+                                    "throw",
+                                    "nat",
+                                    "xresolve"
+                                ],
+                                "minimum": 1,
+                                "maximum": 11,
+                                "default": "unicast"
+                            },
                             "dev": {
                                 "type": [
                                     "integer",
@@ -2298,6 +2392,9 @@
                                 "type": "string"
                             },
                             "via": {
+                                "type": "string"
+                            },
+                            "src": {
                                 "type": "string"
                             }
                         }
