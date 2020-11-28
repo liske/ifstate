@@ -6,6 +6,7 @@ from libifstate.sysctl import Sysctl
 from libifstate.parser import Parser
 from libifstate.tc import TC
 
+from pyroute2.netlink.rtnl.ifaddrmsg import IFA_F_PERMANENT
 from pyroute2.netlink.exceptions import NetlinkError
 try:
     from libifstate.wireguard import WireGuard
@@ -263,14 +264,14 @@ class IfState():
             defaults = {}
 
         ipaddr_ignore = []
-        for ip in Parser._default_ifstates.get('ignore').get('ipaddr_builtin'):
+        for ip in Parser._default_ifstates['ignore']['ipaddr_builtin']:
             ipaddr_ignore.append(ip_network(ip))
 
         ifs_links = []
         for ipr_link in ipr.get_links():
             name = ipr_link.get_attr('IFLA_IFNAME')
             # skip links on ignore list
-            if not any(re.match(regex, name) for regex in Parser._default_ifstates['ignore'].get('ifname', [])):
+            if not any(re.match(regex, name) for regex in Parser._default_ifstates['ignore']['ifname_builtin']):
                 ifs_link = {
                     'name': name,
                     'addresses': [],
@@ -280,10 +281,11 @@ class IfState():
                 }
 
                 for addr in ipr.get_addr(index=ipr_link['index']):
-                    ip = ip_interface(addr.get_attr(
-                        'IFA_ADDRESS') + '/' + str(addr['prefixlen']))
-                    if not any(ip in net for net in ipaddr_ignore):
-                        ifs_link['addresses'].append(ip.with_prefixlen)
+                    if addr['flags'] & IFA_F_PERMANENT == IFA_F_PERMANENT:
+                        ip = ip_interface(addr.get_attr(
+                            'IFA_ADDRESS') + '/' + str(addr['prefixlen']))
+                        if not any(ip in net for net in ipaddr_ignore):
+                            ifs_link['addresses'].append(ip.with_prefixlen)
 
                 info = ipr_link.get_attr('IFLA_LINKINFO')
                 if info is not None:
