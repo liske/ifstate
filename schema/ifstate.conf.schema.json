@@ -178,6 +178,12 @@
             ],
             "description": "specifies a master device name or index"
         },
+        "iface-link_mtu": {
+            "type": "integer",
+            "description": "change the mtu of the device",
+            "minimum": 68,
+            "maximum": 65536
+        },
         "iface-link_state": {
             "type": "string",
             "description": "set device state",
@@ -1036,6 +1042,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     }
@@ -1067,6 +1076,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     }
@@ -1094,6 +1106,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
                                     },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
@@ -1128,6 +1143,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     }
@@ -1157,6 +1175,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
                                     },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
@@ -1199,6 +1220,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     },
@@ -1240,6 +1264,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     },
@@ -1275,6 +1302,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
                                     },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
@@ -1312,6 +1342,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
                                     },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
@@ -1353,6 +1386,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     },
@@ -1390,6 +1426,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
                                     },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
@@ -1451,6 +1490,9 @@
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
                                     },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
                                     }
@@ -1479,6 +1521,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
                                     },
                                     "ifalias": {
                                         "$ref": "#/definitions/iface-link_ifalias"
@@ -2334,11 +2379,11 @@
                         "additionalProperties": false,
                         "properties": {
                             "type": {
+                                "description": "the type of this route",
                                 "type": [
                                     "integer",
                                     "string"
                                 ],
-                                "description": "the type of this route",
                                 "enum": [
                                     "unicast",
                                     "local",
@@ -2357,12 +2402,14 @@
                                 "default": "unicast"
                             },
                             "dev": {
+                                "description": "the output device name",
                                 "type": [
                                     "integer",
                                     "string"
                                 ]
                             },
                             "proto": {
+                                "description": "the routing protool identifier of this route",
                                 "type": [
                                     "integer",
                                     "string"
@@ -2370,18 +2417,21 @@
                                 "default": "boot"
                             },
                             "realm": {
+                                "description": "the realm to which this route is assigned",
                                 "type": [
                                     "integer",
                                     "string"
                                 ]
                             },
                             "scope": {
+                                "description": "the scope of the destinations covered by the route prefix",
                                 "type": [
                                     "integer",
                                     "string"
                                 ]
                             },
                             "table": {
+                                "description": "the table to add this route to",
                                 "type": [
                                     "integer",
                                     "string"
@@ -2389,13 +2439,25 @@
                                 "default": "main"
                             },
                             "to": {
+                                "description": "the destination prefix of the route",
                                 "type": "string"
                             },
                             "via": {
-                                "type": "string"
+                                "description": "address of the nexthop router",
+                                "type": "string",
+                                "format": "ipv4,ipv6"
                             },
                             "src": {
-                                "type": "string"
+                                "description": "the source address to prefer",
+                                "type": "string",
+                                "format": "ipv4,ipv6"
+                            },
+                            "preference": {
+                                "description": "preference of the route",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 0
                             }
                         }
                     }
