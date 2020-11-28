@@ -2334,11 +2334,11 @@
                         "additionalProperties": false,
                         "properties": {
                             "type": {
+                                "description": "the type of this route",
                                 "type": [
                                     "integer",
                                     "string"
                                 ],
-                                "description": "the type of this route",
                                 "enum": [
                                     "unicast",
                                     "local",
@@ -2357,12 +2357,14 @@
                                 "default": "unicast"
                             },
                             "dev": {
+                                "description": "the output device name",
                                 "type": [
                                     "integer",
                                     "string"
                                 ]
                             },
                             "proto": {
+                                "description": "the routing protool identifier of this route",
                                 "type": [
                                     "integer",
                                     "string"
@@ -2370,18 +2372,21 @@
                                 "default": "boot"
                             },
                             "realm": {
+                                "description": "the realm to which this route is assigned",
                                 "type": [
                                     "integer",
                                     "string"
                                 ]
                             },
                             "scope": {
+                                "description": "the scope of the destinations covered by the route prefix",
                                 "type": [
                                     "integer",
                                     "string"
                                 ]
                             },
                             "table": {
+                                "description": "the table to add this route to",
                                 "type": [
                                     "integer",
                                     "string"
@@ -2389,13 +2394,18 @@
                                 "default": "main"
                             },
                             "to": {
+                                "description": "the destination prefix of the route",
                                 "type": "string"
                             },
                             "via": {
-                                "type": "string"
+                                "description": "address of the nexthop router",
+                                "type": "string",
+                                "format": "ipv4,ipv6"
                             },
                             "src": {
-                                "type": "string"
+                                "description": "the source address to prefer",
+                                "type": "string",
+                                "format": "ipv4,ipv6"
                             },
                             "preference": {
                                 "description": "preference of the route",
