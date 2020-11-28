@@ -2333,6 +2333,29 @@
                         ],
                         "additionalProperties": false,
                         "properties": {
+                            "type": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "description": "the type of this route",
+                                "enum": [
+                                    "unicast",
+                                    "local",
+                                    "broadcast",
+                                    "anycast",
+                                    "multicast",
+                                    "blackhole",
+                                    "unreachable",
+                                    "prohibit",
+                                    "throw",
+                                    "nat",
+                                    "xresolve"
+                                ],
+                                "minimum": 1,
+                                "maximum": 11,
+                                "default": "unicast"
+                            },
                             "dev": {
                                 "type": [
                                     "integer",

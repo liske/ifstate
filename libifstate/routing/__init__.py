@@ -3,6 +3,7 @@ from libifstate.exception import RouteDupblicate
 from ipaddress import ip_address, ip_network
 from pyroute2.netlink.exceptions import NetlinkError
 from pyroute2.netlink.rtnl.fibmsg import FR_ACT_VALUES
+from pyroute2.netlink.rtnl import rt_type
 import collections.abc
 from glob import glob
 import os
@@ -94,12 +95,16 @@ class Tables(collections.abc.Mapping):
     def add(self, route):
         rt = {
             'table': RTLookups.tables.lookup_id(route.get('table', 254)),
+            'type': route.get('type', 'unicast'),
             'dst': ip_network(route['to']).with_prefixlen,
             'scope': RTLookups.scopes.lookup_id(route.get('scope', 0)),
             'proto': RTLookups.protos.lookup_id(route.get('proto', 3)),
             'realm': RTLookups.realms.lookup_id(route.get('realm', 0)),
             'tos': route.get('tos', 0),
         }
+
+        if type(rt['type']) == str:
+            rt['type'] = rt_type[rt['type']]
 
         if 'dev' in route:
             rt['oif'] = route['dev']
@@ -141,8 +146,10 @@ class Tables(collections.abc.Mapping):
 
             rt = {
                 'to': dst,
-                'table': RTLookups.tables.lookup_str(table),
             }
+
+            if table != 254:
+                rt['table'] = RTLookups.tables.lookup_str(table),
 
             dev = route.get_attr('RTA_OIF')
             if dev:
@@ -151,6 +158,10 @@ class Tables(collections.abc.Mapping):
                     rt['dev'] = link.get_attr('IFLA_IFNAME', dev)
                 else:
                     rt['dev'] = dev
+
+            via = route.get_attr('RTA_GATEWAY')
+            if via:
+                rt['via'] = via
 
             realm = route.get_attr('RTA_FLOW')
             if realm:
@@ -165,8 +176,13 @@ class Tables(collections.abc.Mapping):
             if route['tos'] != 0:
                 rt['tos'] = route['tos']
 
-            if 'prefsrc' in route:
-                rt['src'] = route['prefsrc']
+            src = route.get_attr('RTA_PREFSRC')
+            if src:
+                rt['src'] = src
+
+            rtype = route['type']
+            if rtype != 1:
+                rt['type'] = rt_type[rtype]
 
             routes.append(rt)
 
@@ -189,6 +205,7 @@ class Tables(collections.abc.Mapping):
 
             rt = {
                 'table': route.get_attr('RTA_TABLE'),
+                'type': route['type'],
                 'dst': dst,
                 'oif': route.get_attr('RTA_OIF'),
                 'scope': route['scope'],
