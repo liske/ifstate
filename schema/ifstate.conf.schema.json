@@ -181,7 +181,7 @@
         "iface-link_mtu": {
             "type": "integer",
             "description": "change the mtu of the device",
-            "minimum": 552,
+            "minimum": 68,
             "maximum": 65536
         },
         "iface-link_state": {
