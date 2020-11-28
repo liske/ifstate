@@ -1,9 +1,18 @@
 # ChangeLog
 
-## 1.2.2
+## 1.3.0
 
 Changes:
 - support prefered src address on routes
+- support preference on routes
+- support mtu setting on links
+- support permanent address support on links
+- improve show command output, drop unset values
+- apply builtin filters on show command
+- add the showall command to view builtin settings
+
+Fixes:
+- fix broken show command
 
 ## 1.2.1
 
