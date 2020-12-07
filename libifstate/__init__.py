@@ -313,6 +313,10 @@ class IfState():
                         elif addr != permaddr:
                             ifs_link['link']['permaddr'] = permaddr
 
+                master = ipr_link.get_attr('IFLA_MASTER')
+                if master is not None:
+                    ifs_link['link']['master'] = ipr.get_ifname_by_index(master)
+
                 mtu = ipr_link.get_attr('IFLA_MTU')
                 if not mtu is None and not mtu in [1500, 65536]:
                     ifs_link['link']['mtu'] = mtu

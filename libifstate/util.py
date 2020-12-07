@@ -15,9 +15,10 @@ import struct
 import array
 
 # ethtool helper
-ETHTOOL_GPERMADDR = 0x00000020 # Get permanent hardware address
-L2_ADDRLENGTH = 6 # L2 address length
+ETHTOOL_GPERMADDR = 0x00000020  # Get permanent hardware address
+L2_ADDRLENGTH = 6  # L2 address length
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
 
 class IPRouteExt(IPRoute):
     def del_filter_by_info(self, index=0, handle=0, info=0, parent=0):
@@ -36,10 +37,12 @@ class IPRouteExt(IPRoute):
         ))
 
     def get_permaddr(self, ifname):
-        data = array.array("B", struct.pack("II", ETHTOOL_GPERMADDR, L2_ADDRLENGTH))
+        data = array.array("B", struct.pack(
+            "II", ETHTOOL_GPERMADDR, L2_ADDRLENGTH))
         data.extend(b'\x00' * L2_ADDRLENGTH)
 
-        ifr = struct.pack('16sP', ifname.encode("utf-8"), data.buffer_info()[0])
+        ifr = struct.pack('16sP', ifname.encode(
+            "utf-8"), data.buffer_info()[0])
 
         try:
             r = fcntl.ioctl(sock.fileno(), SIOCETHTOOL, ifr)
@@ -53,8 +56,6 @@ class IPRouteExt(IPRoute):
         return l2addr
 
     def get_iface_by_permaddr(self, permaddr):
-        ifaces = {}
-
         for iface in iter(self.get_links()):
             ifname = iface.get_attr('IFLA_IFNAME')
             addr = self.get_permaddr(ifname)
@@ -63,6 +64,14 @@ class IPRouteExt(IPRoute):
                 return iface['index']
 
         return None
+
+    def get_ifname_by_index(self, index):
+        link = next(iter(ipr.get_links(index)), None)
+
+        if link is None:
+            return index
+
+        return link.get_attr('IFLA_IFNAME')
 
 
 ipr = IPRouteExt()
