@@ -288,8 +288,11 @@ class IfState():
                             ifs_link['addresses'].append(ip.with_prefixlen)
 
                 info = ipr_link.get_attr('IFLA_LINKINFO')
-                if info is not None:
+                if info is None:
+                    kind = None
+                else:
                     kind = info.get_attr('IFLA_INFO_KIND')
+                if kind is not None:
                     ifs_link['link']['kind'] = kind
 
                     data = info.get_attr('IFLA_INFO_DATA')
