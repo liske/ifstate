@@ -1,5 +1,13 @@
 # ChangeLog
 
+## 1.3.1
+
+Fixes:
+- several bugs in show command:
+  - show missing master device
+  - ignore non-scalar link attributes
+  - fix kind None for some physical devices
+
 ## 1.3.0
 
 Changes:
