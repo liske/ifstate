@@ -2343,7 +2343,7 @@
                                             "description": "initial endpoint IP or hostname",
                                             "type": "string"
                                         },
-                                        "persistent_keepalive": {
+                                        "persistent_keepalive_interval": {
                                             "description": "keepalive interval seconds",
                                             "type": "integer",
                                             "minimum": 0,
