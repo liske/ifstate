@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 1.x.y
+## 1.3.2
 
 Fixes:
 - wireguard: fix name of persistent_keepalive_interval
