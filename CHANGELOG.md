@@ -4,6 +4,7 @@
 
 Fixes:
 - wireguard: fix name of persistent_keepalive_interval
+- link: add permaddr to kernel iface settings before for compare
 
 ## 1.3.1
 

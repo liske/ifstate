@@ -62,8 +62,8 @@ class Link(ABC):
             return None
 
     def get_if_attr(self, key):
-        if key == "state":
-            return self.iface['state']
+        if key in ["state", "permaddr"]:
+            return self.iface[key]
 
         if key in self.attr_map:
             return self._drill_attr(self.iface, self.attr_map[key])
@@ -181,6 +181,9 @@ class Link(ABC):
 
         if self.idx is not None:
             self.iface = next(iter(ipr.get_links(self.idx)), None)
+            permaddr = ipr.get_permaddr(self.iface.get_attr('IFLA_IFNAME'))
+            if not permaddr is None:
+                self.iface['permaddr'] = permaddr
 
             # check for ifname collisions
             idx = next(iter(ipr.link_lookup(
