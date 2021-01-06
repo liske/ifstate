@@ -1068,7 +1068,13 @@
                                         "$ref": "#/definitions/iface-link_address"
                                     },
                                     "permaddr": {
+                                        "description": "select interface by permanent address [ethtool -P]",
                                         "$ref": "#/definitions/iface-link_address"
+                                    },
+                                    "businfo": {
+                                        "description": "select interface by bus info [ethtool -i]",
+                                        "type": "string",
+                                        "maxLength": 32
                                     },
                                     "state": {
                                         "$ref": "#/definitions/iface-link_state"
