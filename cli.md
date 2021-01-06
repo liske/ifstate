@@ -62,12 +62,14 @@ interfaces:
   link:
     kind: physical
     address: 8c:16:45:3c:f1:42
+    businfo: 0000:00:1f.6
     state: up
 - name: wlan0
   addresses: []
   link:
     kind: physical
     address: 8c:16:54:15:aa:21
+    businfo: 0000:05:00.0
     state: down
 - name: eth0.10
   addresses:

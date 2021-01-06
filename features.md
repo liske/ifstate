@@ -8,8 +8,9 @@ The following features are already available:
 
 - operates idempotent
 - basic interfaces settings
-  - rename static interfaces by mac address
-  - set interface state
+- identify explicit physical interfaces by:
+  - permanent mac address (`ethtool -P`) [≥ 1.3.0]
+  - bus information (`ethtool -i`) [≥ 1.4.0]
 - create and configure interfaces
   - supports many [interface types](schema/#interfaces_items_link)
 - configure ip addresses
