@@ -312,6 +312,9 @@ class IfState():
                             ifs_link['link']['addr'] = permaddr
                         elif addr != permaddr:
                             ifs_link['link']['permaddr'] = permaddr
+                    businfo = ipr.get_businfo(name)
+                    if not businfo is None:
+                        ifs_link['link']['businfo'] = businfo
 
                 master = ipr_link.get_attr('IFLA_MASTER')
                 if master is not None:

@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.4.0
+
+Changes:
+- support bus_info link identification [ethtool -i]
+
 ## 1.3.2
 
 Fixes:
@@ -20,7 +25,7 @@ Changes:
 - support prefered src address on routes
 - support preference on routes
 - support mtu setting on links
-- support permanent address support on links
+- support permanent address link identification [ethtool -P]
 - improve show command output, drop unset values
 - apply builtin filters on show command
 - add the showall command to view builtin settings

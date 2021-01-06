@@ -48,6 +48,8 @@ class Link(ABC):
         if 'permaddr' in self.settings:
             self.settings['permaddr'] = self.settings['permaddr'].lower()
             self.idx = ipr.get_iface_by_permaddr(self.settings['permaddr'])
+        if 'businfo' in self.settings:
+            self.idx = ipr.get_iface_by_businfo(self.settings['businfo'])
 
     def _drill_attr(self, data, keys):
         key = keys[0]
