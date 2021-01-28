@@ -65,7 +65,7 @@ class Link(ABC):
             return None
 
     def get_if_attr(self, key):
-        if key in ["state", "permaddr"]:
+        if key in ["state", "permaddr", "businfo"]:
             return self.iface[key]
 
         if key in self.attr_map:
@@ -187,6 +187,9 @@ class Link(ABC):
             permaddr = ipr.get_permaddr(self.iface.get_attr('IFLA_IFNAME'))
             if not permaddr is None:
                 self.iface['permaddr'] = permaddr
+            businfo = ipr.get_businfo(self.iface.get_attr('IFLA_IFNAME'))
+            if not businfo is None:
+                self.iface['businfo'] = businfo
 
             # check for ifname collisions
             idx = next(iter(ipr.link_lookup(
