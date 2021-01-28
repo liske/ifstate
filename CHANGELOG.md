@@ -1,5 +1,13 @@
 # ChangeLog
 
+## 1.x.x
+
+Fixes:
+- wireguard: fix broken apply iface settings
+- link: supress exceptions on unsupported permaddr or businfo
+- link: make businfo available in iface settings check
+- link: make businfo lower case
+
 ## 1.4.0
 
 Changes:
