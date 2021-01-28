@@ -66,7 +66,10 @@ class Link(ABC):
 
     def get_if_attr(self, key):
         if key in ["state", "permaddr", "businfo"]:
-            return self.iface[key]
+            if key in self.iface:
+                return self.iface[key]
+            else:
+                return None
 
         if key in self.attr_map:
             return self._drill_attr(self.iface, self.attr_map[key])
