@@ -42,7 +42,8 @@ class WireGuard():
                         'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
             if do_apply:
                 try:
-                    wg.set_interface(self.iface, **self.wireguard)
+                    wg.set_interface(
+                        self.iface, **{k: v for k, v in self.wireguard.items() if k != "peers"})
                 except NetlinkError as err:
                     logger.warning('updating iface {} failed: {}'.format(
                         self.iface, err.args[1]))
