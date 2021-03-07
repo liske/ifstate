@@ -1,6 +1,10 @@
 # ChangeLog
 
-## 1.x.x
+## 1.5.x
+
+Changes:
+- vrrp: add support for failover link setups, design to work with
+        keepalived's notify script interface
 
 Fixes:
 - wireguard: fix broken apply iface settings
