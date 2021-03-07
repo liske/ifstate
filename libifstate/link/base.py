@@ -26,7 +26,7 @@ class Link(ABC):
         return super().__new__(GenericLink)
         #raise LinkTypeUnknown()
 
-    def __init__(self, name, link, ethtool):
+    def __init__(self, name, link, ethtool, vrrp):
         self.cap_create = True
         self.cap_ethtool = False
         self.settings = {
@@ -34,6 +34,7 @@ class Link(ABC):
         }
         self.settings.update(link)
         self.ethtool = None
+        self.vrrp = vrrp
         self.attr_map = {
             'kind': ['IFLA_LINKINFO', 'IFLA_INFO_KIND'],
         }
@@ -170,6 +171,15 @@ class Link(ABC):
                     yaml.dump(self.ethtool[setting], fh)
             except Exception as err:
                 logger.warning('failed write `{}`: {}'.format(fn, err.args[1]))
+
+    def has_vrrp(self):
+        return not self.vrrp is None
+
+    def match_vrrp_select(self, vrrp_type, vrrp_name):
+        return self.has_vrrp() and (self.vrrp['type'] == vrrp_type) and (self.vrrp['name'] == vrrp_name)
+
+    def match_vrrp_state(self, vrrp_type, vrrp_name, vrrp_state):
+        return self.match_vrrp_select(vrrp_type, vrrp_name) and (vrrp_state in self.vrrp['states'])
 
     def apply(self, do_apply):
         excpts = ExceptionCollector()
@@ -377,5 +387,5 @@ class Link(ABC):
 
 
 class GenericLink(Link):
-    def __init__(self, name, link, ethtool):
-        super().__init__(name, link, ethtool)
+    def __init__(self, name, link, ethtool, vrrp):
+        super().__init__(name, link, ethtool, vrrp)

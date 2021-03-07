@@ -18,6 +18,7 @@ class Actions():
     APPLY = "apply"
     SHOW = "show"
     SHOWALL = "showall"
+    VRRP = "vrrp"
 
 
 def main():
@@ -33,8 +34,19 @@ def main():
                         help="ignore schema validation errors, expect ifstatecli to trigger internal exceptions")
     parser.add_argument("-c", "--config", type=str,
                         default="/etc/ifstate/config.yml", help="configuration YaML filename")
-    parser.add_argument("action", choices=list(a.lower() for a in dir(
-        Actions) if not a.startswith('_')), help="specifies the action to perform")
+    subparsers = parser.add_subparsers(
+        dest='action', required=True, help="specifies the action to perform")
+
+    action_parsers = {
+        a.lower(): subparsers.add_parser(a.lower()) for a in dir(Actions) if not a.startswith('_')
+    }
+
+    action_parsers[Actions.VRRP].add_argument(
+        "vrrp_type", choices=["group", "instance"], help="type of vrrp notification")
+    action_parsers[Actions.VRRP].add_argument(
+        "vrrp_name", type=str, help="name of the vrrp group or instance")
+    action_parsers[Actions.VRRP].add_argument(
+        "vrrp_state", choices=["unknown", "fault", "backup", "master"], help="the new state for the vrrp group or instance")
 
     args = parser.parse_args()
     if args.verbose:
@@ -57,7 +69,7 @@ def main():
         ifslog.quit()
         exit(0)
 
-    if args.action in [Actions.CHECK, Actions.APPLY]:
+    if args.action in [Actions.CHECK, Actions.APPLY, Actions.VRRP]:
         try:
             parser = YamlParser(args.config)
         except ParserOpenError as ex:
@@ -99,7 +111,11 @@ def main():
             signal.signal(signal.SIGPIPE, signal.SIG_IGN)
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
             try:
-                ifs.apply()
+                if args.action == Actions.APPLY:
+                    ifs.apply()
+                elif args.action == Actions.VRRP:
+                    ifs.apply(
+                        args.vrrp_type, args.vrrp_name, args.vrrp_state)
             except LinkNoConfigFound:
                 pass
 

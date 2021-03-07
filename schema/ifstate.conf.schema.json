@@ -1003,6 +1003,45 @@
                             ]
                         }
                     },
+                    "vrrp": {
+                        "description": "interface depending on vrrp status",
+                        "type": "object",
+                        "required": [
+                            "name",
+                            "type",
+                            "states"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                            "name": {
+                                "description": "related vrrp INSTANCE or GROUP name",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "failover type",
+                                "type": "string",
+                                "enum": [
+                                    "instance",
+                                    "group"
+                                ]
+                            },
+                            "states": {
+                                "description": "states at which the interface should be configured",
+                                "type": "array",
+                                "items": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "unknown",
+                                            "fault",
+                                            "backup",
+                                            "master"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
                     "link": {
                         "description": "link settings of the interface",
                         "type": "object",
