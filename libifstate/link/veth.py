@@ -3,8 +3,8 @@ from libifstate.link.base import Link
 from libifstate.exception import LinkCannotAdd
 
 class VethLink(Link):
-    def __init__(self, name, link, ethtool):
-        super().__init__(name, link, ethtool)
+    def __init__(self, name, link, ethtool, vrrp):
+        super().__init__(name, link, ethtool, vrrp)
 
     # quirk to handle peer attribute
     def get_if_attr(self, key):

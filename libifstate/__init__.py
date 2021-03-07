@@ -37,6 +37,11 @@ class IfState():
         self.links = {}
         self.addresses = {}
         self.ignore = {}
+        self.vrrp = {
+            'links': [],
+            'group': {},
+            'instance': {},
+        }
         self.tables = None
         self.rules = None
         self.sysctl = Sysctl()
@@ -93,7 +98,7 @@ class IfState():
                 raise LinkDuplicate()
             if 'link' in ifstate:
                 self.links[name] = Link(
-                    name, ifstate['link'], ifstate.get('ethtool'))
+                    name, ifstate['link'], ifstate.get('ethtool'), ifstate.get('vrrp'))
             else:
                 self.links[name] = None
 
@@ -101,6 +106,18 @@ class IfState():
                 self.addresses[name] = Addresses(name, ifstate['addresses'])
             else:
                 self.addresses[name] = None
+
+            if 'vrrp' in ifstate:
+                ktype = ifstate['vrrp']['type']
+                kname = ifstate['vrrp']['name']
+                kstates = ifstate['vrrp']['states']
+                if not kname in self.vrrp[ktype]:
+                    self.vrrp[ktype][kname] = {}
+                for kstate in kstates:
+                    if not kstate in self.vrrp[ktype][kname]:
+                        self.vrrp[ktype][kname][kstate] = []
+                    self.vrrp[ktype][kname][kstate].append(name)
+                self.vrrp['links'].append(name)
 
             if 'sysctl' in ifstate:
                 self.sysctl.add(name, ifstate['sysctl'])
@@ -132,13 +149,30 @@ class IfState():
         # add ignore list items
         self.ignore.update(ifstates['ignore'])
 
-    def apply(self):
-        self._apply(True)
+    def apply(self, vrrp_type=None, vrrp_name=None, vrrp_state=None):
+        self._apply(True, vrrp_type, vrrp_name, vrrp_state)
 
-    def check(self):
-        self._apply(False)
+    def check(self, vrrp_type=None, vrrp_name=None, vrrp_state=None):
+        self._apply(False, vrrp_type, vrrp_name, vrrp_state)
+        self._apply(False, [])
 
-    def _apply(self, do_apply):
+    def _apply(self, do_apply, vrrp_type, vrrp_name, vrrp_state):
+        vrrp_ignore = []
+        vrrp_remove = []
+
+        by_vrrp = not None in [
+            vrrp_type, vrrp_name, vrrp_state]
+
+        for ifname, link in self.links.items():
+            if ifname in self.vrrp['links']:
+                if not by_vrrp:
+                    vrrp_ignore.append(ifname)
+                else:
+                    if not link.match_vrrp_select(vrrp_type, vrrp_name):
+                        vrrp_ignore.append(ifname)
+                    elif not vrrp_name in self.vrrp[vrrp_type] or not vrrp_state in self.vrrp[vrrp_type][vrrp_name] or not ifname in self.vrrp[vrrp_type][vrrp_name][vrrp_state]:
+                        vrrp_remove.append(ifname)
+
         self.ipaddr_ignore = set()
         for ip in self.ignore.get('ipaddr', []):
             self.ipaddr_ignore.add(ip_network(ip))
@@ -155,15 +189,25 @@ class IfState():
         for stage in range(2):
             if stage == 0:
                 logger.info("\nconfiguring interface links")
+
+                for ifname in vrrp_remove:
+                    logger.debug('to be removed due to vrrp constraint',
+                                 extra={'iface': ifname})
+                    del self.links[ifname]
             else:
                 logger.info("\nconfiguring interface links (stage 2)")
 
             retry = False
             applied = []
-            while len(applied) < len(self.links):
+            while len(applied) + len(vrrp_ignore) < len(self.links):
                 last = len(applied)
                 for name, link in self.links.items():
                     if name in applied:
+                        continue
+
+                    if name in vrrp_ignore:
+                        logger.debug('skipped due to vrrp constraint',
+                                     extra={'iface': name})
                         continue
 
                     if link is None:
@@ -201,6 +245,9 @@ class IfState():
                                     name, err.args[1]))
                     # shutdown physical interfaces
                     else:
+                        if name in vrrp_ignore:
+                            logger.warning('vrrp', extra={
+                                'iface': name, 'style': IfStateLogging.STYLE_OK})
                         if link.get('state') == 'down':
                             logger.warning('orphan', extra={
                                 'iface': name, 'style': IfStateLogging.STYLE_OK})
@@ -221,7 +268,10 @@ class IfState():
             logger.info("\nconfiguring interface traffic control...")
 
             for name, tc in self.tc.items():
-                if tc is None:
+                if name in vrrp_ignore:
+                    logger.debug('skipped due to vrrp constraint',
+                                 extra={'iface': name})
+                elif tc is None:
                     logger.debug('skipped due to no tc settings', extra={
                                  'iface': name})
                 else:
@@ -237,7 +287,10 @@ class IfState():
                     self.addresses[name] = Addresses(name, [])
 
             for name, addresses in self.addresses.items():
-                if addresses is None:
+                if name in vrrp_ignore:
+                    logger.debug('skipped due to vrrp constraint',
+                                 extra={'iface': name})
+                elif addresses is None:
                     logger.debug('skipped due to no address settings', extra={
                                  'iface': name})
                 else:
@@ -255,6 +308,10 @@ class IfState():
         if len(self.wireguard):
             logger.info("\nconfiguring WireGuard...")
             for iface, wireguard in self.wireguard.items():
+                if iface in vrrp_ignore:
+                    logger.debug('skipped due to vrrp constraint',
+                                 extra={'iface': name})
+                    continue
                 wireguard.apply(do_apply)
 
     def show(self, showall=False):
