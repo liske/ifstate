@@ -172,6 +172,8 @@ class IfState():
                         vrrp_ignore.append(ifname)
                     elif not vrrp_name in self.vrrp[vrrp_type] or not vrrp_state in self.vrrp[vrrp_type][vrrp_name] or not ifname in self.vrrp[vrrp_type][vrrp_name][vrrp_state]:
                         vrrp_remove.append(ifname)
+            elif by_vrrp:
+                vrrp_ignore.append(ifname)
 
         self.ipaddr_ignore = set()
         for ip in self.ignore.get('ipaddr', []):
