@@ -5,9 +5,11 @@ from libifstate import __version__, IfState
 from libifstate.exception import FeatureMissingError, LinkNoConfigFound, ParserValidationError, ParserOpenError, ParserIncludeError
 from libifstate.util import logger, IfStateLogging
 from collections import namedtuple
+from copy import deepcopy
 
 import argparse
 import logging
+import re
 import signal
 import sys
 import yaml
@@ -19,6 +21,7 @@ class Actions():
     SHOW = "show"
     SHOWALL = "showall"
     VRRP = "vrrp"
+    VRRP_FIFO = "vrrp-fifo"
 
 
 def main():
@@ -38,15 +41,20 @@ def main():
         dest='action', required=True, help="specifies the action to perform")
 
     action_parsers = {
-        a.lower(): subparsers.add_parser(a.lower()) for a in dir(Actions) if not a.startswith('_')
+        a.lower().replace("_", "-"): subparsers.add_parser(a.lower().replace("_", "-")) for a in dir(Actions) if not a.startswith('_')
     }
 
+    # Parameters for the vrrp action
     action_parsers[Actions.VRRP].add_argument(
-        "vrrp_type", choices=["group", "instance"], help="type of vrrp notification")
+        "type", type=str.lower, choices=["group", "instance"], help="type of vrrp notification")
     action_parsers[Actions.VRRP].add_argument(
-        "vrrp_name", type=str, help="name of the vrrp group or instance")
+        "name", type=str, help="name of the vrrp group or instance")
     action_parsers[Actions.VRRP].add_argument(
-        "vrrp_state", choices=["unknown", "fault", "backup", "master"], help="the new state for the vrrp group or instance")
+        "state", type=str.lower, choices=["unknown", "fault", "backup", "master"], help="the new state for the vrrp group or instance")
+
+    # Parameters for the vrrp-fifo action
+    action_parsers[Actions.VRRP_FIFO].add_argument(
+        "fifo", type=str, help="named FIFO to read state changes from")
 
     args = parser.parse_args()
     if args.verbose:
@@ -69,7 +77,7 @@ def main():
         ifslog.quit()
         exit(0)
 
-    if args.action in [Actions.CHECK, Actions.APPLY, Actions.VRRP]:
+    if args.action in [Actions.CHECK, Actions.APPLY, Actions.VRRP, Actions.VRRP_FIFO]:
         try:
             parser = YamlParser(args.config)
         except ParserOpenError as ex:
@@ -105,6 +113,22 @@ def main():
                 ifs.check()
             except LinkNoConfigFound:
                 pass
+        elif args.action == Actions.VRRP_FIFO:
+            status_pattern = re.compile(
+                r'(group|instance) "([^"]+)" (unknown|fault|backup|master)$', re.IGNORECASE)
+
+            with open(args.fifo) as fifo:
+                for line in fifo:
+                    m = status_pattern.match(line.strip())
+                    if m:
+                        signal.signal(signal.SIGHUP, signal.SIG_IGN)
+                        signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+                        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+                        try:
+                            ifs_tmp = deepcopy(ifs)
+                            ifs_tmp.apply(m.group(1), m.group(2), m.group(3))
+                        except:
+                            pass
         else:
             # ignore some well-known signals to prevent interruptions (i.e. due to ssh connection loss)
             signal.signal(signal.SIGHUP, signal.SIG_IGN)
@@ -115,7 +139,7 @@ def main():
                     ifs.apply()
                 elif args.action == Actions.VRRP:
                     ifs.apply(
-                        args.vrrp_type, args.vrrp_name, args.vrrp_state)
+                        args.type, args.name, args.state)
             except LinkNoConfigFound:
                 pass
 
