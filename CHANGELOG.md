@@ -5,6 +5,7 @@
 Changes:
 - vrrp: add support for failover link setups, design to work with
         keepalived's notify script interface
+- ignore: add proto keepalived(18) to builtin lists
 
 Fixes:
 - wireguard: fix broken apply iface settings
