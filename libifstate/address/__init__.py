@@ -21,23 +21,26 @@ class Addresses():
 
         # get active ip addresses
         ipr_addr = {}
+        addr_add = []
         for addr in ipr.get_addr(index=idx):
             ip = ip_interface(addr.get_attr('IFA_ADDRESS') + '/' + str(addr['prefixlen']))
             ipr_addr[ip] = addr
 
         for addr in self.addresses:
-            ip = str(addr.ip)
             if addr in ipr_addr:
-                logger.info('%s', addr.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
+                logger.info(' %s', addr.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
                 del ipr_addr[addr]
             else:
-                logger.info('%s', addr.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
-                if do_apply:
-                    ipr.addr("add", index=idx, address=ip, mask=addr.network.prefixlen)
+                addr_add.append(addr)
 
         for ip, addr in ipr_addr.items():
             if not any(ip in net for net in ignore):
                 if not ign_dynamic or ipr_addr[ip]['flags'] & IFA_F_PERMANENT == IFA_F_PERMANENT:
-                    logger.info('%s', ip.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_DEL})
+                    logger.info('-%s', ip.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_DEL})
                     if do_apply:
                         ipr.addr("del", index=idx, address=str(ip.ip), mask=ip.network.prefixlen)
+
+        for addr in addr_add:
+            logger.info('+%s', addr.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
+            if do_apply:
+                ipr.addr("add", index=idx, address=str(addr.ip), mask=addr.network.prefixlen)
