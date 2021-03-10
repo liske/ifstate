@@ -1,17 +1,18 @@
 # ChangeLog
 
-## 1.5.x
+## 1.5.0
 
 Changes:
 - vrrp: add support for failover link setups, design to work with
-        keepalived's notify script interface
+        keepalived's notify script or fifo interface
 - ignore: add proto keepalived(18) to builtin lists
 
 Fixes:
-- wireguard: fix broken apply iface settings
-- link: supress exceptions on unsupported permaddr or businfo
+- addresses: replacing primary ipv4 addr was broken due to add-before-del
 - link: make businfo available in iface settings check
 - link: make businfo lower case
+- link: supress exceptions on unsupported permaddr or businfo
+- wireguard: fix broken apply iface settings
 
 ## 1.4.0
 
