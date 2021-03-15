@@ -154,7 +154,6 @@ class IfState():
 
     def check(self, vrrp_type=None, vrrp_name=None, vrrp_state=None):
         self._apply(False, vrrp_type, vrrp_name, vrrp_state)
-        self._apply(False, [])
 
     def _apply(self, do_apply, vrrp_type, vrrp_name, vrrp_state):
         vrrp_ignore = []
