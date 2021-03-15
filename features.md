@@ -21,6 +21,7 @@ The following features are already available:
 - configure interface driver and hardware settings via `ethtool` [≥ 0.7.2]
 - configure WireGuard settings [≥ 0.8.0]
 - configure traffic control (`tc`) qdisc and filters (*experimental*) [≥ 1.1.0]
+- conditional interfaces for VRRP failover setups based on keepalived [≥ 1.5.0]
 - ignore interfaces by patterns
 - ignore ip addresses by prefix lists
 - ignore routing table entries by protocol
