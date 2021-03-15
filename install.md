@@ -4,10 +4,13 @@ title: Install
 
 # Alpine Linux
 
-*IfState* is currently available in the *edge community* repository, only.
+
+## Alpine ≥ 3.13
+
+*IfState* is available in the *community* repository since *Alpine 3.13*.
 
 
-## Alpine ≥ 3.12
+## Alpine 3.12
 
 - enable [repository
   pinning](https://wiki.alpinelinux.org/wiki/Alpine_Linux_package_management#Repository_pinning)
