@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.5.1
+
+Fixes:
+- check: fix broken check command (TypeError exception)
+
 ## 1.5.0
 
 Changes:
