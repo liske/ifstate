@@ -310,35 +310,6 @@ class Tables(collections.abc.Mapping):
                         route['dst'], err.args[1]))
 
 
-class Routes():
-    def __init__(self):
-        self.routes = {}
-
-    def add(self, route):
-        dst = ip_network(route['dst'])
-        if dst in self.routes:
-            raise RouteDupblicate()
-
-        if 'table' in route:
-            route['table'] = RTLookups.tables.lookup_id(
-                route.get_attr('RTA_TABLE', 'main'))
-        # if 'dev' in route:
-        #     route['dev'] = xxxx
-        if 'scope' in route:
-            route['scope'] = RTLookups.scopes.lookup_id(route['scope'])
-
-        if 'proto' in route:
-            route['proto'] = RTLookups.protos.lookup_id(route['proto'])
-
-        if 'gateway' in route:
-            route['gateway'] = ip_address(route['gateway'])
-
-        if 'realm' in route:
-            route['realm'] = RTLookups.realms.lookup_id(route['realm'])
-
-        self.routes[dst] = route
-
-
 class Rules():
     def __init__(self):
         self.rules = []
