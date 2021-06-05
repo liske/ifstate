@@ -1,6 +1,6 @@
 from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import RouteDupblicate
-from ipaddress import ip_address, ip_network
+from ipaddress import ip_address, ip_network, IPv6Network
 from pyroute2.netlink.exceptions import NetlinkError
 from pyroute2.netlink.rtnl.fibmsg import FR_ACT_VALUES
 from pyroute2.netlink.rtnl import rt_type
@@ -93,15 +93,15 @@ class Tables(collections.abc.Mapping):
         return len(self.tables)
 
     def add(self, route):
+        dst = ip_network(route['to'])
         rt = {
             'table': RTLookups.tables.lookup_id(route.get('table', 254)),
             'type': route.get('type', 'unicast'),
-            'dst': ip_network(route['to']).with_prefixlen,
+            'dst': dst.with_prefixlen,
             'scope': RTLookups.scopes.lookup_id(route.get('scope', 0)),
             'proto': RTLookups.protos.lookup_id(route.get('proto', 3)),
             'realm': RTLookups.realms.lookup_id(route.get('realm', 0)),
-            'tos': route.get('tos', 0),
-            'priority': 0
+            'tos': route.get('tos', 0)
         }
 
         if type(rt['type']) == str:
@@ -118,6 +118,10 @@ class Tables(collections.abc.Mapping):
 
         if 'preference' in route:
             rt['priority'] = route['preference']
+        elif isinstance(dst, IPv6Network):
+            rt['priority'] = 1024
+        else:
+            rt['priority'] = 0
 
         if not rt['table'] in self.tables:
             self.tables[rt['table']] = []

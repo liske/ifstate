@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.5.2
+
+Fixes:
+- routing: fix ipv6 route default priority from 0 to 1024
+
 ## 1.5.1
 
 Fixes:
