@@ -2,8 +2,12 @@
 
 ## 1.5.2
 
+Changes:
+- routing: make route matching verbose in verbose mode
+
 Fixes:
-- routing: fix ipv6 route default priority from 0 to 1024
+- routing: fix ipv6 routes get removed accidentally since the kernel uses
+           a default priority of 1024 vs. 0 on ipv4 routes
 
 ## 1.5.1
 
