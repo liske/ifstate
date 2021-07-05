@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.5.3
+
+Fixes:
+- schema: fix broken geneve links
+
 ## 1.5.2
 
 Changes:

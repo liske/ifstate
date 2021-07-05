@@ -1449,12 +1449,13 @@
                                 }
                             },
                             {
-                                "description": "GENEVE interface",
+                                "description": "GENEVE interface over IPv4",
+                                "additionalProperties": false,
                                 "required": [
                                     "kind",
-                                    "geneve_id"
+                                    "geneve_id",
+                                    "geneve_remote"
                                 ],
-                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "type": "string",
@@ -1485,32 +1486,55 @@
                                         "minimum": 0,
                                         "maximum": 16777215,
                                         "description": "specifies the VNI to use"
-                                    }
-                                },
-                                "oneOf": [
-                                    {
-                                        "description": "tunnel over IPv4",
-                                        "required": [
-                                            "geneve_remote"
-                                        ],
-                                        "properties": {
-                                            "geneve_remote": {
-                                                "$ref": "#/definitions/iface-link_tun-remote4"
-                                            }
-                                        }
                                     },
-                                    {
-                                        "description": "tunnel over IPv6",
-                                        "required": [
-                                            "geneve_remote6"
-                                        ],
-                                        "properties": {
-                                            "geneve_remote6": {
-                                                "$ref": "#/definitions/iface-link_tun-remote6"
-                                            }
-                                        }
+                                    "geneve_remote": {
+                                        "$ref": "#/definitions/iface-link_tun-remote4"
                                     }
-                                ]
+                                }
+                            },
+                            {
+                                "description": "GENEVE interface over IPv6",
+                                "additionalProperties": false,
+                                "required": [
+                                    "kind",
+                                    "geneve_id",
+                                    "geneve_remote6"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "geneve"
+                                        ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/definitions/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/definitions/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/definitions/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/definitions/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/definitions/iface-link_ifalias"
+                                    },
+                                    "geneve_id": {
+                                        "type": [
+                                            "integer"
+                                        ],
+                                        "minimum": 0,
+                                        "maximum": 16777215,
+                                        "description": "specifies the VNI to use"
+                                    },
+                                    "geneve_remote6": {
+                                        "$ref": "#/definitions/iface-link_tun-remote6"
+                                    }
+                                }
                             },
                             {
                                 "description": "WireGuard interface; WireGuard settings can be configured using a `wireguard` block",
