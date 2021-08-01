@@ -4,6 +4,7 @@
 
 Fixes:
 - link: recreate virtual interfaces if updating fails
+- wireguard: deep compare a peer's set of allowedips
 
 ## 1.5.3
 

@@ -73,11 +73,12 @@ class WireGuard():
                     pchange = False
                     for setting in peer.keys():
                         attr = getattr(peers[pubkey], setting)
+                        if setting == 'allowedips':
+                            attr = set(attr)
                         logger.debug('  peer.%s: %s => %s', setting, attr,
                                      peer[setting], extra={'iface': self.iface})
-                        if type(attr) == list:
-                            pchange |= collections.Counter(
-                                attr) != collections.Counter(peer[setting])
+                        if type(attr) == set:
+                            pchange |= not (attr == peer[setting])
                         else:
                             pchange |= str(peer[setting]) != str(getattr(
                                 peers[pubkey], setting))
