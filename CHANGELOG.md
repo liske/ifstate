@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.5.4
+
+Fixes:
+- link: recreate virtual interfaces if updating fails
+
 ## 1.5.3
 
 Fixes:

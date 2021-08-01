@@ -182,7 +182,7 @@ class Link(ABC):
         return self.match_vrrp_select(vrrp_type, vrrp_name) and (vrrp_state in self.vrrp['states'])
 
     def apply(self, do_apply):
-        excpts = ExceptionCollector()
+        excpts = ExceptionCollector(self.settings['ifname'])
         osettings = copy.deepcopy(self.settings)
 
         # lookup for attributes requiring a interface index
@@ -213,14 +213,16 @@ class Link(ABC):
                     ipr.link('set', index=idx, ifname='{}!'.format(
                         self.settings['ifname']))
                 except NetlinkError as err:
-                    logger.warning('renaming link {} failed: {}'.format(
-                        self.settings['ifname'], err.args[1]))
                     excpts.add('set', err, state='down', ifname='{}!')
 
             if self.cap_create and self.get_if_attr('kind') != self.settings['kind']:
                 self.recreate(do_apply, excpts)
             else:
+                excpts.set_quiet(self.cap_create)
                 self.update(do_apply, excpts)
+                if self.cap_create and excpts.get_all():
+                    excpts.reset()
+                    self.recreate(do_apply, excpts)
         else:
             self.create(do_apply, excpts)
 
@@ -243,12 +245,8 @@ class Link(ABC):
                     try:
                         ipr.link('set', index=self.idx, state=state)
                     except NetlinkError as err:
-                        logger.warning('setting link state {} failed: {}'.format(
-                            self.settings['ifname'], err.args[1]))
                         excpts.add('set', err, state=state)
             except NetlinkError as err:
-                logger.warning('adding link {} failed: {}'.format(
-                    self.settings['ifname'], err.args[1]))
                 excpts.add('add', err, **(self.settings))
 
         if not self.ethtool is None:
@@ -263,8 +261,6 @@ class Link(ABC):
             try:
                 ipr.link('del', index=self.idx)
             except NetlinkError as err:
-                logger.warning('removing link {} failed: {}'.format(
-                    self.settings['ifname'], err.args[1]))
                 excpts.add('del', err)
         self.idx = None
         self.create(do_apply, "replace")
@@ -314,8 +310,6 @@ class Link(ABC):
                     try:
                         ipr.link('set', index=self.idx, state='down')
                     except NetlinkError as err:
-                        logger.warning('shutting down link {} failed: {}'.format(
-                            self.settings['ifname'], err.args[1]))
                         excpts.add('set', err, state='down')
                 if not 'state' in self.settings:
                     self.settings['state'] = 'up'
@@ -334,16 +328,14 @@ class Link(ABC):
                     state = self.settings.pop('state', None)
                     ipr.link('set', index=self.idx, **(self.settings))
                 except NetlinkError as err:
-                    logger.warning('updating link {} failed: {}'.format(
-                        self.settings['ifname'], err.args[1]))
                     excpts.add('set', err, state=state)
 
                 try:
                     if not state is None:
+                        # restore state setting for recreate
+                        self.settings['state'] = state
                         ipr.link('set', index=self.idx, state=state)
                 except NetlinkError as err:
-                    logger.warning('updating link state {} failed: {}'.format(
-                        self.settings['ifname'], err.args[1]))
                     excpts.add('set', err, state=state)
         else:
             self.set_ethtool_state(self.get_if_attr(
@@ -354,8 +346,6 @@ class Link(ABC):
                     ipr.link('set', index=self.idx,
                              state=self.settings["state"])
                 except NetlinkError as err:
-                    logger.warning('updating link state {} failed: {}'.format(
-                        self.settings['ifname'], err.args[1]))
                     excpts.add('set', err, state=state)
                 logger.info('change', extra={
                             'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})

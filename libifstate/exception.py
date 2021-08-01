@@ -1,9 +1,14 @@
 from pyroute2.netlink.exceptions import NetlinkError
-
+from libifstate.util import logger
 
 class ExceptionCollector():
-    def __init__(self):
+    def __init__(self, ifname):
+        self.ifname = ifname
+        self.reset()
+
+    def reset(self):
         self.excpts = []
+        self.quiet = False
 
     def add(self, op, excpt, **kwargs):
         self.excpts.append({
@@ -11,6 +16,9 @@ class ExceptionCollector():
             'excpt': excpt,
             'args': kwargs,
         })
+        if not self.quiet:
+            logger.warning('{} link {} failed: {}'.format(
+                op, self.ifname, excpt.args[1]))
 
     def has_errno(self, errno):
         for e in self.excpts:
@@ -20,6 +28,9 @@ class ExceptionCollector():
 
     def get_all(self):
         return self.excpts
+
+    def set_quiet(self, quiet):
+        self.quiet = quiet
 
 class FeatureMissingError(Exception):
     def __init__(self, feature):
