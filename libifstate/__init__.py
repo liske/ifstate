@@ -28,7 +28,7 @@ import re
 import json
 import errno
 
-__version__ = "1.5.3"
+__version__ = "1.5.4"
 
 
 class IfState():
