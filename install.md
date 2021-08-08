@@ -10,34 +10,6 @@ title: Install
 *IfState* is available in the *community* repository since *Alpine 3.13*.
 
 
-## Alpine 3.12
-
-- enable [repository
-  pinning](https://wiki.alpinelinux.org/wiki/Alpine_Linux_package_management#Repository_pinning)
-  in `/etc/apk/repositories`:
-
-```perl
-http://dl-cdn.alpinelinux.org/alpine/v3.12/main
-http://dl-cdn.alpinelinux.org/alpine/v3.12/community
-@edgecommunity http://dl-cdn.alpinelinux.org/alpine/edge/community
-```
-- install *IfState* using `apk add ifstate@edgecommunity`
-
-
-## Alpine ≤ 3.11
-
-- enable [repository
-  pinning](https://wiki.alpinelinux.org/wiki/Alpine_Linux_package_management#Repository_pinning)
-  in `/etc/apk/repositories`:
-
-```perl
-http://dl-cdn.alpinelinux.org/alpine/v3.11/main
-http://dl-cdn.alpinelinux.org/alpine/v3.11/community
-@edgecommunity http://dl-cdn.alpinelinux.org/alpine/edge/community
-```
-- install *IfState* using `apk add ifstate@edgecommunity py3-pyroute2@edgecommunity`
-
-
 # Manual installation
 
 ## Prerequisites
