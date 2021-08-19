@@ -357,7 +357,7 @@ class IfState():
                     # unsupported link type, fallback to raw encoding
                     if data is not None and type(data) != str:
                         for k, v in data['attrs']:
-                            if k != "UNKNOWN" and type(data) in [str, int] and v != 0:
+                            if k not in ['UNKNOWN', 'IFLA_VLAN_FLAGS']:
                                 ifs_link['link'][ipr_link.nla2name(k)] = v
                 else:
                     ifs_link['link']['kind'] = 'physical'
@@ -374,10 +374,11 @@ class IfState():
                     if not businfo is None:
                         ifs_link['link']['businfo'] = businfo
 
-                master = ipr_link.get_attr('IFLA_MASTER')
-                if master is not None:
-                    ifs_link['link']['master'] = ipr.get_ifname_by_index(
-                        master)
+                for attr in ['link', 'master', 'gre_link', 'ip6gre_link', 'vxlan_link', 'xfrm_link']:
+                    ref = ipr_link.get_attr('IFLA_{}'.format(attr.upper()))
+                    if ref is not None:
+                        ifs_link['link'][attr] = ipr.get_ifname_by_index(
+                            ref)
 
                 mtu = ipr_link.get_attr('IFLA_MTU')
                 if not mtu is None and not mtu in [1500, 65536]:
