@@ -7,7 +7,13 @@ from pyroute2.netlink import NLM_F_REQUEST
 from pyroute2.netlink import NLM_F_ACK
 from pyroute2.netlink import NLM_F_CREATE
 from pyroute2.netlink import NLM_F_EXCL
-from pyroute2.ethtool.ioctl import SIOCETHTOOL
+
+try:
+    # pyroute2 <0.6
+    from pyroute2.ethtool.ioctl import SIOCETHTOOL
+except ModuleNotFoundError:
+    # pyroute2 >= 0.6
+    from pr2modules.ethtool.ioctl import SIOCETHTOOL
 
 import socket
 import fcntl

@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.5.5
+
+Fixes:
+- ethtool: fix module import for pyroute2 0.6+
+
 ## 1.5.4
 
 Fixes:
