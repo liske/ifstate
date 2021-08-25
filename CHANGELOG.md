@@ -5,6 +5,7 @@
 Fixes:
 - ethtool: fix module import for pyroute2 0.6+
 - show: fix missing attributes
+- tc: fix internal exception during apply
 
 ## 1.5.4
 
