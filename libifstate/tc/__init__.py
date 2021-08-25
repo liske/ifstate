@@ -220,7 +220,7 @@ class TC():
         return changes
 
     def apply(self, do_apply):
-        excpts = ExceptionCollector()
+        excpts = ExceptionCollector(ifname=self.iface)
 
         # get ifindex
         self.idx = next(iter(ipr.link_lookup(ifname=self.iface)), None)
