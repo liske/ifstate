@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.5.6
+
+Fixes:
+- link: fix exception while 'show' for master/link to other netns
+
 ## 1.5.5
 
 Fixes:

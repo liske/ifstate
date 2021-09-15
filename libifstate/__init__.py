@@ -377,8 +377,13 @@ class IfState():
                 for attr in ['link', 'master', 'gre_link', 'ip6gre_link', 'vxlan_link', 'xfrm_link']:
                     ref = ipr_link.get_attr('IFLA_{}'.format(attr.upper()))
                     if ref is not None:
-                        ifs_link['link'][attr] = ipr.get_ifname_by_index(
-                            ref)
+                        try:
+                            ifs_link['link'][attr] = ipr.get_ifname_by_index(
+                                ref)
+                        except NetlinkError as err:
+                            logger.warning('lookup {} failed: {}'.format(
+                                attr, err.args[1]), extra={'iface': name})
+                            ifs_link['link'][attr] = ref
 
                 mtu = ipr_link.get_attr('IFLA_MTU')
                 if not mtu is None and not mtu in [1500, 65536]:
