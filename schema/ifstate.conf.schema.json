@@ -1237,6 +1237,16 @@
                                         "minimum": 0,
                                         "maximum": 4094,
                                         "description": "specifies the VLAN identifier to use"
+                                    },
+                                    "vlan_protocol": {
+                                        "enum": [
+                                            33024,
+                                            "802.1q",
+                                            34984,
+                                            "802.1ad"
+                                        ],
+                                        "default": "802.1q",
+                                        "description": "802.1q or 802.1ad (Q-in-Q)"
                                     }
                                 }
                             },

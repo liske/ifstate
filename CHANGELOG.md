@@ -2,6 +2,9 @@
 
 ## 1.5.6
 
+Changes:
+- link: add attribute value mappings for bond and vlan interfaces
+
 Fixes:
 - link: fix exception while 'show' for master/link to other netns
 

@@ -358,7 +358,11 @@ class IfState():
                     if data is not None and type(data) != str:
                         for k, v in data['attrs']:
                             if k not in ['UNKNOWN', 'IFLA_VLAN_FLAGS']:
-                                ifs_link['link'][ipr_link.nla2name(k)] = v
+                                attr = ipr_link.nla2name(k)
+                                if attr in Link.attr_value_maps:
+                                    ifs_link['link'][attr] = Link.attr_value_maps[attr].get(v, v)
+                                else:
+                                    ifs_link['link'][attr] = v
                 else:
                     ifs_link['link']['kind'] = 'physical'
                     addr = ipr_link.get_attr('IFLA_ADDRESS')

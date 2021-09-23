@@ -13,6 +13,61 @@ ethtool_path = shutil.which("ethtool") or '/usr/sbin/ethtool'
 class Link(ABC):
     _nla_prefix = 'IFLA_'
     _classes = {}
+    attr_value_maps = {
+        # === bond ===
+        'bond_mode': {
+            0: 'balance-rr',
+            1: 'active-backup',
+            2: 'balance-xor',
+            3: 'broadcast',
+            4: '802.3ad',
+            5: 'balance-tlb',
+            6: 'balance-alb',
+        },
+        'bond_arp_validate': {
+            0: "none",
+            1: "active",
+            2: "backup",
+            3: "all",
+        },
+        'bond_arp_all_targets': {
+
+            0: "any",
+            1: "all",
+        },
+        'bond_primary_reselect': {
+            0: "always",
+            1: "better",
+            2: "failure",
+        },
+        'bond_fail_over_mac': {
+            0: "none",
+            1: "active",
+            2: "follow",
+        },
+        'bond_xmit_hash_policy': {
+            0: 'layer2',
+            1: 'layer3+4',
+            2: 'layer2+3',
+            3: 'encap2+3',
+            4: 'encap3+4',
+            5: 'vlan+srcmac',
+        },
+        'bond_ad_lacp_rate': {
+            0: 'slow',
+            1: 'fast',
+        },
+        'bond_ad_select': {
+            0: "stable",
+            1: "bandwidth",
+            2: "count",
+        },
+        # === vlan ===
+        'vlan_protocol': {
+            0x88a8: '802.1ad',
+            0x8100: '802.1q',
+        },
+    }
 
     def __new__(cls, *args, **kwargs):
         cname = cls.__name__
@@ -52,6 +107,11 @@ class Link(ABC):
         if 'businfo' in self.settings:
             self.settings['businfo'] = self.settings['businfo'].lower()
             self.idx = ipr.get_iface_by_businfo(self.settings['businfo'])
+
+        for attr, mappings in self.attr_value_maps.items():
+            if attr in self.settings and type(self.settings[attr]) != int:
+                self.settings[attr] = next((k for k, v in mappings.items(
+                ) if v == self.settings[attr]), self.settings[attr])
 
     def _drill_attr(self, data, keys):
         key = keys[0]
