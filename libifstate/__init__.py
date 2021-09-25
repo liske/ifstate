@@ -67,7 +67,7 @@ class IfState():
         except ValidationError as ex:
             if len(ex.path) > 0:
                 path = ["$"]
-                for i, p in enumerate(ex.path):
+                for i, p in enumerate(ex.absolute_path):
                     if type(p) == int:
                         path.append("[{}]".format(p))
                     else:
