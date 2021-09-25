@@ -9,7 +9,7 @@ This is a collection of configuration examples for different interface link type
 - [Bonding Interface w/ LACP (802.3ad)](examples/lacp.md)
 - [Policy Based Routing (PBR)](examples/pbr.md)
 - [VLAN Subinterface (802.1q)](examples/vlan-dot1q.md)
-- [VLAN Q-in-Q Interfaces (802.1ad & 802.1q)](examples/vlan-qinq.md)
+- [VLAN Q-in-Q Subinterfaces (802.1ad + 802.1q)](examples/vlan-qinq.md)
 - [Virtual Routing and Forwarding (VRF)](examples/vrf.md)
 - [EoGRE Layer 2 Tunnel](examples/gretap.md)
 - [GENEVE Layer 2 Tunnel](examples/geneve.md)

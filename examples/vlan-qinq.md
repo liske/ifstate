@@ -1,4 +1,4 @@
-# Example: VLAN Q-in-Q Interfaces (802.1ad & 802.1q)
+# Example: VLAN Q-in-Q Subinterfaces (802.1ad + 802.1q)
 
 This example configures a service VLAN subinterface (IEEE 802.1ad) with a stacked customer VLAN subinterface (IEEE 802.1q):
 - set the base interface link to `up`
@@ -20,7 +20,6 @@ interfaces:
     address: 8c:16:45:dc:b1:ad
     state: up
 - name: eth0.10
-  addresses: []
   link:
     kind: vlan
     link: eth0
