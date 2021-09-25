@@ -159,6 +159,10 @@
                 }
             }
         },
+        "iface-name": {
+            "type": "string",
+            "pattern": "^[^/ ]{1,15}$"
+        },
         "iface-link_address": {
             "type": "string",
             "description": "link mac address (xx:xx:xx:xx:xx:xx)",
@@ -964,8 +968,8 @@
                 "additionalProperties": false,
                 "properties": {
                     "name": {
-                        "description": "name of the interface",
-                        "type": "string"
+                        "$ref": "#/$defs/iface-name",
+                        "description": "name of the interface"
                     },
                     "addresses": {
                         "description": "ip addresses of the interface",
