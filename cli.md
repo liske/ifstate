@@ -77,12 +77,10 @@ interfaces:
   link:
     kind: vlan
     state: up
-    vlan_flags:
-      state:
-        flags: 1
-        mask: 4294967295
+    vlan_protocol: 802.1q
     vlan_id: 10
-    vlan_protocol: 33024
+    link: eth0
+
 - name: LOOP
   addresses:
   - 192.0.2.3
