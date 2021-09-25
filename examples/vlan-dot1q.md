@@ -1,4 +1,4 @@
-# Example: VLAN Interface (802.1q)
+# Example: VLAN Subinterface (802.1q)
 
 This example configures a VLAN subinterface (IEEE 802.1q):
 - rename the base interface to `trunk`
@@ -24,7 +24,7 @@ interfaces:
     - 192.0.2.1/24
   link:
     kind: vlan
-    link: eth0
+    link: trunk
     vlan_id: 42
 ```
 
