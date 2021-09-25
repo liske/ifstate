@@ -29,9 +29,11 @@ class Link(ABC):
             1: "active",
             2: "backup",
             3: "all",
+            4: "filter",
+            5: "filter_active",
+            6: "filter_backup"
         },
         'bond_arp_all_targets': {
-
             0: "any",
             1: "all",
         },

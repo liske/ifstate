@@ -1,13 +1,13 @@
 {
     "$id": "https://ifstate.net/schema/ifstate.conf.schema.json",
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
     "title": "ifstate.conf",
     "description": "IfState Configuration Schema",
     "type": "object",
     "required": [
         "interfaces"
     ],
-    "definitions": {
+    "$defs": {
         "ignore-ipaddr": {
             "description": "list of ip address prefixes to be ignored",
             "type": "array",
@@ -217,7 +217,7 @@
             "format": "ipv6"
         },
         "iface-link_tun-dev": {
-            "$ref": "#/definitions/iface-link_link",
+            "$ref": "#/$defs/iface-link_link",
             "description": "interface to use for tunnel endpoint communication"
         },
         "iface-sysctl": {
@@ -533,7 +533,7 @@
             "properties": {
                 "handle": {
                     "description": "unique id",
-                    "$ref": "#/definitions/iface-tc_qid"
+                    "$ref": "#/$defs/iface-tc_qid"
                 }
             },
             "oneOf": [
@@ -569,15 +569,12 @@
                     ],
                     "properties": {
                         "kind": {
-                            "type": "string",
-                            "description": "qdisk type",
-                            "enum": [
-                                "cake"
-                            ]
+                            "const": "cake",
+                            "description": "qdisk type"
                         },
                         "handle": {
                             "description": "unique id",
-                            "$ref": "#/definitions/iface-tc_qid"
+                            "$ref": "#/$defs/iface-tc_qid"
                         },
                         "ack_filter": {
                             "description": "ACKnowledge filter",
@@ -717,11 +714,8 @@
                     ],
                     "properties": {
                         "kind": {
-                            "type": "string",
-                            "description": "qdisk type",
-                            "enum": [
-                                "choke"
-                            ]
+                            "const": "choke",
+                            "description": "qdisk type"
                         }
                     }
                 },
@@ -732,11 +726,8 @@
                     ],
                     "properties": {
                         "kind": {
-                            "type": "string",
-                            "description": "qdisk type",
-                            "enum": [
-                                "codel"
-                            ]
+                            "const": "codel",
+                            "description": "qdisk type"
                         }
                     }
                 },
@@ -768,11 +759,8 @@
                     ],
                     "properties": {
                         "kind": {
-                            "type": "string",
-                            "description": "qdisk type",
-                            "enum": [
-                                "fq"
-                            ]
+                            "const": "fq",
+                            "description": "qdisk type"
                         },
                         "limit": {
                             "type": "number",
@@ -791,11 +779,8 @@
                     ],
                     "properties": {
                         "kind": {
-                            "type": "string",
-                            "description": "qdisk type",
-                            "enum": [
-                                "fq_codel"
-                            ]
+                            "const": "fq_codel",
+                            "description": "qdisk type"
                         },
                         "limit": {
                             "type": "number",
@@ -837,18 +822,15 @@
                     ],
                     "properties": {
                         "kind": {
-                            "type": "string",
-                            "description": "qdisk type",
-                            "enum": [
-                                "mq"
-                            ]
+                            "const": "mq",
+                            "description": "qdisk type"
                         },
                         "children": {
                             "description": "list child qdiscs for each device TX queue",
                             "type": "array",
                             "items": {
                                 "description": "child qdiscs for the nth device TX queue",
-                                "$ref": "#/definitions/iface-tc_qdisc"
+                                "$ref": "#/$defs/iface-tc_qdisc"
                             }
                         }
                     }
@@ -865,10 +847,7 @@
                 ],
                 "properties": {
                     "kind": {
-                        "type": "string",
-                        "enum": [
-                            "mirred"
-                        ]
+                        "const": "mirred"
                     }
                 },
                 "oneOf": [
@@ -882,10 +861,7 @@
                         ],
                         "properties": {
                             "kind": {
-                                "type": "string",
-                                "enum": [
-                                    "mirred"
-                                ]
+                                "const": "mirred"
                             },
                             "direction": {
                                 "description": "packet direction",
@@ -905,7 +881,7 @@
                             },
                             "dev": {
                                 "description": "destination interface where packets are redirected or mirrored to",
-                                "$ref": "#/definitions/iface-link_link"
+                                "$ref": "#/$defs/iface-link_link"
                             },
                             "index": {
                                 "description": "unique action ID",
@@ -931,11 +907,11 @@
                     "properties": {
                         "all": {
                             "description": "overrides [per interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/all/`",
-                            "$ref": "#/definitions/iface-sysctl"
+                            "$ref": "#/$defs/iface-sysctl"
                         },
                         "default": {
                             "description": "default [per interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/default/`",
-                            "$ref": "#/definitions/iface-sysctl"
+                            "$ref": "#/$defs/iface-sysctl"
                         }
                     }
                 }
@@ -947,10 +923,10 @@
             "additionalProperties": false,
             "properties": {
                 "ipaddr_builtin": {
-                    "$ref": "#/definitions/ignore-ipaddr"
+                    "$ref": "#/$defs/ignore-ipaddr"
                 },
                 "ipaddr": {
-                    "$ref": "#/definitions/ignore-ipaddr"
+                    "$ref": "#/$defs/ignore-ipaddr"
                 },
                 "ipaddr_dynamic": {
                     "description": "ignore dynamic assigned ip addresses",
@@ -958,22 +934,22 @@
                     "default": true
                 },
                 "ifname_builtin": {
-                    "$ref": "#/definitions/ignore-ifname"
+                    "$ref": "#/$defs/ignore-ifname"
                 },
                 "ifname": {
-                    "$ref": "#/definitions/ignore-ifname"
+                    "$ref": "#/$defs/ignore-ifname"
                 },
                 "routes_builtin": {
-                    "$ref": "#/definitions/ignore-routes"
+                    "$ref": "#/$defs/ignore-routes"
                 },
                 "routes": {
-                    "$ref": "#/definitions/ignore-routes"
+                    "$ref": "#/$defs/ignore-routes"
                 },
                 "rules_builtin": {
-                    "$ref": "#/definitions/ignore-rules"
+                    "$ref": "#/$defs/ignore-rules"
                 },
                 "rules": {
-                    "$ref": "#/definitions/ignore-rules"
+                    "$ref": "#/$defs/ignore-rules"
                 }
             }
         },
@@ -1047,45 +1023,565 @@
                         "type": "object",
                         "oneOf": [
                             {
+                                "description": "Intermediate Functional Block device",
+                                "required": [
+                                    "kind"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "const": "ifb",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
                                 "description": "generic interface",
                                 "required": [
                                     "kind"
                                 ],
                                 "properties": {
                                     "kind": {
-                                        "type": "string",
-                                        "description": "link type",
-                                        "enum": [
-                                            "bond",
-                                            "bridge",
-                                            "gtp",
-                                            "ifb",
-                                            "ip6tnl",
-                                            "ipoib",
-                                            "ipvlan",
-                                            "macvlan",
-                                            "macvtap",
-                                            "team",
-                                            "tuntap",
-                                            "vrf",
-                                            "vti",
-                                            "vti6"
-                                        ]
+                                        "const": "ip6tnl",
+                                        "description": "link type"
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "generic interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "ipoib",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "generic interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "ipvlan",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "generic interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "macvlan",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "generic interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "macvtap",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "generic interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "team",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "generic interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "tuntap",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "generic interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "vrf",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "generic interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "vti",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "generic interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "vti6",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Bonding network interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "const": "bond",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "bond_mode": {
+                                        "enum": [
+                                            0,
+                                            "balance-rr",
+                                            1,
+                                            "active-backup",
+                                            2,
+                                            "balance-xor",
+                                            3,
+                                            "broadcast",
+                                            4,
+                                            "802.3ad",
+                                            5,
+                                            "balance-tlb",
+                                            6,
+                                            "balance-alb"
+                                        ],
+                                        "default": "balance-rr",
+                                        "description": "the bonding policy"
+                                    },
+                                    "bond_miimon": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 0,
+                                        "description": "MII link monitoring frequency in milliseconds"
+                                    },
+                                    "bond_updelay": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 0,
+                                        "description": "time, in milliseconds, to wait before enabling a slave after a link recovery has been detected"
+                                    },
+                                    "bond_downdelay": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 0,
+                                        "description": "time, in milliseconds, to wait before disabling a slave after a link failure has been detected"
+                                    },
+                                    "bond_use_carrier": {
+                                        "enum": [
+                                            0,
+                                            1
+                                        ],
+                                        "default": 1,
+                                        "description": "use MII or ETHTOOL ioctls vs. netif_carrier_ok() to determine the link status"
+                                    },
+                                    "bond_arp_interval": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 0,
+                                        "description": "ARP link monitoring frequency in milliseconds"
+                                    },
+                                    "bond_arp_validate": {
+                                        "enum": [
+                                            0,
+                                            "none",
+                                            1,
+                                            "active",
+                                            2,
+                                            "backup",
+                                            3,
+                                            "all",
+                                            4,
+                                            "filter",
+                                            5,
+                                            "filter_active",
+                                            6,
+                                            "filter_backup"
+                                        ],
+                                        "default": "none",
+                                        "description": "arp validation for arp monitoring"
+                                    },
+                                    "bond_arp_all_targets": {
+                                        "enum": [
+                                            0,
+                                            "any",
+                                            1,
+                                            "all"
+                                        ],
+                                        "default": "any",
+                                        "description": "quantity of arp_ip_targets that must be reachable"
+                                    },
+                                    "bond_primary_reselect": {
+                                        "enum": [
+                                            0,
+                                            "always",
+                                            1,
+                                            "better",
+                                            2,
+                                            "failure"
+                                        ],
+                                        "default": "always",
+                                        "description": "reselection policy for the primary slave"
+                                    },
+                                    "bond_fail_over_mac": {
+                                        "enum": [
+                                            0,
+                                            "none",
+                                            1,
+                                            "active",
+                                            2,
+                                            "follow"
+                                        ],
+                                        "default": "none",
+                                        "description": "slave mac address selection"
+                                    },
+                                    "bond_xmit_hash_policy": {
+                                        "enum": [
+                                            0,
+                                            "layer2",
+                                            1,
+                                            "layer3+4",
+                                            2,
+                                            "layer2+3",
+                                            3,
+                                            "encap2+3",
+                                            4,
+                                            "encap3+4",
+                                            5,
+                                            "vlan+srcmac"
+                                        ],
+                                        "default": "layer2",
+                                        "description": "transmit hash policy to use for slave selection"
+                                    },
+                                    "bond_resend_igmp": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 255,
+                                        "default": 1,
+                                        "description": "number of IGMP membership reports to be issued after a failover event"
+                                    },
+                                    "bond_num_peer_notif": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 1
+                                    },
+                                    "bond_all_slaves_active": {
+                                        "enum": [
+                                            0,
+                                            1
+                                        ],
+                                        "default": 1,
+                                        "description": "dropped (0) or delivered (1) duplicate frames"
+                                    },
+                                    "bond_min_links": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 0,
+                                        "description": "number of links that must be active before asserting carrier"
+                                    },
+                                    "bond_lp_interval": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 2147483647,
+                                        "default": 1,
+                                        "description": "number of seconds between instances where the bonding driver sends learning packets to each slaves peer switch"
+                                    },
+                                    "bond_packets_per_slave": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 65535,
+                                        "default": 1,
+                                        "description": "number of packets to transmit through a slave before moving to the next one"
+                                    },
+                                    "bond_ad_lacp_rate": {
+                                        "enum": [
+                                            0,
+                                            "slow",
+                                            1,
+                                            "fast"
+                                        ],
+                                        "default": "slow",
+                                        "description": "requested LACPDU packet rate in 802.3ad mode"
+                                    },
+                                    "bond_ad_select": {
+                                        "enum": [
+                                            0,
+                                            "stable",
+                                            1,
+                                            "bandwidth",
+                                            2,
+                                            "count"
+                                        ],
+                                        "default": "stable",
+                                        "description": "802.3ad aggregation selection logic to use"
+                                    },
+                                    "bond_tlb_dynamic_lb": {
+                                        "enum": [
+                                            0,
+                                            1
+                                        ],
+                                        "default": 1,
+                                        "description": "dynamic shuffling of flows in tlb mode"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Bridge network interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "bridge",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "br_ageing_time": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 30000,
+                                        "description": "FDB entry ageing time in milliseconds"
+                                    },
+                                    "br_vlan_protocol": {
+                                        "enum": [
+                                            33024,
+                                            "802.1q",
+                                            34984,
+                                            "802.1ad"
+                                        ],
+                                        "default": "802.1q",
+                                        "description": "802.1q or 802.1ad (Q-in-Q)"
                                     }
                                 }
                             },
@@ -1104,11 +1600,11 @@
                                         ]
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "permaddr": {
                                         "description": "select interface by permanent address [ethtool -P]",
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "businfo": {
                                         "description": "select interface by bus info [ethtool -i]",
@@ -1116,16 +1612,16 @@
                                         "maxLength": 32
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
@@ -1144,19 +1640,19 @@
                                         ]
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
@@ -1177,22 +1673,22 @@
                                         ]
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "peer": {
-                                        "$ref": "#/definitions/iface-link_link"
+                                        "$ref": "#/$defs/iface-link_link"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
@@ -1206,29 +1702,26 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "kind": {
-                                        "type": "string",
-                                        "description": "link type",
-                                        "enum": [
-                                            "vlan"
-                                        ]
+                                        "const": "vlan",
+                                        "description": "link type"
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     },
                                     "link": {
-                                        "$ref": "#/definitions/iface-link_link"
+                                        "$ref": "#/$defs/iface-link_link"
                                     },
                                     "vlan_id": {
                                         "type": [
@@ -1260,26 +1753,23 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "kind": {
-                                        "type": "string",
-                                        "description": "link type",
-                                        "enum": [
-                                            "vxlan"
-                                        ]
+                                        "const": "vxlan",
+                                        "description": "link type"
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     },
                                     "vxlan_id": {
                                         "type": [
@@ -1290,7 +1780,7 @@
                                         "description": "specifies the VNI"
                                     },
                                     "vxlan_link": {
-                                        "$ref": "#/definitions/iface-link_tun-dev"
+                                        "$ref": "#/$defs/iface-link_tun-dev"
                                     }
                                 }
                             },
@@ -1304,32 +1794,29 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "kind": {
-                                        "type": "string",
-                                        "description": "link type",
-                                        "enum": [
-                                            "ipip"
-                                        ]
+                                        "const": "ipip",
+                                        "description": "link type"
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     },
                                     "ipip_remote": {
-                                        "$ref": "#/definitions/iface-link_tun-remote4"
+                                        "$ref": "#/$defs/iface-link_tun-remote4"
                                     },
                                     "ipip_local": {
-                                        "$ref": "#/definitions/iface-link_tun-local4"
+                                        "$ref": "#/$defs/iface-link_tun-local4"
                                     }
                                 }
                             },
@@ -1343,32 +1830,29 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "kind": {
-                                        "type": "string",
-                                        "description": "link type",
-                                        "enum": [
-                                            "sit"
-                                        ]
+                                        "const": "sit",
+                                        "description": "link type"
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     },
                                     "sit_remote": {
-                                        "$ref": "#/definitions/iface-link_tun-remote4"
+                                        "$ref": "#/$defs/iface-link_tun-remote4"
                                     },
                                     "sit_local": {
-                                        "$ref": "#/definitions/iface-link_tun-local4"
+                                        "$ref": "#/$defs/iface-link_tun-local4"
                                     }
                                 }
                             },
@@ -1390,28 +1874,28 @@
                                         ]
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     },
                                     "gre_remote": {
-                                        "$ref": "#/definitions/iface-link_tun-remote4"
+                                        "$ref": "#/$defs/iface-link_tun-remote4"
                                     },
                                     "gre_local": {
-                                        "$ref": "#/definitions/iface-link_tun-local4"
+                                        "$ref": "#/$defs/iface-link_tun-local4"
                                     },
                                     "gre_link": {
-                                        "$ref": "#/definitions/iface-link_tun-dev"
+                                        "$ref": "#/$defs/iface-link_tun-dev"
                                     }
                                 }
                             },
@@ -1433,28 +1917,28 @@
                                         ]
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     },
                                     "ip6gre_remote": {
-                                        "$ref": "#/definitions/iface-link_tun-remote4"
+                                        "$ref": "#/$defs/iface-link_tun-remote4"
                                     },
                                     "ip6gre_local": {
-                                        "$ref": "#/definitions/iface-link_tun-local4"
+                                        "$ref": "#/$defs/iface-link_tun-local4"
                                     },
                                     "ip6gre_link": {
-                                        "$ref": "#/definitions/iface-link_tun-dev"
+                                        "$ref": "#/$defs/iface-link_tun-dev"
                                     }
                                 }
                             },
@@ -1468,26 +1952,23 @@
                                 ],
                                 "properties": {
                                     "kind": {
-                                        "type": "string",
-                                        "description": "link type",
-                                        "enum": [
-                                            "geneve"
-                                        ]
+                                        "const": "geneve",
+                                        "description": "link type"
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     },
                                     "geneve_id": {
                                         "type": [
@@ -1498,7 +1979,7 @@
                                         "description": "specifies the VNI to use"
                                     },
                                     "geneve_remote": {
-                                        "$ref": "#/definitions/iface-link_tun-remote4"
+                                        "$ref": "#/$defs/iface-link_tun-remote4"
                                     }
                                 }
                             },
@@ -1512,26 +1993,23 @@
                                 ],
                                 "properties": {
                                     "kind": {
-                                        "type": "string",
-                                        "description": "link type",
-                                        "enum": [
-                                            "geneve"
-                                        ]
+                                        "const": "geneve",
+                                        "description": "link type"
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     },
                                     "geneve_id": {
                                         "type": [
@@ -1542,7 +2020,7 @@
                                         "description": "specifies the VNI to use"
                                     },
                                     "geneve_remote6": {
-                                        "$ref": "#/definitions/iface-link_tun-remote6"
+                                        "$ref": "#/$defs/iface-link_tun-remote6"
                                     }
                                 }
                             },
@@ -1554,26 +2032,23 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "kind": {
-                                        "type": "string",
-                                        "description": "link type",
-                                        "enum": [
-                                            "wireguard"
-                                        ]
+                                        "const": "wireguard",
+                                        "description": "link type"
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
@@ -1586,29 +2061,26 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "kind": {
-                                        "type": "string",
-                                        "description": "link type",
-                                        "enum": [
-                                            "xfrm"
-                                        ]
+                                        "const": "xfrm",
+                                        "description": "link type"
                                     },
                                     "address": {
-                                        "$ref": "#/definitions/iface-link_address"
+                                        "$ref": "#/$defs/iface-link_address"
                                     },
                                     "state": {
-                                        "$ref": "#/definitions/iface-link_state"
+                                        "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
-                                        "$ref": "#/definitions/iface-link_master"
+                                        "$ref": "#/$defs/iface-link_master"
                                     },
                                     "mtu": {
-                                        "$ref": "#/definitions/iface-link_mtu"
+                                        "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "ifalias": {
-                                        "$ref": "#/definitions/iface-link_ifalias"
+                                        "$ref": "#/$defs/iface-link_ifalias"
                                     },
                                     "xfrm_link": {
-                                        "$ref": "#/definitions/iface-link_tun-dev",
+                                        "$ref": "#/$defs/iface-link_tun-dev",
                                         "description": "underlying interface used to send and receive the transformed traffic"
                                     },
                                     "xfrm_if_id": {
@@ -1626,7 +2098,7 @@
                     },
                     "sysctl": {
                         "description": "[interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/{IFACE}/`",
-                        "$ref": "#/definitions/iface-sysctl"
+                        "$ref": "#/$defs/iface-sysctl"
                     },
                     "ethtool": {
                         "description": "network driver and hardware settings via [ethtool(8)](https://man7.org/linux/man-pages/man8/ethtool.8.html)",
@@ -1640,15 +2112,15 @@
                                 "properties": {
                                     "autoneg": {
                                         "description": "enable pause autonegotiation",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "rx": {
                                         "description": "enable Rx pause",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "tx": {
                                         "description": "enable Tx pause",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     }
                                 }
                             },
@@ -1658,10 +2130,10 @@
                                 "description": "interrupt coalescing",
                                 "properties": {
                                     "adaptive-rx": {
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "adaptive-tx": {
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "rx-usecs": {
                                         "type": "integer"
@@ -1755,51 +2227,51 @@
                                 "properties": {
                                     "rx": {
                                         "description": "enable RX checksumming",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "tx": {
                                         "description": "enable TX checksumming",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "sg": {
                                         "description": "enable scatter-gather",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "tso": {
                                         "description": "enable TCP segmentation offload",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "ufo": {
                                         "description": "enable UDP fragmentation offload",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "gso": {
                                         "description": "enable generic segmentation offload",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "gro": {
                                         "description": "enable generic receive offload",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "lro": {
                                         "description": "enable large receive offload",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "rxvlan": {
                                         "description": "enable RX VLAN acceleration",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "txvlan": {
                                         "description": "enable TX VLAN acceleration",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "ntuple": {
                                         "description": "enable Rx ntuple filters and actions",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "rxhash": {
                                         "description": "enable receive hashing offload",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     }
                                 }
                             },
@@ -1846,7 +2318,7 @@
                                     },
                                     "autoneg": {
                                         "description": "enable autonegotation",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "advertise": {
                                         "description": "speed and duplex advertised by autonegotation",
@@ -1908,7 +2380,7 @@
                                                     },
                                                     {
                                                         "description": "enable flag",
-                                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                                     }
                                                 ]
                                             }
@@ -1946,11 +2418,11 @@
                                 "properties": {
                                     "eee": {
                                         "description": "enable EEE support",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "tx-lpi": {
                                         "description": "assert Tx LPI",
-                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                     },
                                     "advertise": {
                                         "description": "sets the speed for which EEE should be enabled (see also `change.advertise`)",
@@ -1972,7 +2444,7 @@
                                         "oneOf": [
                                             {
                                                 "description": "enable downshift",
-                                                "$ref": "#/definitions/iface-ethtool_onoff"
+                                                "$ref": "#/$defs/iface-ethtool_onoff"
                                             },
                                             {
                                                 "type": "array",
@@ -1981,7 +2453,7 @@
                                                 "items": [
                                                     {
                                                         "description": "enable downshift",
-                                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                                     },
                                                     {
                                                         "description": "*REQUIRED*",
@@ -2003,7 +2475,7 @@
                                         "oneOf": [
                                             {
                                                 "description": "enable Fast Link Down",
-                                                "$ref": "#/definitions/iface-ethtool_onoff"
+                                                "$ref": "#/$defs/iface-ethtool_onoff"
                                             },
                                             {
                                                 "type": "array",
@@ -2012,7 +2484,7 @@
                                                 "items": [
                                                     {
                                                         "description": "enable Fast Link Down",
-                                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                                     },
                                                     {
                                                         "description": "*REQUIRED*",
@@ -2034,7 +2506,7 @@
                                         "oneOf": [
                                             {
                                                 "description": "enable EDPD",
-                                                "$ref": "#/definitions/iface-ethtool_onoff"
+                                                "$ref": "#/$defs/iface-ethtool_onoff"
                                             },
                                             {
                                                 "type": "array",
@@ -2043,7 +2515,7 @@
                                                 "items": [
                                                     {
                                                         "description": "enable EDPD",
-                                                        "$ref": "#/definitions/iface-ethtool_onoff"
+                                                        "$ref": "#/$defs/iface-ethtool_onoff"
                                                     },
                                                     {
                                                         "description": "*REQUIRED*",
@@ -2109,7 +2581,7 @@
                             },
                             "qdisc": {
                                 "description": "root queueing disciplines",
-                                "$ref": "#/definitions/iface-tc_qdisc"
+                                "$ref": "#/$defs/iface-tc_qdisc"
                             },
                             "filter": {
                                 "description": "filter used by qdiscs",
@@ -2143,13 +2615,13 @@
                                                     ]
                                                 },
                                                 "protocol": {
-                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                    "$ref": "#/$defs/iface-tc_protocol"
                                                 },
                                                 "prio": {
-                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                    "$ref": "#/$defs/iface-tc_prio"
                                                 },
                                                 "action": {
-                                                    "$ref": "#/definitions/iface-tc_action"
+                                                    "$ref": "#/$defs/iface-tc_action"
                                                 },
                                                 "match": {
                                                     "description": "match packets using the [extended match infrastructure](https://man7.org/linux/man-pages/man8/tc-ematch.8.html)",
@@ -2167,13 +2639,13 @@
                                                     ]
                                                 },
                                                 "protocol": {
-                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                    "$ref": "#/$defs/iface-tc_protocol"
                                                 },
                                                 "prio": {
-                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                    "$ref": "#/$defs/iface-tc_prio"
                                                 },
                                                 "action": {
-                                                    "$ref": "#/definitions/iface-tc_action"
+                                                    "$ref": "#/$defs/iface-tc_action"
                                                 },
                                                 "baseclass": {
                                                     "description": "offset for the class ID calculation",
@@ -2320,13 +2792,13 @@
                                                     ]
                                                 },
                                                 "protocol": {
-                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                    "$ref": "#/$defs/iface-tc_protocol"
                                                 },
                                                 "prio": {
-                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                    "$ref": "#/$defs/iface-tc_prio"
                                                 },
                                                 "action": {
-                                                    "$ref": "#/definitions/iface-tc_action"
+                                                    "$ref": "#/$defs/iface-tc_action"
                                                 },
                                                 "handle": {
                                                     "description": "fwmark (iptables) to match",
@@ -2346,16 +2818,16 @@
                                                     ]
                                                 },
                                                 "parent": {
-                                                    "$ref": "#/definitions/iface-tc_qid"
+                                                    "$ref": "#/$defs/iface-tc_qid"
                                                 },
                                                 "protocol": {
-                                                    "$ref": "#/definitions/iface-tc_protocol"
+                                                    "$ref": "#/$defs/iface-tc_protocol"
                                                 },
                                                 "prio": {
-                                                    "$ref": "#/definitions/iface-tc_prio"
+                                                    "$ref": "#/$defs/iface-tc_prio"
                                                 },
                                                 "action": {
-                                                    "$ref": "#/definitions/iface-tc_action"
+                                                    "$ref": "#/$defs/iface-tc_action"
                                                 },
                                                 "classid": {
                                                     "description": "push matching packets into class",
