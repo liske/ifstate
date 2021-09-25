@@ -1,32 +1,35 @@
 # ChangeLog
 
-## 1.5.6
+## 1.5.6 - 2021-09-25
 
 Changes:
 - link: add attribute value mappings for bond and vlan interfaces
+- schema: add link name validation
 
 Fixes:
 - link: fix exception while 'show' for master/link to other netns
+- schema: simplify and make it work on jschon validator
+- schema: fix shortened path output on validation errors
 
-## 1.5.5
+## 1.5.5 - 2021-08-25
 
 Fixes:
 - ethtool: fix module import for pyroute2 0.6+
 - show: fix missing attributes
 - tc: fix internal exception during apply
 
-## 1.5.4
+## 1.5.4 - 2021-08-01
 
 Fixes:
 - link: recreate virtual interfaces if updating fails
 - wireguard: deep compare a peer's set of allowedips
 
-## 1.5.3
+## 1.5.3 - 2021-07-05
 
 Fixes:
 - schema: fix broken geneve links
 
-## 1.5.2
+## 1.5.2 - 2021-06-05
 
 Changes:
 - routing: make route matching verbose in verbose mode
@@ -35,12 +38,12 @@ Fixes:
 - routing: fix ipv6 routes get removed accidentally since the kernel uses
            a default priority of 1024 vs. 0 on ipv4 routes
 
-## 1.5.1
+## 1.5.1 - 2021-03-15
 
 Fixes:
 - check: fix broken check command (TypeError exception)
 
-## 1.5.0
+## 1.5.0 - 2021-03-23
 
 Changes:
 - vrrp: add support for failover link setups, design to work with
@@ -54,18 +57,18 @@ Fixes:
 - link: supress exceptions on unsupported permaddr or businfo
 - wireguard: fix broken apply iface settings
 
-## 1.4.0
+## 1.4.0 - 2021-01-09
 
 Changes:
 - support bus_info link identification [ethtool -i]
 
-## 1.3.2
+## 1.3.2 - 2020-12-20
 
 Fixes:
 - wireguard: fix name of persistent_keepalive_interval
 - link: add permaddr to kernel iface settings before for compare
 
-## 1.3.1
+## 1.3.1 - 2020-12-07
 
 Fixes:
 - several bugs in show command:
@@ -73,7 +76,7 @@ Fixes:
   - ignore non-scalar link attributes
   - fix kind None for some physical devices
 
-## 1.3.0
+## 1.3.0 - 2020-09-28
 
 Changes:
 - support prefered src address on routes
@@ -87,7 +90,7 @@ Changes:
 Fixes:
 - fix broken show command
 
-## 1.2.1
+## 1.2.1 - 2020-09-25
 
 Changes:
 - add schema support for ifalias
@@ -95,7 +98,7 @@ Changes:
 Fixes:
 - fix link lookup by mac address
 
-## 1.2.0
+## 1.2.0 - 2020-09-18
 
 Changes:
 - ignore: move defaults to builtin keys to make them
@@ -107,7 +110,7 @@ Fixes:
 - handle empty configs more gracefully
 - add quirks to make veth links work
 
-## 1.1.0
+## 1.1.0 - 2020-09-04
 
 Changes:
 - link: add ifb support
@@ -116,7 +119,7 @@ Changes:
   - tc filter
 - wireguard: catch exception if wireguard netlink support is missing
 
-## 1.0.0
+## 1.0.0 - 2020-08-24
 
 Changes:
 - ignore dynamic ip addresses by default and make it configurable
@@ -128,7 +131,7 @@ Changes:
 - schema: add missing `master` link property (for dummy and wireguard links)
 - schema: add `--soft-schema` CLI parameter
 
-## 0.9.0
+## 0.9.0 - 2020-08-17
 
 Changes:
 - ignore keepalive's vrrp interfaces by default
@@ -140,21 +143,21 @@ Changes:
 - multiple bugfixes
 
 
-## 0.8.1
+## 0.8.1 - 2020-07-26
 
 Changes:
 - Add missing `dummy` interface type to schema.
 - Fix WireGuard peer `endpoint` setting handling.
 
 
-## 0.8.0
+## 0.8.0 - 2020-07-26
 
 Changes:
 - ifstatecli: Add `!include` tag to read secrets from external files.
 - Add WireGuard configuration support.
 
 
-## 0.7.3
+## 0.7.3 - 2020-07-24
 
 Changes:
 - Fix broken ethtool pause schema.
@@ -163,13 +166,13 @@ Changes:
 - Minor bugfixes.
 
 
-## 0.7.2
+## 0.7.2 - 2020-07-16
 
 Changes:
 - Add ethtool support.
 - Minor cleanups.
 
-## 0.7.1
+## 0.7.1 - 2020-07-12
 
 Changes:
 - Add *sysctl* support.
@@ -177,7 +180,7 @@ Changes:
 - Minor bugfixes.
 
 
-## 0.7.0
+## 0.7.0 - 2020-07-04
 
 Changes:
 - Ignore kernel routes flagged `RTM_F_CLONED`.
@@ -187,7 +190,7 @@ Changes:
 - Implement routing rule support.
 
 
-## 0.6.3
+## 0.6.3 - 2020-06-20
 
 Changes:
 - Add interface index translations for some interface types:
@@ -198,7 +201,7 @@ Changes:
 - Delay route interface lookup to fix exception for routes on new interfaces.
 
 
-## 0.6.2
+## 0.6.2 - 2020-06-16
 
 Changes:
 - Bugfix: support `master` attribute as interface name (add lookup).
@@ -206,7 +209,7 @@ Changes:
 - Update schema to support integer values for various fields.
 
 
-## 0.6.1 (first public release)
+## 0.6.1 (first public release) - 2020-06-09
 
 Changes:
 - Add schema support (json-schema).
