@@ -5,20 +5,21 @@ from libifstate.routing import Tables, Rules
 from libifstate.sysctl import Sysctl
 from libifstate.parser import Parser
 from libifstate.tc import TC
+from libifstate.exception import netlinkerror_classes
 
 from pyroute2.netlink.rtnl.ifaddrmsg import IFA_F_PERMANENT
-from pyroute2.netlink.exceptions import NetlinkError
 try:
     from libifstate.wireguard import WireGuard
 except ModuleNotFoundError:
     # ignore missing plugin
     pass
-except NetlinkError:
+except Exception as err:
     # ignore plugin failure if kmod is not loaded
-    pass
+    if not isinstance(err, netlinkerror_classes):
+        raise
 
 from libifstate.util import logger, ipr, IfStateLogging
-from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, NetlinkError, ParserValidationError
+from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, ParserValidationError
 from ipaddress import ip_network, ip_interface
 from jsonschema import validate, ValidationError
 from copy import deepcopy
@@ -299,7 +300,9 @@ class IfState():
                                 ipr.link('set', index=link.get(
                                     'index'), state='down')
                                 ipr.link('del', index=link.get('index'))
-                            except NetlinkError as err:
+                            except Exception as err:
+                                if not isinstance(err, netlinkerror_classes):
+                                    raise
                                 logger.warning('removing link {} failed: {}'.format(
                                     name, err.args[1]))
                     # shutdown physical interfaces
@@ -317,7 +320,9 @@ class IfState():
                                 try:
                                     ipr.link('set', index=link.get(
                                         'index'), state='down')
-                                except NetlinkError as err:
+                                except Exception as err:
+                                    if not isinstance(err, netlinkerror_classes):
+                                        raise
                                     logger.warning('updating link {} failed: {}'.format(
                                         name, err.args[1]))
             if not retry:
@@ -443,7 +448,9 @@ class IfState():
                         try:
                             ifs_link['link'][attr] = ipr.get_ifname_by_index(
                                 ref)
-                        except NetlinkError as err:
+                        except Exception as err:
+                            if not isinstance(err, netlinkerror_classes):
+                                raise
                             logger.warning('lookup {} failed: {}'.format(
                                 attr, err.args[1]), extra={'iface': name})
                             ifs_link['link'][attr] = ref

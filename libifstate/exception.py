@@ -1,6 +1,16 @@
 from pyroute2.netlink.exceptions import NetlinkError
 from libifstate.util import logger
 
+# pyroute2.minimal exceptions might be broken
+#   => workaround for pyroute2 #845 #847
+netlinkerror_classes = (NetlinkError)
+try:
+    from pr2modules.netlink.exceptions import NetlinkError as Pr2mNetlinkError
+    netlinkerror_classes = (NetlinkError, Pr2mNetlinkError)
+except ModuleNotFoundError:
+    # required for pyroute2 before 0.6.0
+    pass
+
 class ExceptionCollector():
     def __init__(self, ifname):
         self.ifname = ifname

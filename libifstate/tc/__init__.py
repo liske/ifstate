@@ -1,5 +1,5 @@
 from libifstate.util import logger, ipr, IfStateLogging
-from libifstate.exception import ExceptionCollector, NetlinkError
+from libifstate.exception import ExceptionCollector, netlinkerror_classes
 
 
 class TC():
@@ -59,7 +59,9 @@ class TC():
                     }
                     try:
                         ipr.tc("del", **opts)
-                    except NetlinkError as err:
+                    except Exception as err:
+                        if not isinstance(err, netlinkerror_classes):
+                            raise
                         logger.warning('removing ingress qdisc on {} failed: {}'.format(
                             self.iface, err.args[1]))
                         excpts.add('del', err, **opts)
@@ -73,7 +75,9 @@ class TC():
                     }
                     try:
                         ipr.tc("add", **opts)
-                    except NetlinkError as err:
+                    except Exception as err:
+                        if not isinstance(err, netlinkerror_classes):
+                            raise
                         logger.warning('adding ingress qdisc on {} failed: {}'.format(
                             self.iface, err.args[1]))
                         excpts.add('add', err, **opts)
@@ -115,7 +119,9 @@ class TC():
             if recreate:
                 try:
                     ipr.tc("add", **opts)
-                except NetlinkError as err:
+                except Exception as err:
+                    if not isinstance(err, netlinkerror_classes):
+                        raise
                     logger.warning('adding qdisc {} on {} failed: {}'.format(
                         opts.get("handle"), self.iface, err.args[1]))
                     excpts.add('add', err, **opts)
@@ -123,7 +129,9 @@ class TC():
                 # soft update for TCA_OPTIONS
                 try:
                     ipr.tc("change", **opts)
-                except NetlinkError as err:
+                except Exception as err:
+                    if not isinstance(err, netlinkerror_classes):
+                        raise
                     logger.warning('updating qdisc {} on {} failed: {}'.format(
                         opts.get("handle"), self.iface, err.args[1]))
                     excpts.add('change', err, **opts)
@@ -172,7 +180,9 @@ class TC():
                     }
                     try:
                         ipr.del_filter_by_info(**opts)
-                    except NetlinkError as err:
+                    except Exception as err:
+                        if not isinstance(err, netlinkerror_classes):
+                            raise
                         logger.warning('deleting filter #{} on {} failed: {}'.format(
                             prio, self.iface, err.args[1]))
                         excpts.add('del', err, **opts)
@@ -200,7 +210,9 @@ class TC():
                             # replace seems only to work if there is no filter
                             # => something has changed
                             changes = True
-                        except NetlinkError as err:
+                        except Exception as err:
+                            if not isinstance(err, netlinkerror_classes):
+                                raise
                             # replace does not work, supress changes result
                             # for now
                             #changes = True
@@ -212,7 +224,9 @@ class TC():
                             ipr.del_filter_by_info(**opts)
                             ipr.tc("add-filter", **tc_filter)
 
-                    except NetlinkError as err:
+                    except Exception as err:
+                        if not isinstance(err, netlinkerror_classes):
+                            raise
                         logger.warning('replace filter #{} on {} failed: {}'.format(
                             tc_filter['prio'], self.iface, err.args[1]))
                         excpts.add('replace', err, **tc_filter)

@@ -1,5 +1,5 @@
 from libifstate.util import logger, ipr, IfStateLogging
-from libifstate.exception import ExceptionCollector, LinkTypeUnknown, NetlinkError
+from libifstate.exception import ExceptionCollector, LinkTypeUnknown, netlinkerror_classes
 from abc import ABC, abstractmethod
 import os
 import subprocess
@@ -274,7 +274,9 @@ class Link(ABC):
                     ipr.link('set', index=idx, state='down')
                     ipr.link('set', index=idx, ifname='{}!'.format(
                         self.settings['ifname']))
-                except NetlinkError as err:
+                except Exception as err:
+                    if not isinstance(err, netlinkerror_classes):
+                        raise
                     excpts.add('set', err, state='down', ifname='{}!')
 
             if self.cap_create and self.get_if_attr('kind') != self.settings['kind']:
@@ -306,9 +308,13 @@ class Link(ABC):
                 if not state is None and not self.idx is None:
                     try:
                         ipr.link('set', index=self.idx, state=state)
-                    except NetlinkError as err:
+                    except Exception as err:
+                        if not isinstance(err, netlinkerror_classes):
+                            raise
                         excpts.add('set', err, state=state)
-            except NetlinkError as err:
+            except Exception as err:
+                if not isinstance(err, netlinkerror_classes):
+                    raise
                 excpts.add('add', err, **(self.settings))
 
         if not self.ethtool is None:
@@ -322,7 +328,9 @@ class Link(ABC):
         if do_apply:
             try:
                 ipr.link('del', index=self.idx)
-            except NetlinkError as err:
+            except Exception as err:
+                if not isinstance(err, netlinkerror_classes):
+                    raise
                 excpts.add('del', err)
         self.idx = None
         self.create(do_apply, "replace")
@@ -371,7 +379,9 @@ class Link(ABC):
                 if do_apply:
                     try:
                         ipr.link('set', index=self.idx, state='down')
-                    except NetlinkError as err:
+                    except Exception as err:
+                        if not isinstance(err, netlinkerror_classes):
+                            raise
                         excpts.add('set', err, state='down')
                 if not 'state' in self.settings:
                     self.settings['state'] = 'up'
@@ -389,7 +399,9 @@ class Link(ABC):
                 try:
                     state = self.settings.pop('state', None)
                     ipr.link('set', index=self.idx, **(self.settings))
-                except NetlinkError as err:
+                except Exception as err:
+                    if not isinstance(err, netlinkerror_classes):
+                        raise
                     excpts.add('set', err, state=state)
 
                 try:
@@ -397,7 +409,9 @@ class Link(ABC):
                         # restore state setting for recreate
                         self.settings['state'] = state
                         ipr.link('set', index=self.idx, state=state)
-                except NetlinkError as err:
+                except Exception as err:
+                    if not isinstance(err, netlinkerror_classes):
+                        raise
                     excpts.add('set', err, state=state)
         else:
             self.set_ethtool_state(self.get_if_attr(
@@ -407,7 +421,9 @@ class Link(ABC):
                 try:
                     ipr.link('set', index=self.idx,
                              state=self.settings["state"])
-                except NetlinkError as err:
+                except Exception as err:
+                    if not isinstance(err, netlinkerror_classes):
+                        raise
                     excpts.add('set', err, state=state)
                 logger.info('change', extra={
                             'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})

@@ -1,7 +1,6 @@
 from libifstate.util import logger, ipr, IfStateLogging
-from libifstate.exception import RouteDupblicate
+from libifstate.exception import RouteDupblicate, netlinkerror_classes
 from ipaddress import ip_address, ip_network, IPv6Network
-from pyroute2.netlink.exceptions import NetlinkError
 from pyroute2.netlink.rtnl.fibmsg import FR_ACT_VALUES
 from pyroute2.netlink.rtnl import rt_type
 import collections.abc
@@ -287,7 +286,9 @@ class Tables(collections.abc.Mapping):
                     try:
                         if do_apply:
                             ipr.route('replace', **route)
-                    except NetlinkError as err:
+                    except Exception as err:
+                        if not isinstance(err, netlinkerror_classes):
+                            raise
                         logger.warning('route setup {} failed: {}'.format(
                             route['dst'], err.args[1]))
 
@@ -305,7 +306,9 @@ class Tables(collections.abc.Mapping):
                 try:
                     if do_apply:
                         ipr.route('del', **route)
-                except NetlinkError as err:
+                except Exception as err:
+                    if not isinstance(err, netlinkerror_classes):
+                        raise
                     logger.warning('removing route {} failed: {}'.format(
                         route['dst'], err.args[1]))
 
@@ -455,7 +458,9 @@ class Rules():
                 try:
                     if do_apply:
                         ipr.rule('add', **rule)
-                except NetlinkError as err:
+                except Exception as err:
+                    if not isinstance(err, netlinkerror_classes):
+                        raise
                     logger.warning('rule setup failed: {}'.format(err.args[1]))
 
         for rule in krules:
@@ -475,5 +480,7 @@ class Rules():
             try:
                 if do_apply:
                     ipr.rule('del', **rule)
-            except NetlinkError as err:
+            except Exception as err:
+                if not isinstance(err, netlinkerror_classes):
+                    raise
                 logger.warning('removing rule failed: {}'.format(err.args[1]))

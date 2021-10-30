@@ -1,5 +1,5 @@
 from libifstate.util import logger, IfStateLogging
-from libifstate.exception import NetlinkError
+from libifstate.exception import netlinkerror_classes
 from wgnlpy import WireGuard as WG
 from ipaddress import ip_network
 import collections
@@ -44,7 +44,9 @@ class WireGuard():
                 try:
                     wg.set_interface(
                         self.iface, **{k: v for k, v in self.wireguard.items() if k != "peers"})
-                except NetlinkError as err:
+                except Exception as err:
+                    if not isinstance(err, netlinkerror_classes):
+                        raise
                     logger.warning('updating iface {} failed: {}'.format(
                         self.iface, err.args[1]))
         else:
@@ -66,7 +68,9 @@ class WireGuard():
                     if do_apply:
                         try:
                             wg.set_peer(self.iface, **peer)
-                        except NetlinkError as err:
+                        except Exception as err:
+                            if not isinstance(err, netlinkerror_classes):
+                                raise
                             logger.warning('add peer to {} failed: {}'.format(
                                 self.iface, err.args[1]))
                 else:
@@ -88,7 +92,9 @@ class WireGuard():
                         if do_apply:
                             try:
                                 wg.set_peer(self.iface, **peer)
-                            except NetlinkError as err:
+                            except Exception as err:
+                                if not isinstance(err, netlinkerror_classes):
+                                    raise
                                 logger.warning('change peer at {} failed: {}'.format(
                                     self.iface, err.args[1]))
 
@@ -98,7 +104,9 @@ class WireGuard():
                     if do_apply:
                         try:
                             wg.remove_peers(self.iface, peer)
-                        except NetlinkError as err:
+                        except Exception as err:
+                            if not isinstance(err, netlinkerror_classes):
+                                raise
                             logger.warning('remove peer from {} failed: {}'.format(
                                 self.iface, err.args[1]))
             if has_pchanges:
