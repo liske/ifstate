@@ -31,10 +31,10 @@ setup(
         "libifstate": ["../schema/*.schema.json"],
     },
     install_requires=[
-        "pyroute2",
+        "pyroute2.minimal",
+        "pyroute2.ethtool",
         "PyYAML",
-        "jsonschema",
-        "wgnlpy",
+        "jsonschema"
     ],
     entry_points={
         "console_scripts": ["ifstatecli = ifstate.ifstate:main"]
