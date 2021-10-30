@@ -567,143 +567,7 @@
                     }
                 },
                 {
-                    "description": "[cake](https://man7.org/linux/man-pages/man8/tc-cake.8.html) - common applications kept enhanced (CAKE)",
-                    "required": [
-                        "kind"
-                    ],
-                    "properties": {
-                        "kind": {
-                            "const": "cake",
-                            "description": "qdisk type"
-                        },
-                        "handle": {
-                            "description": "unique id",
-                            "$ref": "#/$defs/iface-tc_qid"
-                        },
-                        "ack_filter": {
-                            "description": "ACKnowledge filter",
-                            "type": [
-                                "boolean",
-                                "string"
-                            ],
-                            "enum": [
-                                "aggressive",
-                                true,
-                                false
-                            ]
-                        },
-                        "atm_mode": {
-                            "description": "ATM mode",
-                            "type": [
-                                "boolean",
-                                "string"
-                            ],
-                            "enum": [
-                                "ptm",
-                                true,
-                                false
-                            ]
-                        },
-                        "autorate": {
-                            "type": "boolean",
-                            "description": "autorate-ingress"
-                        },
-                        "diffserv_mode": {
-                            "type": "string",
-                            "description": "diffserv mode",
-                            "enum": [
-                                "diffserv3",
-                                "diffserv4",
-                                "diffserv8",
-                                "besteffort",
-                                "precedence"
-                            ]
-                        },
-                        "ingress": {
-                            "description": "ingress",
-                            "type": "boolean"
-                        },
-                        "overhead": {
-                            "description": "overhead",
-                            "type": "integer",
-                            "minimum": -64,
-                            "maximum": 256
-                        },
-                        "flow_mode": {
-                            "description": "flow mode",
-                            "type": "string",
-                            "enum": [
-                                "flowblind",
-                                "srchost",
-                                "dsthost",
-                                "hosts",
-                                "flows",
-                                "dual-srchost",
-                                "dual-dsthost",
-                                "triple-isolated"
-                            ]
-                        },
-                        "fwmark": {
-                            "description": "fwmark",
-                            "type": "integer",
-                            "minimum": 0
-                        },
-                        "memlimit": {
-                            "description": "memlimit",
-                            "type": "integer",
-                            "minimum": 0
-                        },
-                        "mpu": {
-                            "description": "MPU",
-                            "type": "integer",
-                            "minimum": 0,
-                            "maximum": 256
-                        },
-                        "nat": {
-                            "description": "NAT",
-                            "type": "boolean"
-                        },
-                        "raw": {
-                            "description": "RAW",
-                            "type": "boolean"
-                        },
-                        "rtt": {
-                            "oneOf": [
-                                {
-                                    "type": "string",
-                                    "description": "well-known RTT",
-                                    "enum": [
-                                        "datacentre",
-                                        "lan",
-                                        "metro",
-                                        "regional",
-                                        "internet",
-                                        "oceanic",
-                                        "satellite",
-                                        "interplanetary"
-                                    ]
-                                },
-                                {
-                                    "type": "integer",
-                                    "description": "manually specify an RTT (us)",
-                                    "minimum": 1
-                                }
-                            ]
-                        },
-                        "split_gso": {
-                            "description": "split GSO",
-                            "type": "boolean"
-                        },
-                        "target": {
-                            "type": "integer",
-                            "description": "target",
-                            "minimum": 1
-                        },
-                        "wash": {
-                            "description": "wash",
-                            "type": "boolean"
-                        }
-                    }
+                    "$ref": "#/$defs/tc-cake"
                 },
                 {
                     "description": "[choke](https://man7.org/linux/man-pages/man8/tc-choke.8.html) - choose and keep scheduler",
@@ -841,6 +705,145 @@
                 }
             ]
         },
+        "tc-cake": {
+            "description": "[cake](https://man7.org/linux/man-pages/man8/tc-cake.8.html) - common applications kept enhanced (CAKE)",
+            "required": [
+                "kind"
+            ],
+            "properties": {
+                "kind": {
+                    "const": "cake",
+                    "description": "qdisk type"
+                },
+                "handle": {
+                    "description": "unique id",
+                    "$ref": "#/$defs/iface-tc_qid"
+                },
+                "ack_filter": {
+                    "description": "ACKnowledge filter",
+                    "type": [
+                        "boolean",
+                        "string"
+                    ],
+                    "enum": [
+                        "aggressive",
+                        true,
+                        false
+                    ]
+                },
+                "atm_mode": {
+                    "description": "ATM mode",
+                    "type": [
+                        "boolean",
+                        "string"
+                    ],
+                    "enum": [
+                        "ptm",
+                        true,
+                        false
+                    ]
+                },
+                "autorate": {
+                    "type": "boolean",
+                    "description": "autorate-ingress"
+                },
+                "diffserv_mode": {
+                    "type": "string",
+                    "description": "diffserv mode",
+                    "enum": [
+                        "diffserv3",
+                        "diffserv4",
+                        "diffserv8",
+                        "besteffort",
+                        "precedence"
+                    ]
+                },
+                "ingress": {
+                    "description": "ingress",
+                    "type": "boolean"
+                },
+                "overhead": {
+                    "description": "overhead",
+                    "type": "integer",
+                    "minimum": -64,
+                    "maximum": 256
+                },
+                "flow_mode": {
+                    "description": "flow mode",
+                    "type": "string",
+                    "enum": [
+                        "flowblind",
+                        "srchost",
+                        "dsthost",
+                        "hosts",
+                        "flows",
+                        "dual-srchost",
+                        "dual-dsthost",
+                        "triple-isolated"
+                    ]
+                },
+                "fwmark": {
+                    "description": "fwmark",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "memlimit": {
+                    "description": "memlimit",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "mpu": {
+                    "description": "MPU",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 256
+                },
+                "nat": {
+                    "description": "NAT",
+                    "type": "boolean"
+                },
+                "raw": {
+                    "description": "RAW",
+                    "type": "boolean"
+                },
+                "rtt": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "well-known RTT",
+                            "enum": [
+                                "datacentre",
+                                "lan",
+                                "metro",
+                                "regional",
+                                "internet",
+                                "oceanic",
+                                "satellite",
+                                "interplanetary"
+                            ]
+                        },
+                        {
+                            "type": "integer",
+                            "description": "manually specify an RTT (us)",
+                            "minimum": 1
+                        }
+                    ]
+                },
+                "split_gso": {
+                    "description": "split GSO",
+                    "type": "boolean"
+                },
+                "target": {
+                    "type": "integer",
+                    "description": "target",
+                    "minimum": 1
+                },
+                "wash": {
+                    "description": "wash",
+                    "type": "boolean"
+                }
+            }
+        },
         "iface-tc_action": {
             "description": "traffic control filter action",
             "type": "array",
@@ -956,6 +959,52 @@
                     "$ref": "#/$defs/ignore-rules"
                 }
             }
+        },
+        "cshaper": {
+            "description": "cshaper templates",
+            "type": "object",
+            "patternProperties": {
+                "": {
+                    "description": "cshaper profile",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "egress_qdisc",
+                        "ingress_qdisc",
+                        "ingress_ifname"
+                    ],
+                    "properties": {
+                        "egress_qdisc": {
+                            "$ref": "#/$defs/tc-cake"
+                        },
+                        "ingress_qdisc": {
+                            "$ref": "#/$defs/tc-cake"
+                        },
+                        "ingress_ifname": {
+                            "description": "build a ifb ifname using a regex on the ifname",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                                "search",
+                                "replace"
+                            ],
+                            "properties": {
+                                "search": {
+                                    "description": "pattern to search",
+                                    "type": "string"
+                                },
+                                "replace": {
+                                    "description": "replace pattern by string",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "required": [
+                "default"
+            ]
         },
         "interfaces": {
             "description": "list of interface settings (link settings and ip addresses)",
@@ -2571,6 +2620,28 @@
                                         }
                                     }
                                 }
+                            }
+                        }
+                    },
+                    "cshaper": {
+                        "description": "simple shaper setup based on the [cake](https://man7.org/linux/man-pages/man8/tc-cake.8.html) queue discipline; replaces any tc settings",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "ingress": {
+                                "description": "target ingress bandwidth",
+                                "type": "string",
+                                "default": "unlimited"
+                            },
+                            "egress": {
+                                "description": "target egress bandwidth",
+                                "type": "string",
+                                "default": "unlimited"
+                            },
+                            "profile": {
+                                "description": "cshaper profile",
+                                "type": "string",
+                                "default": "default"
                             }
                         }
                     },

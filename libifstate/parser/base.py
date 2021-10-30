@@ -60,6 +60,22 @@ class Parser(ABC):
                 {'proto': 189},
                 {'proto': 192},
             ],
+        },
+        'cshaper': {
+            'default': {
+                'egress_qdisc': {
+                    'kind': 'cake',
+                    'handle': '1:',
+                },
+                'ingress_qdisc': {
+                    'kind': 'cake',
+                    'handle': '1:',
+                },
+                'ingress_ifname': {
+                    'search': r'^\D{1,3}',
+                    'replace': 'ifb',
+                }
+            }
         }
     }
 

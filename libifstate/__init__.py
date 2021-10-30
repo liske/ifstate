@@ -122,6 +122,64 @@ class IfState():
             if 'sysctl' in ifstate:
                 self.sysctl.add(name, ifstate['sysctl'])
 
+            if 'cshaper' in ifstate:
+                profile_name = ifstate['cshaper'].get(
+                    'profile', 'default')
+                logger.debug('cshaper profile {} enabled'.format(profile_name),
+                             extra={'iface': name})
+                cshaper_profile = ifstates['cshaper'][profile_name]
+
+                # ingress
+                ifb_name = re.sub(
+                    cshaper_profile['ingress_ifname']['search'], cshaper_profile['ingress_ifname']['replace'], name)
+                logger.debug('cshaper ifb name {}'.format(ifb_name),
+                             extra={'iface': name})
+
+                ifb_state = {
+                    'name': ifb_name,
+                    'link': {
+                        'state': 'up',
+                        'kind': 'ifb',
+                    },
+                    'tc': {
+                        'qdisc': cshaper_profile['ingress_qdisc'],
+                    }
+                }
+                ifb_state['tc']['qdisc']['bandwidth'] = ifstate['cshaper'].get(
+                    'ingress', 'unlimited')
+
+                ifstates['interfaces'].append(ifb_state)
+
+                # egress
+                if 'tc' in ifstate:
+                    logger.warning(
+                        'cshaper settings replaces tc settings', extra={'iface': name})
+
+                ifstate['tc'] = {
+                    'ingress': True,
+                    'qdisc': cshaper_profile['egress_qdisc'],
+                    'filter': [
+                        {
+                            'kind': 'matchall',
+                            'parent': 'ffff:',
+                            'action': [
+                                {
+                                    'kind': 'mirred',
+                                    'direction': 'egress',
+                                    'action': 'redirect',
+                                    'dev': ifb_name,
+                                }
+                            ]
+                        }
+
+                    ]
+                }
+
+                ifstate['tc']['qdisc']['bandwidth'] = ifstate['cshaper'].get(
+                    'egress', 'unlimited')
+
+                del ifstate['cshaper']
+
             if 'tc' in ifstate:
                 self.tc[name] = TC(
                     name, ifstate['tc'])
@@ -360,7 +418,8 @@ class IfState():
                             if k not in ['UNKNOWN', 'IFLA_VLAN_FLAGS']:
                                 attr = ipr_link.nla2name(k)
                                 if attr in Link.attr_value_maps:
-                                    ifs_link['link'][attr] = Link.attr_value_maps[attr].get(v, v)
+                                    ifs_link['link'][attr] = Link.attr_value_maps[attr].get(
+                                        v, v)
                                 else:
                                     ifs_link['link'][attr] = v
                 else:
