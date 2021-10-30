@@ -1,6 +1,8 @@
 from libifstate.util import logger, ipr, IfStateLogging
+from libifstate.exception import netlinkerror_classes
 from ipaddress import ip_interface
 from pyroute2.netlink.rtnl.ifaddrmsg import IFA_F_PERMANENT
+
 
 class Addresses():
     def __init__(self, iface, addresses):
@@ -23,12 +25,14 @@ class Addresses():
         ipr_addr = {}
         addr_add = []
         for addr in ipr.get_addr(index=idx):
-            ip = ip_interface(addr.get_attr('IFA_ADDRESS') + '/' + str(addr['prefixlen']))
+            ip = ip_interface(addr.get_attr('IFA_ADDRESS') +
+                              '/' + str(addr['prefixlen']))
             ipr_addr[ip] = addr
 
         for addr in self.addresses:
             if addr in ipr_addr:
-                logger.info(' %s', addr.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
+                logger.info(' %s', addr.with_prefixlen, extra={
+                            'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
                 del ipr_addr[addr]
             else:
                 addr_add.append(addr)
@@ -36,11 +40,27 @@ class Addresses():
         for ip, addr in ipr_addr.items():
             if not any(ip in net for net in ignore):
                 if not ign_dynamic or ipr_addr[ip]['flags'] & IFA_F_PERMANENT == IFA_F_PERMANENT:
-                    logger.info('-%s', ip.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_DEL})
-                    if do_apply:
-                        ipr.addr("del", index=idx, address=str(ip.ip), mask=ip.network.prefixlen)
+                    logger.info(
+                        '-%s', ip.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_DEL})
+                    try:
+                        if do_apply:
+                            ipr.addr("del", index=idx, address=str(
+                                ip.ip), mask=ip.network.prefixlen)
+                    except Exception as err:
+                        if not isinstance(err, netlinkerror_classes):
+                            raise
+                        logger.warning('removing ip {}/{} failed: {}'.format(
+                            str(ip.ip), ip.network.prefixlen, err.args[1]))
 
         for addr in addr_add:
-            logger.info('+%s', addr.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
+            logger.info('+%s', addr.with_prefixlen,
+                        extra={'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
             if do_apply:
-                ipr.addr("add", index=idx, address=str(addr.ip), mask=addr.network.prefixlen)
+                try:
+                    ipr.addr("add", index=idx, address=str(
+                        addr.ip), mask=addr.network.prefixlen)
+                except Exception as err:
+                    if not isinstance(err, netlinkerror_classes):
+                        raise
+                    logger.warning('adding ip {}/{} failed: {}'.format(
+                        str(addr.ip), addr.network.prefixlen, err.args[1]))

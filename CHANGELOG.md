@@ -6,6 +6,7 @@ Changes:
 - cshaper: add simple tc-cake based shaping
 
 Fixes:
+- addresses: add missing exception handling
 - pyroute2: workaround NetlinkError regression (pyroute2 #845 #847)
 
 ## 1.5.6 - 2021-09-25
