@@ -20,7 +20,8 @@ The following features are already available:
 - configure interface `sysctl` options [≥ 0.7.1]
 - configure interface driver and hardware settings via `ethtool` [≥ 0.7.2]
 - configure WireGuard settings [≥ 0.8.0]
-- configure traffic control (`tc`) qdisc and filters (*experimental*) [≥ 1.1.0]
+- configure traffic control (`tc`) qdisc and filters [≥ 1.1.0]
+- cshaper: simple traffic control (`tc`) for cake based traffic shaping [≥ 1.5.7]
 - conditional interfaces for VRRP failover setups based on keepalived [≥ 1.5.0]
 - ignore interfaces by patterns
 - ignore ip addresses by prefix lists
