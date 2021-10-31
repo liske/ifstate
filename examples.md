@@ -18,4 +18,4 @@ This is a collection of configuration examples for different interface link type
 - [ethtool hardware settings](examples/ethtool.md)
 - [WireGuard tunnel](examples/wireguard.md)
 - [traffic control shaping](examples/tc-shaping.md)
-- [cshaper: simple traffic control shaping](examples/cshaper.md)
+- [simple bandwidth shaping with cshaper](examples/cshaper.md)

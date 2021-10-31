@@ -21,7 +21,7 @@ The following features are already available:
 - configure interface driver and hardware settings via `ethtool` [≥ 0.7.2]
 - configure WireGuard settings [≥ 0.8.0]
 - configure traffic control (`tc`) qdisc and filters [≥ 1.1.0]
-- cshaper: simple traffic control (`tc`) for cake based traffic shaping [≥ 1.5.7]
+- simple bandwidth shaping using [cake](https://man7.org/linux/man-pages/man8/tc-cake.8.html) (`cshaper`) [≥ 1.5.7]
 - conditional interfaces for VRRP failover setups based on keepalived [≥ 1.5.0]
 - ignore interfaces by patterns
 - ignore ip addresses by prefix lists

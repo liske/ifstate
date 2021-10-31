@@ -1,4 +1,4 @@
-# Example: simple traffic control shaping
+# Example: simple bandwidth shaping with cshaper
 
 This example configures traffic control settings using the cshaper feature:
 - configure interface eth0 with an ipv4 address
