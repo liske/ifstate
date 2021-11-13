@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 1.5.8 - 
+## 1.5.8 - 2021-11-14
 
 Changes:
 - neighbours: add static ip neighbour configuration

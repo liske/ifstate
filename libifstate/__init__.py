@@ -30,7 +30,7 @@ import re
 import json
 import errno
 
-__version__ = "1.5.7"
+__version__ = "1.5.8"
 
 
 class IfState():
