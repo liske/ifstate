@@ -2149,6 +2149,29 @@
                             }
                         ]
                     },
+                    "neighbours": {
+                        "description": "static ARP or NDISC cache entries",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "dst"
+                            ],
+                            "additionalProperties": false,
+                            "properties": {
+                                "dst": {
+                                    "description": "protocol address of the neighbour",
+                                    "type": "string",
+                                    "format": "ipv4"
+                                },
+                                "lladdr": {
+                                    "description": "link layer address of the neighbour",
+                                    "$ref": "#/$defs/iface-link_address",
+                                    "default": null
+                                }
+                            }
+                        }
+                    },
                     "sysctl": {
                         "description": "[interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/{IFACE}/`",
                         "$ref": "#/$defs/iface-sysctl"

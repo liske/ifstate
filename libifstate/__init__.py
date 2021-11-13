@@ -1,6 +1,7 @@
 from libifstate.exception import LinkDuplicate
 from libifstate.link.base import ethtool_path, Link
 from libifstate.address import Addresses
+from libifstate.neighbour import Neighbours
 from libifstate.routing import Tables, Rules
 from libifstate.sysctl import Sysctl
 from libifstate.parser import Parser
@@ -21,7 +22,7 @@ except Exception as err:
 from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, ParserValidationError
 from ipaddress import ip_network, ip_interface
-from jsonschema import validate, ValidationError
+from jsonschema import validate, ValidationError, FormatChecker
 from copy import deepcopy
 import os
 import pkgutil
@@ -37,6 +38,7 @@ class IfState():
         logger.debug('IfState {}'.format(__version__))
         self.links = {}
         self.addresses = {}
+        self.neighbours = {}
         self.ignore = {}
         self.vrrp = {
             'links': [],
@@ -64,7 +66,7 @@ class IfState():
         schema = json.loads(pkgutil.get_data(
             "libifstate", "../schema/ifstate.conf.schema.json"))
         try:
-            validate(ifstates, schema)
+            validate(ifstates, schema, format_checker=FormatChecker())
         except ValidationError as ex:
             if len(ex.path) > 0:
                 path = ["$"]
@@ -107,6 +109,11 @@ class IfState():
                 self.addresses[name] = Addresses(name, ifstate['addresses'])
             else:
                 self.addresses[name] = None
+
+            if 'neighbours' in ifstate:
+                self.neighbours[name] = Neighbours(name, ifstate['neighbours'])
+            else:
+                self.neighbours[name] = None
 
             if 'vrrp' in ifstate:
                 ktype = ifstate['vrrp']['type']
@@ -362,6 +369,27 @@ class IfState():
                         'ipaddr_dynamic', True), do_apply)
         else:
             logger.info("\nno interface ip addressing to be applied")
+
+        if any(not x is None for x in self.neighbours.values()):
+            logger.info("\nconfiguring interface neighbours...")
+            # add empty objects for unhandled interfaces
+            for link in ipr.get_links():
+                name = link.get_attr('IFLA_IFNAME')
+                # skip links on ignore list
+                if not name in self.neighbours and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
+                    self.neighbours[name] = Neighbours(name, [])
+
+            for name, neighbours in self.neighbours.items():
+                if name in vrrp_ignore:
+                    logger.debug('skipped due to vrrp constraint',
+                                 extra={'iface': name})
+                elif neighbours is None:
+                    logger.debug('skipped due to no address settings', extra={
+                                 'iface': name})
+                else:
+                    neighbours.apply(do_apply)
+        else:
+            logger.info("\nno interface neighbours to be applied")
 
         if not self.tables is None:
             self.tables.apply(self.ignore.get('routes', []), do_apply)
