@@ -8,6 +8,8 @@ Changes:
 Fixes:
 - schema: revert to json schema Draft 7 due to regressions
 - schema: fix usage of ipv4 & ipv6 format
+- packaging: make setup.py work with pyroute2<0.6, pyroute2>=0.6 and
+             pyroute2.minimal
 
 ## 1.5.7 - 2021-10-31
 

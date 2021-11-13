@@ -16,6 +16,19 @@ def version():
     raise RuntimeError("Unable to find version string.")
 
 
+def install_requires():
+    requires = [
+        "jsonschema"
+    ]
+
+    try:
+        import pyroute2
+    except ModuleNotFoundError:
+        requires.append('pyroute2')
+
+    return requires
+
+
 setup(
     name="ifstate",
     version=version(),
@@ -30,12 +43,12 @@ setup(
     package_data={
         "libifstate": ["../schema/*.schema.json"],
     },
-    install_requires=[
-        "pyroute2.minimal",
-        "pyroute2.ethtool",
-        "PyYAML",
-        "jsonschema"
-    ],
+    install_requires=install_requires(),
+    extras_require={
+        'wireguard': [
+            'wgnlpy'
+        ]
+    },
     entry_points={
         "console_scripts": ["ifstatecli = ifstate.ifstate:main"]
     },
