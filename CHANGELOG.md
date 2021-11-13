@@ -5,6 +5,9 @@
 Changes:
 - neighbours: add static ip neighbour configuration
 
+Fixes:
+- schema: revert to json schema Draft 7 due to regressions
+
 ## 1.5.7 - 2021-10-31
 
 Changes:
