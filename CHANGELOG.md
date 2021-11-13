@@ -7,6 +7,7 @@ Changes:
 
 Fixes:
 - schema: revert to json schema Draft 7 due to regressions
+- schema: fix usage of ipv4 & ipv6 format
 
 ## 1.5.7 - 2021-10-31
 

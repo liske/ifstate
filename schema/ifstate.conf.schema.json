@@ -121,13 +121,11 @@
                     },
                     "from": {
                         "type": "string",
-                        "description": "select the source prefix to match",
-                        "format": "ipv4,ipv6"
+                        "description": "select the source prefix to match"
                     },
                     "to": {
                         "type": "string",
-                        "description": "select the destination prefix to match",
-                        "format": "ipv4,ipv6"
+                        "description": "select the destination prefix to match"
                     },
                     "iif": {
                         "type": "string",
@@ -3002,8 +3000,7 @@
                                             "description": "list of prefixes in CIDR notation",
                                             "type": "array",
                                             "items": {
-                                                "type": "string",
-                                                "format": "ipv4,ipv6"
+                                                "type": "string"
                                             }
                                         }
                                     }
@@ -3094,12 +3091,26 @@
                             "via": {
                                 "description": "address of the nexthop router",
                                 "type": "string",
-                                "format": "ipv4,ipv6"
+                                "oneOf": [
+                                    {
+                                        "format": "ipv4"
+                                    },
+                                    {
+                                        "format": "ipv6"
+                                    }
+                                ]
                             },
                             "src": {
                                 "description": "the source address to prefer",
                                 "type": "string",
-                                "format": "ipv4,ipv6"
+                                "oneOf": [
+                                    {
+                                        "format": "ipv4"
+                                    },
+                                    {
+                                        "format": "ipv6"
+                                    }
+                                ]
                             },
                             "preference": {
                                 "description": "preference of the route",
@@ -3165,13 +3176,11 @@
                             },
                             "from": {
                                 "type": "string",
-                                "description": "select the source prefix to match",
-                                "format": "ipv4,ipv6"
+                                "description": "select the source prefix to match"
                             },
                             "to": {
                                 "type": "string",
-                                "description": "select the destination prefix to match",
-                                "format": "ipv4,ipv6"
+                                "description": "select the destination prefix to match"
                             },
                             "iif": {
                                 "type": "string",
