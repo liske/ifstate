@@ -1109,7 +1109,7 @@
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual tunnel interface IPv4|IPv6 over IPv6",
                                 "required": [
                                     "kind"
                                 ],
@@ -1139,7 +1139,7 @@
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "IP over Infiniband device",
                                 "required": [
                                     "kind"
                                 ],
@@ -1169,7 +1169,7 @@
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Interface for L3 (IPv6/IPv4) based VLANs",
                                 "required": [
                                     "kind"
                                 ],
@@ -1199,7 +1199,7 @@
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual interface base on link layer address (MAC)",
                                 "required": [
                                     "kind"
                                 ],
@@ -1229,7 +1229,7 @@
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual interface based on link layer address (MAC) and TAP",
                                 "required": [
                                     "kind"
                                 ],
@@ -1259,7 +1259,7 @@
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Team network device",
                                 "required": [
                                     "kind"
                                 ],
@@ -1289,7 +1289,7 @@
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual software device",
                                 "required": [
                                     "kind"
                                 ],
@@ -1319,7 +1319,7 @@
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual Routing and Forwarding device",
                                 "required": [
                                     "kind"
                                 ],
@@ -1349,7 +1349,7 @@
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual tunnel interface over IPv4",
                                 "required": [
                                     "kind"
                                 ],
@@ -1379,7 +1379,7 @@
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual tunnel interface over IPv6",
                                 "required": [
                                     "kind"
                                 ],
