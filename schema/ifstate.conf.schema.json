@@ -1,8 +1,8 @@
 {
     "$id": "https://ifstate.net/schema/ifstate.conf.schema.json",
-    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ifstate.conf",
-    "description": "IfState Configuration Schema",
+    "description": "IfState 1.6.0+ Configuration Schema",
     "type": "object",
     "required": [
         "interfaces"
@@ -121,13 +121,11 @@
                     },
                     "from": {
                         "type": "string",
-                        "description": "select the source prefix to match",
-                        "format": "ipv4,ipv6"
+                        "description": "select the source prefix to match"
                     },
                     "to": {
                         "type": "string",
-                        "description": "select the destination prefix to match",
-                        "format": "ipv4,ipv6"
+                        "description": "select the destination prefix to match"
                     },
                     "iif": {
                         "type": "string",
@@ -195,6 +193,10 @@
                 "up",
                 "down"
             ]
+        },
+        "iface-link_txqlen": {
+            "type": "integer",
+            "description": "the transmit queue length of the device"
         },
         "iface-link_ifalias": {
             "type": "string",
@@ -1098,13 +1100,16 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual tunnel interface IPv4|IPv6 over IPv6",
                                 "required": [
                                     "kind"
                                 ],
@@ -1125,13 +1130,16 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "IP over Infiniband device",
                                 "required": [
                                     "kind"
                                 ],
@@ -1152,13 +1160,16 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Interface for L3 (IPv6/IPv4) based VLANs",
                                 "required": [
                                     "kind"
                                 ],
@@ -1179,13 +1190,16 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual interface base on link layer address (MAC)",
                                 "required": [
                                     "kind"
                                 ],
@@ -1206,13 +1220,16 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual interface based on link layer address (MAC) and TAP",
                                 "required": [
                                     "kind"
                                 ],
@@ -1233,13 +1250,16 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Team network device",
                                 "required": [
                                     "kind"
                                 ],
@@ -1260,13 +1280,16 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual software device",
                                 "required": [
                                     "kind"
                                 ],
@@ -1287,13 +1310,16 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual Routing and Forwarding device",
                                 "required": [
                                     "kind"
                                 ],
@@ -1314,13 +1340,16 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual tunnel interface over IPv4",
                                 "required": [
                                     "kind"
                                 ],
@@ -1341,13 +1370,16 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
                                 }
                             },
                             {
-                                "description": "generic interface",
+                                "description": "Virtual tunnel interface over IPv6",
                                 "required": [
                                     "kind"
                                 ],
@@ -1367,6 +1399,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1395,6 +1430,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1617,6 +1655,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
@@ -1673,6 +1714,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
@@ -1703,6 +1747,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1740,6 +1787,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
@@ -1769,6 +1819,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1821,6 +1874,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
@@ -1862,6 +1918,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
@@ -1897,6 +1956,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1937,6 +1999,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1981,6 +2046,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
@@ -2019,6 +2087,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -2061,6 +2132,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
@@ -2100,6 +2174,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
@@ -2129,6 +2206,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
@@ -2148,6 +2228,29 @@
                                 }
                             }
                         ]
+                    },
+                    "neighbours": {
+                        "description": "static ARP or NDISC cache entries",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "dst"
+                            ],
+                            "additionalProperties": false,
+                            "properties": {
+                                "dst": {
+                                    "description": "protocol address of the neighbour",
+                                    "type": "string",
+                                    "format": "ipv4"
+                                },
+                                "lladdr": {
+                                    "description": "link layer address of the neighbour",
+                                    "$ref": "#/$defs/iface-link_address",
+                                    "default": null
+                                }
+                            }
+                        }
                     },
                     "sysctl": {
                         "description": "[interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/{IFACE}/`",
@@ -2979,8 +3082,7 @@
                                             "description": "list of prefixes in CIDR notation",
                                             "type": "array",
                                             "items": {
-                                                "type": "string",
-                                                "format": "ipv4,ipv6"
+                                                "type": "string"
                                             }
                                         }
                                     }
@@ -3071,12 +3173,26 @@
                             "via": {
                                 "description": "address of the nexthop router",
                                 "type": "string",
-                                "format": "ipv4,ipv6"
+                                "oneOf": [
+                                    {
+                                        "format": "ipv4"
+                                    },
+                                    {
+                                        "format": "ipv6"
+                                    }
+                                ]
                             },
                             "src": {
                                 "description": "the source address to prefer",
                                 "type": "string",
-                                "format": "ipv4,ipv6"
+                                "oneOf": [
+                                    {
+                                        "format": "ipv4"
+                                    },
+                                    {
+                                        "format": "ipv6"
+                                    }
+                                ]
                             },
                             "preference": {
                                 "description": "preference of the route",
@@ -3142,13 +3258,11 @@
                             },
                             "from": {
                                 "type": "string",
-                                "description": "select the source prefix to match",
-                                "format": "ipv4,ipv6"
+                                "description": "select the source prefix to match"
                             },
                             "to": {
                                 "type": "string",
-                                "description": "select the destination prefix to match",
-                                "format": "ipv4,ipv6"
+                                "description": "select the destination prefix to match"
                             },
                             "iif": {
                                 "type": "string",
