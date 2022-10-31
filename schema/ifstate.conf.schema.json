@@ -194,6 +194,10 @@
                 "down"
             ]
         },
+        "iface-link_txqlen": {
+            "type": "integer",
+            "description": "the transmit queue length of the device"
+        },
         "iface-link_ifalias": {
             "type": "string",
             "description": "symbolic name for easy reference"
@@ -1096,6 +1100,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
@@ -1122,6 +1129,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1150,6 +1160,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
@@ -1176,6 +1189,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1204,6 +1220,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
@@ -1230,6 +1249,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1258,6 +1280,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
@@ -1284,6 +1309,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1312,6 +1340,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
@@ -1338,6 +1369,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1366,6 +1400,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
@@ -1393,6 +1430,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1615,6 +1655,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
@@ -1671,6 +1714,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
@@ -1701,6 +1747,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1738,6 +1787,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
@@ -1767,6 +1819,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1819,6 +1874,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
@@ -1860,6 +1918,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
@@ -1895,6 +1956,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1935,6 +1999,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -1979,6 +2046,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
@@ -2017,6 +2087,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
@@ -2059,6 +2132,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
@@ -2098,6 +2174,9 @@
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     }
@@ -2126,6 +2205,9 @@
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
