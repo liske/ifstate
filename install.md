@@ -20,6 +20,7 @@ title: Install
 - [jsonschema](https://github.com/Julian/jsonschema) - An implementation of JSON Schema validation for Python
 - [wgnlpy](https://github.com/ArgosyLabs/wgnlpy) - Python netlink connector to WireGuard *(optional)*
 
+*IfState* uses python ctypes to configure *eXpress Data Path* (XDP). You need to have `libbp.so.1` available to configure *XDP*.
 
 ## PyPI
 

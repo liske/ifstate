@@ -10,8 +10,9 @@ declarative manner. It is a frontend for the kernel netlink protocol using
 - bridge
 - ethtool
 - sysctl for interface settings (`/proc/sys/net/ipv[46]/conf/$IFACE/`)
-- tc (*experimental*)
+- tc
 - wireguard
+- xdp (*experimental*)
 
 It was written for interface configuration on lightweight software defined linux
 routers **without** using any additional network management daemon like
@@ -48,7 +49,7 @@ Alternatively you could use *pip3* to install *IfState*:
 pip3 install ifstate
 ```
 
-This will also install all dependencies if not already statisfied.
+This will also install all python dependencies if not already statisfied.
 
 [More...](install.md)
 
