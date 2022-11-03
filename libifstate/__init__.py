@@ -19,6 +19,21 @@ except Exception as err:
     if not isinstance(err, netlinkerror_classes):
         raise
 
+try:
+    from libifstate.bpf import libbpf
+except OSError:
+    # ignore missing plugin
+    pass
+except AttributeError:
+    # ignore missing symbols (i.e. libbpf0)
+    pass
+
+try:
+    from libifstate.xdp import XDP
+except ModuleNotFoundError:
+    # ignore missing plugin
+    pass
+
 from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, ParserValidationError
 from ipaddress import ip_network, ip_interface
@@ -29,6 +44,7 @@ import pkgutil
 import re
 import json
 import errno
+import logging
 
 __version__ = "1.5.8"
 
@@ -50,16 +66,24 @@ class IfState():
         self.sysctl = Sysctl()
         self.tc = {}
         self.wireguard = {}
+        self.xdp = {}
         self.features = {
             'link': True,
             'sysctl': os.access('/proc/sys/net', os.R_OK),
             'ethtool': not ethtool_path is None,
             'tc': True,
             'wireguard': not globals().get("WireGuard") is None,
+            'bpf': not globals().get("libbpf") is None,
+            'xdp': not globals().get("XDP") is None,
         }
 
         logger.debug('{}'.format(' '.join(sorted(
             [x for x, y in self.features.items() if y]))), extra={'iface': 'features'})
+
+        if self.features['bpf']:
+            if logger.level != logging.DEBUG:
+                # BPF: disable libbpf stderr output
+                libbpf.libbpf_set_print(0)
 
     def update(self, ifstates, soft_schema):
         # check config schema
@@ -197,6 +221,12 @@ class IfState():
                     raise FeatureMissingError("wireguard")
 
                 self.wireguard[name] = WireGuard(name, ifstate['wireguard'])
+
+            if 'xdp' in ifstate:
+                if not self.features['xdp']:
+                    raise FeatureMissingError("xdp")
+
+                self.xdp[name] = XDP(name, ifstate['xdp'])
 
         # add routing from config
         if 'routing' in ifstates:
@@ -347,6 +377,19 @@ class IfState():
                                  'iface': name})
                 else:
                     tc.apply(do_apply)
+
+        if any(not x is None for x in self.xdp.values()):
+            logger.info("\nconfiguring eXpress Data Path...")
+
+            for name, xdp in self.xdp.items():
+                if name in vrrp_ignore:
+                    logger.debug('skipped due to vrrp constraint',
+                                 extra={'iface': name})
+                elif xdp is None:
+                    logger.debug('skipped due to no xdp settings', extra={
+                                 'iface': name})
+                else:
+                    xdp.apply(do_apply)
 
         if any(not x is None for x in self.addresses.values()):
             logger.info("\nconfiguring interface ip addresses...")
