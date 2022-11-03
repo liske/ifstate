@@ -3089,6 +3089,47 @@
                                 }
                             }
                         }
+                    },
+                    "xdp": {
+                        "description": "settings for XDP (\"eXpress Data Path\") BPF program",
+                        "oneOf": [
+                            {
+                                "type": "boolean",
+                                "enum": [ false ]
+                            },
+                            {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                    "object"
+                                ],
+                                "properties": {
+                                    "object": {
+                                        "description": "BPF ELF file to load",
+                                        "type": "string"
+                                    },
+                                    "section": {
+                                        "description": "XDP program's section name",
+                                        "type": "string",
+                                        "default": "xdp"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                    "pinned"
+                                ],
+                                "properties": {
+                                    "pinned": {
+                                        "description": "path to already pinned XDP program",
+                                        "type": "string",
+                                        "format": "^/sys/fs/bfd/$"
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
