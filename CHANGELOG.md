@@ -1,5 +1,14 @@
 # ChangeLog
 
+## 1.6.0 - 2021-11-03
+
+Changes:
+- xdp: add experimental eXpress Data Path (XDP) support
+- link: add txqlen link setting
+
+Fixes:
+- schema: fix link kind descriptions
+
 ## 1.5.8 - 2021-11-14
 
 Changes:
