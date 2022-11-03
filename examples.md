@@ -19,3 +19,4 @@ This is a collection of configuration examples for different interface link type
 - [WireGuard tunnel](examples/wireguard.md)
 - [traffic control shaping](examples/tc-shaping.md)
 - [simple bandwidth shaping with cshaper](examples/cshaper.md)
+- [attach XDP program to interface](examples/xdp.md)
