@@ -3094,10 +3094,12 @@
                         "description": "settings for XDP (\"eXpress Data Path\") BPF program",
                         "oneOf": [
                             {
+                                "description": "remove attached XDP program",
                                 "type": "boolean",
                                 "enum": [ false ]
                             },
                             {
+                                "description": "attach XDP program from object file",
                                 "type": "object",
                                 "additionalProperties": false,
                                 "required": [
@@ -3116,6 +3118,7 @@
                                 }
                             },
                             {
+                                "description": "attach already pinned XDP program",
                                 "type": "object",
                                 "additionalProperties": false,
                                 "required": [
