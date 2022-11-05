@@ -20,15 +20,6 @@ except Exception as err:
         raise
 
 try:
-    from libifstate.bpf import libbpf
-except OSError:
-    # ignore missing plugin
-    pass
-except AttributeError:
-    # ignore missing symbols (i.e. libbpf0)
-    pass
-
-try:
     from libifstate.xdp import XDP
 except ModuleNotFoundError:
     # ignore missing plugin

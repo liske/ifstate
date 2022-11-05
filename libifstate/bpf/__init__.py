@@ -1,7 +1,9 @@
 from ctypes import cdll, Structure, POINTER, c_int, c_uint, c_char_p, c_size_t, c_bool, c_void_p, c_ubyte, c_ulong, c_char
 import ctypes
 
+
 BPF_PROG_TYPE_XDP = 6
+
 
 class struct_bpf_link(Structure):
     pass
@@ -10,22 +12,7 @@ class struct_bpf_object(Structure):
     pass
 
 class struct_bpf_object_open_opts(Structure):
-    pass
-
-struct_bpf_object_open_opts.__slots__ = [
-    'sz',
-    'object_name',
-    'relaxed_maps',
-    'pin_root_path',
-    'unnamed_1',
-    'kconfig',
-    'btf_custom_path',
-    'kernel_log_buf',
-    'kernel_log_size',
-    'kernel_log_level',
-    'unnamed_2',
-]
-struct_bpf_object_open_opts._fields_ = [
+    _fields_ = [
     ('sz', c_size_t),
     ('object_name', c_char_p),
     ('relaxed_maps', c_bool),
@@ -39,49 +26,6 @@ struct_bpf_object_open_opts._fields_ = [
     ('unnamed_2', c_size_t),
 ]
 
-
-# class struct_bpf_prog_info(Structure):
-#     pass
-
-# struct_bpf_prog_info.__slots__ = [
-#     'type',
-#     'id',
-#     'tag',
-#     'jited_prog_len',
-#     'xlated_prog_len',
-#     'jited_prog_insns',
-#     'xlated_prog_insns',
-#     'load_time',
-#     'created_by_uid',
-#     'nr_map_ids',
-#     'map_ids',
-#     'name',
-#     'ifindex',
-#     'gpl_compatible',
-#     'unnamed_1',
-#     'netns_dev',
-#     'netns_ino',
-#     'nr_jited_ksyms',
-#     'nr_jited_func_lens',
-#     'jited_ksyms',
-#     'jited_func_lens',
-#     'btf_id',
-#     'func_info_rec_size',
-#     'func_info',
-#     'nr_func_info',
-#     'nr_line_info',
-#     'line_info',
-#     'jited_line_info',
-#     'nr_jited_line_info',
-#     'line_info_rec_size',
-#     'jited_line_info_rec_size',
-#     'nr_prog_tags',
-#     'prog_tags',
-#     'run_time_ns',
-#     'run_cnt',
-#     'recursion_misses',
-#     'verified_insns',
-# ]
 class struct_bpf_prog_info(Structure):
     _fields_ = [
     ('type', c_uint),
@@ -124,30 +68,18 @@ class struct_bpf_prog_info(Structure):
 ]
 
 
-
 class struct_bpf_program(Structure):
     pass
 
-# libbpf0 wrapper
-# libbpf = cdll.LoadLibrary('libbpf.so.0')
-# libbpf.bpf_prog_load.argtypes = (
-#     ctypes.c_char_p,                    # const char *filename
-#     c_int,                              # enum bpf_prog_type type
-#     POINTER(POINTER(struct_bpf_object)),# struct bpf_object **pobj
-#     ctypes.POINTER(c_int))              # int *prog_fd
-# libbpf.bpf_prog_load.restype = c_int
 
-# libbpf.bpf_object__pin.argtypes = (
-#     ctypes.c_void_p(),  # struct bpf_object *pobj
-#     ctypes.c_char_p)    # const char *path
+# check if libbpf.so.1 is available
+libbpf = None
+try:
+    libbpf = cdll.LoadLibrary('libbpf.so.1')
+except OSError:
+    # ignore missing library
+    raise ModuleNotFoundError("Failed to load library libbpf.so.1!")
 
-# libbpf.bpf_set_link_xdp_fd.argtypes = (
-#     c_int,      # int ifindex
-#     c_int,      # int fd
-#     c_uint)     # c_uint flags
-# libbpf.bpf_set_link_xdp_fd.restype = c_int
-
-libbpf = cdll.LoadLibrary('libbpf.so.1')
 
 libbpf.bpf_object__open_file.argtypes = (
     c_char_p,                               # const char *path
