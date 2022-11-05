@@ -3106,6 +3106,33 @@
                                     "object"
                                 ],
                                 "properties": {
+                                    "mode": {
+                                        "oneOf": [
+                                            {
+                                                "description": "force attach mode of the XDP program (`auto`: let the kernel choose, `xdp`: run inside driver, `xdpgeneric`: driver-independent before SKB allocation, `xdpoffload`: offload to SmartNIC co-processor)",
+                                                "type": "string",
+                                                "enum": [
+                                                    "auto",
+                                                    "xdp",
+                                                    "xdpgeneric",
+                                                    "xdpoffload"
+                                                ],
+                                                "default": "auto"
+                                            },
+                                            {
+                                                "description": "allowed attach modes of the XDP program (`xdp`: run inside driver, `xdpgeneric`: driver-independent before SKB allocation, `xdpoffload`: offload to SmartNIC co-processor)",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "xdp",
+                                                        "xdpgeneric",
+                                                        "xdpoffload"
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
                                     "object": {
                                         "description": "BPF ELF file to load",
                                         "type": "string"

@@ -1,6 +1,9 @@
 from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import netlinkerror_classes
 from libifstate.bpf import libbpf, struct_bpf_prog_info
+
+from pyrouet2.pr2modules.netlink.rtnl.ifinfmsg import XDP_FLAGS_SKB_MODE, XDP_FLAGS_DRV_MODE, XDP_FLAGS_HW_MODE
+
 import ctypes
 import os
 
@@ -22,6 +25,7 @@ class XDP():
         # get current BPF tag, if any
         current_prog_tag = None
         current_prog_id = self.link.get_attr('IFLA_XDP', {}).get('IFLA_XDP_PROG_ID')
+        current_attached = self.link.get_attr('IFLA_XDP', {}).get('IFLA_XDP_ATTACHED')
         if current_prog_id:
             current_prog_fd = libbpf.bpf_prog_get_fd_by_id(current_prog_id)
             if current_prog_fd < 0:
@@ -39,6 +43,9 @@ class XDP():
                 else:
                     logger.warning('could not get current XDP obj info for {}: {}'.format(
                         self.iface, os.strerror(-rc)))
+
+        logger.debug('current attached: {}'.format(current_attached), extra={
+            'iface': self.iface})
 
         # load new BPF prog
         new_prog_tag = None
@@ -106,16 +113,50 @@ class XDP():
                 logger.warning('XDP failed to get prog info on {}'.format(
                     self.iface))
 
-        # set new XDP prog if tag has changed
-        if current_prog_tag != new_prog_tag:
+        # get attach mode flags
+        new_attached = self.xdp.get("mode", "auto")
+        if type(self.xdp["mode"]) != list:
+            new_attached = [new_attached]
+
+        if "xdp" in new_attached:
+            new_flags = new_flags | XDP_MODE
+
+        new_flags = 0
+        if not "auto" in new_attached:
+            if "xdp" in new_attached:
+                new_flags = new_flags | XDP_FLAGS_DRV_MODE
+            if "xdpgeneric" in new_attached:
+                new_flags = new_flags | XDP_FLAGS_SKB_MODE
+            if "xdpoffload" in new_attached:
+                new_flags = new_flags | XDP_FLAGS_HW_MODE
+
+        logger.debug('new attached: {}'.format(", ".join(new_attached)), extra={
+            'iface': self.iface})
+
+        # set new XDP prog if tag or attach mode has changed
+        if current_prog_tag != new_prog_tag or not current_attached in new_attached:
             if do_apply:
                 try:
-                    ipr.link('set', index=self.idx, xdp_fd=new_prog_fd)
+                    ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
-                    logger.warning('attaching XDP program on {} failed: {}'.format(
-                        self.iface, err.args[1]))
+
+                    if new_prog_fd == -1:
+                        logger.warning('attaching XDP program on {} failed: {}'.format(
+                            self.iface, err.args[1]))
+                    else:
+                        # try again: detaching XDP first
+                        try:
+                            ipr.link('set', index=self.idx, xdp_fd=-1)
+
+                            ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
+                        except Exception as err:
+                            if not isinstance(err, netlinkerror_classes):
+                                raise
+
+                            logger.warning('attaching XDP program on {} failed: {}'.format(
+                                self.iface, err.args[1]))
 
             if new_prog_fd == -1:
                 logger.info('detach', extra={
