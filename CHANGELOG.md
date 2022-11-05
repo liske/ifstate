@@ -1,5 +1,15 @@
 # ChangeLog
 
+## 1.6.1 - 2021-11-05
+
+Changes:
+- xdp: allow to specify attach mode
+- xdp: check libbpf symbols before enabling feature
+
+Fixes:
+- schema: fix xdp pinned format pattern
+- xdp: fix exception if libbpf.so.1 is not available
+
 ## 1.6.0 - 2021-11-03
 
 Changes:
