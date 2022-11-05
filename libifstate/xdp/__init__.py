@@ -127,3 +127,16 @@ class XDP():
             logger.info(
                 'ok',
                 extra={'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
+
+try:
+    libbpf.bpf_obj_get_info_by_fd
+    libbpf.bpf_object__name
+    libbpf.bpf_object__next_program
+    libbpf.bpf_object__load
+    libbpf.bpf_object__open_file
+    libbpf.bpf_prog_get_fd_by_id
+    libbpf.bpf_program__fd
+    libbpf.bpf_program__section_name
+except AttributeError as ex:
+    # ignore missing library
+    raise ModuleNotFoundError(ex)
