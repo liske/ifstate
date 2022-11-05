@@ -3128,7 +3128,7 @@
                                     "pinned": {
                                         "description": "path to already pinned XDP program",
                                         "type": "string",
-                                        "format": "^/sys/fs/bfd/$"
+                                        "format": "^/sys/fs/bfd/."
                                     }
                                 }
                             }
