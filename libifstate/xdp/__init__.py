@@ -2,7 +2,9 @@ from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import netlinkerror_classes
 from libifstate.bpf import libbpf, struct_bpf_prog_info
 
-from pyrouet2.pr2modules.netlink.rtnl.ifinfmsg import XDP_FLAGS_SKB_MODE, XDP_FLAGS_DRV_MODE, XDP_FLAGS_HW_MODE
+from pyroute2.netlink.rtnl.ifinfmsg import XDP_FLAGS_SKB_MODE
+from pyroute2.netlink.rtnl.ifinfmsg import XDP_FLAGS_DRV_MODE
+from pyroute2.netlink.rtnl.ifinfmsg import XDP_FLAGS_HW_MODE
 
 import ctypes
 import os
@@ -115,14 +117,13 @@ class XDP():
 
         # get attach mode flags
         new_attached = self.xdp.get("mode", "auto")
-        if type(self.xdp["mode"]) != list:
+        if type(new_attached) != list:
             new_attached = [new_attached]
 
-        if "xdp" in new_attached:
-            new_flags = new_flags | XDP_MODE
-
         new_flags = 0
-        if not "auto" in new_attached:
+        if "auto" in new_attached:
+            new_attached = ["xdp", "xdpgeneric", "xdpoffload"]
+        else:
             if "xdp" in new_attached:
                 new_flags = new_flags | XDP_FLAGS_DRV_MODE
             if "xdpgeneric" in new_attached:
@@ -131,6 +132,9 @@ class XDP():
                 new_flags = new_flags | XDP_FLAGS_HW_MODE
 
         logger.debug('new attached: {}'.format(", ".join(new_attached)), extra={
+            'iface': self.iface})
+
+        logger.debug('new flags: {}'.format(new_flags), extra={
             'iface': self.iface})
 
         # set new XDP prog if tag or attach mode has changed
