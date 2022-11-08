@@ -9,6 +9,9 @@ title: Install
 
 *IfState* is available in the *community* repository since *Alpine 3.13*.
 
+If the `wireguard-tools-wg` package is going to be installed it will pull also `py3-wgnlpy` which enables *Wireguard* support in *Ifstate*.
+
+To enable *eXpress Data Path* (XDP) support you need to install `libbpf` (available in *Alpine 3.17+*).
 
 # Manual installation
 
@@ -20,7 +23,7 @@ title: Install
 - [jsonschema](https://github.com/Julian/jsonschema) - An implementation of JSON Schema validation for Python
 - [wgnlpy](https://github.com/ArgosyLabs/wgnlpy) - Python netlink connector to WireGuard *(optional)*
 
-*IfState* uses python ctypes to configure *eXpress Data Path* (XDP). You need to have `libbp.so.1` available to configure *XDP*.
+*IfState* uses python ctypes to configure XDP. You need to have `libbp.so.1` available to configure XDP.
 
 ## PyPI
 
