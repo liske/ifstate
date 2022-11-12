@@ -402,7 +402,7 @@ class IfState():
                     addresses.apply(self.ipaddr_ignore, self.ignore.get(
                         'ipaddr_dynamic', True), do_apply)
         else:
-            logger.info("\nno interface ip addressing to be applied")
+            logger.debug("\nno interface ip addressing to be applied")
 
         if any(not x is None for x in self.neighbours.values()):
             logger.info("\nconfiguring interface neighbours...")
@@ -423,7 +423,7 @@ class IfState():
                 else:
                     neighbours.apply(do_apply)
         else:
-            logger.info("\nno interface neighbours to be applied")
+            logger.debug("\nno interface neighbours to be applied")
 
         if not self.tables is None:
             self.tables.apply(self.ignore.get('routes', []), do_apply)
