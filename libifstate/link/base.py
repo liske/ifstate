@@ -419,13 +419,22 @@ class Link(ABC):
                 logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={
                             'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
             if do_apply:
+                # temp. remove special settings
+                state = self.settings.pop('state', None)
+                peer = self.settings.pop('peer', None)
+
                 try:
-                    state = self.settings.pop('state', None)
                     ipr.link('set', index=self.idx, **(self.settings))
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
                     excpts.add('set', err, **(self.settings))
+
+                # restore settings
+                if state is not None:
+                    self.settings['state'] = state
+                if peer is not None:
+                    self.settings['peer'] = peer
 
                 try:
                     if not state is None:
