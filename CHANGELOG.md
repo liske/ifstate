@@ -1,5 +1,16 @@
 # ChangeLog
 
+## 1.7.0 - 2022-11-13
+
+Changes:
+- bport: add support for bridge port settings
+- logger: silence skipped steps unless being verbose
+- shell: add a interactive python shell
+
+Fixes:
+- link: fix exception on link recreation
+- link: several minor bugfixes
+
 ## 1.6.1 - 2021-11-05
 
 Changes:
