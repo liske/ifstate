@@ -425,7 +425,7 @@ class Link(ABC):
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
-                    excpts.add('set', err, state=state)
+                    excpts.add('set', err, **(self.settings))
 
                 try:
                     if not state is None:
