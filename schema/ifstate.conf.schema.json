@@ -2,7 +2,7 @@
     "$id": "https://ifstate.net/schema/ifstate.conf.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ifstate.conf",
-    "description": "IfState 1.6.0+ Configuration Schema",
+    "description": "IfState 1.7.0+ Configuration Schema",
     "type": "object",
     "required": [
         "interfaces"
@@ -1032,6 +1032,84 @@
                                 "192.168.0.1/24",
                                 "2001:db8::1/64"
                             ]
+                        }
+                    },
+                    "brport": {
+                        "description": "settings for bridge ports",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "priority": {
+                                "description": "set port priority",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 63
+                            },
+                            "cost": {
+                                "description": "set port cost",
+                                "minimum": 1,
+                                "maximum": 65535
+                            },
+                            "guard": {
+                                "description": "filter BPDU packets",
+                                "type": "boolean"
+                            },
+                            "mode": {
+                                "description": "enable hairpin mode",
+                                "type": "boolean"
+                            },
+                            "fast_leave": {
+                                "description": "enable multicast fast leave",
+                                "type": "boolean"
+                            },
+                            "protect": {
+                                "description": "prevent to become a root port",
+                                "type": "boolean"
+                            },
+                            "learning": {
+                                "description": "allow MAC address learning",
+                                "type": "boolean"
+                            },
+                            "unicast_flood": {
+                                "description": "flood unknown unicasts",
+                                "type": "boolean"
+                            },
+                            "bcast_flood": {
+                                "description": "flood broadcasts",
+                                "type": "boolean"
+                            },
+                            "mcast_flood": {
+                                "description": "flood multicasts",
+                                "type": "boolean"
+                            },
+                            "mcast_to_unicast": {
+                                "description": "clone multicast packets into unicasts",
+                                "type": "boolean"
+                            },
+                            "proxyarp": {
+                                "description": "enable proxy ARP",
+                                "type": "boolean"
+                            },
+                            "proxyarp_wifi": {
+                                "description": "enable proxy ARP (IEEE 802.11 and Hotspot 2.0)",
+                                "type": "boolean"
+                            },
+                            "neigh_suppress": {
+                                "description": "ARP and ND suppression",
+                                "type": "boolean"
+                            },
+                            "vlan_tunnel": {
+                                "description": "VLAN to tunnel mapping",
+                                "type": "boolean"
+                            },
+                            "backup_port": {
+                                "description": "backup bridge port on loss carrier",
+                                "$ref": "#/$defs/iface-link_link"
+                            },
+                            "isolated": {
+                                "description": "isolated port, can communicate only with non-isolated ports",
+                                "type": "boolean"
+                            }
                         }
                     },
                     "vrrp": {

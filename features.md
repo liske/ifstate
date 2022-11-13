@@ -14,6 +14,7 @@ The following features are already available:
   - interface state
   - tx queue length [≥ 1.6.0]
   - mtu
+  - bridge port settings [≥ 1.7.0]
   - supports many [interface types](schema/#interfaces_items_link)
 - configure ip addresses
 - remove orphan interfaces and ip addresses
