@@ -24,6 +24,16 @@ class Actions():
     VRRP_FIFO = "vrrp-fifo"
     SHELL = "shell"
 
+ACTIONS_HELP = {
+    "CHECK"    : "dry run update the network config",
+    "APPLY"    : "update the network config",
+    "SHOW"     : "show running network config",
+    "SHOWALL"  : "show running network config (more settings)",
+    "VRRP"     : "run as keepalived notify script",
+    "VRRP_FIFO": "run as keepalived notify_fifo_script",
+    "SHELL"    : "launch interactive python shell (pyroute2)",
+}
+
 def shell():
     import readline # optional, will allow Up/Down/History in the console
     import code
@@ -66,7 +76,7 @@ def main():
         dest='action', required=True, help="specifies the action to perform")
 
     action_parsers = {
-        a.lower().replace("_", "-"): subparsers.add_parser(a.lower().replace("_", "-")) for a in dir(Actions) if not a.startswith('_')
+        a.lower().replace("_", "-"): subparsers.add_parser(a.lower().replace("_", "-"), help=ACTIONS_HELP[a]) for a in dir(Actions) if not a.startswith('_')
     }
 
     # Parameters for the vrrp action
