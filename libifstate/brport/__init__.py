@@ -23,8 +23,9 @@ class BRPort():
         has_changes = False
         brport_state = next(iter(ipr.brport('dump', index=idx)), None)
 
-        # no current state found
+        # no a bridge port
         if brport_state is None:
+            logger.debug('  not a bridge port', extra={'iface': self.iface})
             return True
 
         for setting in self.brport.keys():
@@ -57,4 +58,4 @@ class BRPort():
             except Exception as err:
                 if not isinstance(err, netlinkerror_classes):
                     raise
-                excpts.add('set', err, state='down')
+                excpts.add('brport', err, **(self.brport))

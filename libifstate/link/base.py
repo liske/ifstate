@@ -289,7 +289,7 @@ class Link(ABC):
             else:
                 excpts.set_quiet(self.cap_create)
                 self.update(do_apply, excpts)
-                if self.cap_create and excpts.get_all():
+                if self.cap_create and list(excpts.get_all(lambda x: x['op'] != 'brport')):
                     excpts.reset()
                     self.recreate(do_apply, excpts)
         else:
@@ -321,7 +321,7 @@ class Link(ABC):
                             self.brport.apply(do_apply, self.idx, excpts)
 
                     # set state if required
-                    if state is not None:
+                    if state is not None and not excpts.has_op('brport'):
                         try:
                             ipr.link('set', index=self.idx, state=state)
                         except Exception as err:
@@ -393,7 +393,7 @@ class Link(ABC):
         if has_link_changes:
             logger.debug('needs to be configured', extra={
                          'iface': self.settings['ifname']})
-            if old_state:
+            if old_state != 'down':
                 logger.debug('shutting down', extra={
                              'iface': self.settings['ifname']})
                 if do_apply:
@@ -408,9 +408,6 @@ class Link(ABC):
 
             self.set_ethtool_state(self.get_if_attr(
                 'ifname'), has_ethtool_changes, do_apply)
-
-            if has_brport_changes:
-                self.brport.apply(do_apply, self.idx, excpts)
 
             if self.get_if_attr('ifname') == self.settings['ifname']:
                 logger.info('change', extra={
@@ -445,6 +442,9 @@ class Link(ABC):
                     if not isinstance(err, netlinkerror_classes):
                         raise
                     excpts.add('set', err, state=state)
+
+            if has_brport_changes:
+                self.brport.apply(do_apply, self.idx, excpts)
         else:
             self.set_ethtool_state(self.get_if_attr(
                 'ifname'), has_ethtool_changes, do_apply)

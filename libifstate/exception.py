@@ -30,14 +30,23 @@ class ExceptionCollector():
             logger.warning('{} link {} failed: {}'.format(
                 op, self.ifname, excpt.args[1]))
 
+    def has_op(self, op):
+        for e in self.excpts:
+            if e['op'] == op:
+                return True
+        return False
+
     def has_errno(self, errno):
         for e in self.excpts:
             if type(e['excpt']) == NetlinkError and e['excpt'].code == errno:
                 return True
         return False
 
-    def get_all(self):
-        return self.excpts
+    def get_all(self, cb=None):
+        if not cb:
+            return self.excpts
+        else:
+            return filter(cb, self.excpts)
 
     def set_quiet(self, quiet):
         self.quiet = quiet
