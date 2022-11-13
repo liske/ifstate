@@ -22,6 +22,31 @@ class Actions():
     SHOWALL = "showall"
     VRRP = "vrrp"
     VRRP_FIFO = "vrrp-fifo"
+    SHELL = "shell"
+
+def shell():
+    import readline # optional, will allow Up/Down/History in the console
+    import code
+    from pprint import pprint
+    from libifstate.util import ipr
+
+    print("""Symbols:
+  ipr: pyroute2.IPRoute() object
+  pprint: Data pretty printer function
+""")
+
+    print("Interfaces:")
+    for link in ipr.get_links():
+        print("  {:2}: {}".format(link.get('index'),link.get_attr( 'IFLA_IFNAME')))
+    print("")
+
+    variables = {
+        'ipr': ipr,
+        'pprint': pprint,
+    }
+
+    shell = code.InteractiveConsole(variables)
+    shell.interact()
 
 
 def main():
@@ -63,6 +88,10 @@ def main():
         lvl = logging.ERROR
     else:
         lvl = logging.INFO
+
+    if args.action == Actions.SHELL:
+        shell()
+        exit(0)
 
     ifslog = IfStateLogging(lvl)
     ifs = IfState()
