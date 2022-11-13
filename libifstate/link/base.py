@@ -1,5 +1,6 @@
 from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import ExceptionCollector, LinkTypeUnknown, netlinkerror_classes
+from libifstate.brport import BRPort
 from abc import ABC, abstractmethod
 import os
 import subprocess
@@ -83,7 +84,7 @@ class Link(ABC):
         return super().__new__(GenericLink)
         #raise LinkTypeUnknown()
 
-    def __init__(self, name, link, ethtool, vrrp):
+    def __init__(self, name, link, ethtool, vrrp, brport):
         self.cap_create = True
         self.cap_ethtool = False
         self.settings = {
@@ -92,6 +93,10 @@ class Link(ABC):
         self.settings.update(link)
         self.ethtool = None
         self.vrrp = vrrp
+        if brport:
+            self.brport = BRPort(name, brport)
+        else:
+            self.brport = None
         self.attr_map = {
             'kind': ['IFLA_LINKINFO', 'IFLA_INFO_KIND'],
         }
@@ -301,17 +306,28 @@ class Link(ABC):
             " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
         if do_apply:
             try:
+                # set state later
                 state = self.settings.pop('state', None)
+
+                # add link
                 ipr.link('add', **(self.settings))
                 self.idx = next(iter(ipr.link_lookup(
                     ifname=self.settings['ifname'])), None)
-                if not state is None and not self.idx is None:
-                    try:
-                        ipr.link('set', index=self.idx, state=state)
-                    except Exception as err:
-                        if not isinstance(err, netlinkerror_classes):
-                            raise
-                        excpts.add('set', err, state=state)
+
+                if self.idx is not None:
+                    # set brport settings if required
+                    if self.brport:
+                        if self.brport.has_changes(self.idx):
+                            self.brport.apply(do_apply, self.idx, excpts)
+
+                    # set state if required
+                    if state is not None:
+                        try:
+                            ipr.link('set', index=self.idx, state=state)
+                        except Exception as err:
+                            if not isinstance(err, netlinkerror_classes):
+                                raise
+                            excpts.add('set', err, state=state)
             except Exception as err:
                 if not isinstance(err, netlinkerror_classes):
                     raise
@@ -370,6 +386,10 @@ class Link(ABC):
                             if self.ethtool[setting][option] != ethtool[setting].get(option):
                                 has_ethtool_changes.add(setting)
 
+        has_brport_changes = False
+        if self.brport:
+            has_brport_changes = self.brport.has_changes(self.idx)
+
         if has_link_changes:
             logger.debug('needs to be configured', extra={
                          'iface': self.settings['ifname']})
@@ -388,6 +408,9 @@ class Link(ABC):
 
             self.set_ethtool_state(self.get_if_attr(
                 'ifname'), has_ethtool_changes, do_apply)
+
+            if has_brport_changes:
+                self.brport.apply(do_apply, self.idx, excpts)
 
             if self.get_if_attr('ifname') == self.settings['ifname']:
                 logger.info('change', extra={
@@ -417,6 +440,24 @@ class Link(ABC):
             self.set_ethtool_state(self.get_if_attr(
                 'ifname'), has_ethtool_changes, do_apply)
 
+            if has_brport_changes:
+                if old_state:
+                    logger.debug('shutting down', extra={
+                                 'iface': self.settings['ifname']})
+                    if do_apply:
+                        try:
+                            ipr.link('set', index=self.idx, state='down')
+                        except Exception as err:
+                            if not isinstance(err, netlinkerror_classes):
+                                raise
+                            excpts.add('set', err, state='down')
+                    if not 'state' in self.settings:
+                        self.settings['state'] = 'up'
+
+                    has_state_changes = self.settings['state'] == 'up'
+
+                self.brport.apply(do_apply, self.idx, excpts)
+
             if has_state_changes:
                 try:
                     ipr.link('set', index=self.idx,
@@ -437,6 +478,10 @@ class Link(ABC):
         for attr in self.attr_idx:
             if attr in self.settings:
                 deps.append(self.settings[attr])
+
+        if self.brport:
+            deps.extend(self.brport.depends())
+
         return deps
 
     @classmethod
@@ -455,5 +500,5 @@ class Link(ABC):
 
 
 class GenericLink(Link):
-    def __init__(self, name, link, ethtool, vrrp):
-        super().__init__(name, link, ethtool, vrrp)
+    def __init__(self, name, link, ethtool, vrrp, brport):
+        super().__init__(name, link, ethtool, vrrp, brport)

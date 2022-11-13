@@ -3,8 +3,8 @@ from libifstate.link.base import Link
 from libifstate.exception import LinkCannotAdd
 
 class PhysicalLink(Link):
-    def __init__(self, name, link, ethtool, vrrp):
-        super().__init__(name, link, ethtool, vrrp)
+    def __init__(self, name, link, ethtool, vrrp, brport):
+        super().__init__(name, link, ethtool, vrrp, brport)
         self.cap_create = False
         self.cap_ethtool = True
         self.ethtool = ethtool

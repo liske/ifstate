@@ -59,6 +59,7 @@ class IfState():
         self.wireguard = {}
         self.xdp = {}
         self.features = {
+            'brport': True,
             'link': True,
             'sysctl': os.access('/proc/sys/net', os.R_OK),
             'ethtool': not ethtool_path is None,
@@ -116,7 +117,7 @@ class IfState():
                 raise LinkDuplicate()
             if 'link' in ifstate:
                 self.links[name] = Link(
-                    name, ifstate['link'], ifstate.get('ethtool'), ifstate.get('vrrp'))
+                    name, ifstate['link'], ifstate.get('ethtool'), ifstate.get('vrrp'), ifstate.get('brport'))
             else:
                 self.links[name] = None
 
