@@ -35,28 +35,11 @@ ACTIONS_HELP = {
 }
 
 def shell():
-    import readline # optional, will allow Up/Down/History in the console
-    import code
-    from pprint import pprint
-    from libifstate.util import ipr
+    from ifstate.shell import IfStateConsole
+    import pyroute2
 
-    print("""Symbols:
-  ipr: pyroute2.IPRoute() object
-  pprint: Data pretty printer function
-""")
-
-    print("Interfaces:")
-    for link in ipr.get_links():
-        print("  {:2}: {}".format(link.get('index'),link.get_attr( 'IFLA_IFNAME')))
-    print("")
-
-    variables = {
-        'ipr': ipr,
-        'pprint': pprint,
-    }
-
-    shell = code.InteractiveConsole(variables)
-    shell.interact()
+    shell = IfStateConsole()
+    shell.interact(banner=f"ifstate {__version__}; pyroute2 {pyroute2.__version__}")
 
 
 def main():
