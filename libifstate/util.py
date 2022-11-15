@@ -42,6 +42,17 @@ ETHTOOL_GPERMADDR = 0x00000020  # Get permanent hardware address
 L2_ADDRLENGTH = 6  # L2 address length
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+def filter_ifla_dump(ifla, defaults, prefix="IFLA"):
+    dump = {}
+
+    for key, default_value in defaults.items():
+        current_value = next(iter(ifla.get_attrs("_".join((prefix, key.upper())))), None)
+
+        if current_value is not None:
+            if default_value is None or default_value != current_value:
+                dump[key] = current_value
+
+    return dump
 
 class IPRouteExt(IPRoute):
     def del_filter_by_info(self, index=0, handle=0, info=0, parent=0):

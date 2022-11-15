@@ -1,8 +1,27 @@
-from libifstate.util import logger, ipr, IfStateLogging
+from libifstate.util import logger, ipr, IfStateLogging, filter_ifla_dump
 from libifstate.exception import netlinkerror_classes
 
 
 class BRPort():
+    ILFA_DEFAULTS = {
+        "priority": 32,
+        "guard": 0,
+        "mode": 0,
+        "fast_leave": 0,
+        "protect": 0,
+        "learning": 1,
+        "unicast_flood": 1,
+        "bcast_flood": 1,
+        "mcast_flood": 1,
+        "mcast_to_ucast": 0,
+        "proxyarp": 0,
+        "proxyarp_wifi": 0,
+        "neigh_suppress": 0,
+        "vlan_tunnel": 0,
+        "backup_port": None,
+        "isolated": 0,
+    }
+
     def __init__(self, iface, brport):
         self.iface = iface
         self.brport = brport
@@ -59,3 +78,15 @@ class BRPort():
                 if not isinstance(err, netlinkerror_classes):
                     raise
                 excpts.add('brport', err, **(self.brport))
+
+    def show(idx, config):
+        brport_state = next(iter(ipr.brport('dump', index=idx)), None)
+
+        if not brport_state:
+            return
+
+        proinfo = next(iter(brport_state.get_attrs('IFLA_PROTINFO')))
+
+        dump = filter_ifla_dump(proinfo, BRPort.ILFA_DEFAULTS, "IFLA_BRPORT")
+        if dump:
+            config['brport'] = dump

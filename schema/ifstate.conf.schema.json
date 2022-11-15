@@ -1082,7 +1082,7 @@
                                 "description": "flood multicasts",
                                 "type": "boolean"
                             },
-                            "mcast_to_unicast": {
+                            "mcast_to_ucast": {
                                 "description": "clone multicast packets into unicasts",
                                 "type": "boolean"
                             },
