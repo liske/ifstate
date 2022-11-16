@@ -59,8 +59,7 @@ class XDP():
         if not self.xdp:
             new_prog_fd = -1
         elif 'pinned' in self.xdp:
-            fh = open(self.xdp["pinned"], 'r')
-            new_prog_fd = fh.fileno()
+            new_prog_fd = libbpf.bpf_obj_get( os.fsencode(self.xdp["pinned"]) )
         elif 'bpf' in self.xdp:
             if bpf_progs is not None:
                 (new_prog_fd, new_prog_tag) = bpf_progs.get_bpf(self.xdp["bpf"])
