@@ -87,6 +87,12 @@ libbpf.bpf_object__open_file.argtypes = (
 )
 libbpf.bpf_object__open_file.restype = POINTER(struct_bpf_object)
 
+libbpf.bpf_object__pin_maps.argtypes = (
+    POINTER(struct_bpf_object),     # struct bpf_object *obj
+    c_char_p,                       # const char *path
+)
+libbpf.bpf_object__pin_maps.restype = c_int
+
 libbpf.bpf_program__attach_xdp.argtypes = (
     POINTER(struct_bpf_program),    # const struct bpf_program *prog
     c_int,                          # int ifindex

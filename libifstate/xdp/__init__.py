@@ -8,6 +8,7 @@ from pyroute2.netlink.rtnl.ifinfmsg import XDP_FLAGS_HW_MODE
 
 import ctypes
 import os
+import shutil
 
 class XDP():
     def __init__(self, iface, xdp):
@@ -52,31 +53,32 @@ class XDP():
         # load new BPF prog
         new_prog_tag = None
         new_prog_fd = None
+        new_obj = None
         if not self.xdp:
             new_prog_fd = -1
         elif 'pinned' in self.xdp:
             fh = open(self.xdp["pinned"], 'r')
             new_prog_fd = fh.fileno()
         elif 'object' in self.xdp:
-            obj = libbpf.bpf_object__open_file(
+            new_obj = libbpf.bpf_object__open_file(
                 os.fsencode(self.xdp["object"]),
                 None,
             )
-            if not obj:
+            if not new_obj:
                 logger.warning('XDP open on {} failed: {}'.format(
                     self.iface, os.strerror(ctypes.get_errno())))
                 return
 
-            logger.debug('loaded object: {}'.format(libbpf.bpf_object__name(obj).decode('ascii')), extra={
+            logger.debug('loaded object: {}'.format(libbpf.bpf_object__name(new_obj).decode('ascii')), extra={
                         'iface': self.iface})
 
-            rc = libbpf.bpf_object__load(obj)
+            rc = libbpf.bpf_object__load(new_obj)
             if rc < 0:
                 logger.warning('XDP load on {} failed: {}'.format(
                     self.iface, os.strerror(-rc)))
                 return
 
-            prog = libbpf.bpf_object__next_program(obj, None)
+            prog = libbpf.bpf_object__next_program(new_obj, None)
             while prog:
                 section = libbpf.bpf_program__section_name(prog).decode('ascii')
 
@@ -85,7 +87,7 @@ class XDP():
 
                 if section == self.xdp.get('section', 'xdp'):
                     break
-                prog = libbpf.bpf_object__next_program(obj, prog)
+                prog = libbpf.bpf_object__next_program(new_obj, prog)
 
             if not prog:
                 logger.warning('XDP section {} on {} not found'.format(
@@ -140,8 +142,10 @@ class XDP():
         # set new XDP prog if tag or attach mode has changed
         if current_prog_tag != new_prog_tag or not current_attached in new_attached:
             if do_apply:
+                attach_ok = False
                 try:
                     ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
+                    attach_ok = True
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
@@ -155,12 +159,32 @@ class XDP():
                             ipr.link('set', index=self.idx, xdp_fd=-1)
 
                             ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
+                            attach_ok = True
                         except Exception as err:
                             if not isinstance(err, netlinkerror_classes):
                                 raise
 
                             logger.warning('attaching XDP program on {} failed: {}'.format(
                                 self.iface, err.args[1]))
+
+                # pin maps if a new object has been attached
+                if attach_ok and new_obj:
+                    if  os.path.isdir('/sys/fs/bpf'):
+                        maps_path = '/sys/fs/bpf/ifstate/maps/{}'.format(self.iface)
+
+                        # unbind any orphan maps
+                        if os.path.isdir(maps_path):
+                            shutil.rmtree(maps_path)
+
+                        # create a new map directory
+                        os.makedirs(maps_path)
+
+                        libbpf.bpf_object__pin_maps(
+                            new_obj,
+                            os.fsencode(maps_path))
+                    else:
+                        logger.debug('bpfs is not mounted, skipping maps pinning', extra={
+                                'iface': self.iface})
 
             if new_prog_fd == -1:
                 logger.info('detach', extra={
@@ -179,6 +203,7 @@ try:
     libbpf.bpf_object__next_program
     libbpf.bpf_object__load
     libbpf.bpf_object__open_file
+    libbpf.bpf_object__pin_maps
     libbpf.bpf_prog_get_fd_by_id
     libbpf.bpf_program__fd
     libbpf.bpf_program__section_name
