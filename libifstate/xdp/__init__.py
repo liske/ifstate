@@ -1,6 +1,6 @@
 from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import netlinkerror_classes
-from libifstate.bpf import libbpf, struct_bpf_prog_info
+from libifstate.bpf import libbpf, struct_bpf_prog_info, bpfs_ifstate_dir
 
 from pyroute2.netlink.rtnl.ifinfmsg import XDP_FLAGS_SKB_MODE
 from pyroute2.netlink.rtnl.ifinfmsg import XDP_FLAGS_DRV_MODE
@@ -181,7 +181,7 @@ class XDP():
                 # pin maps if a new object has been attached
                 if attach_ok and new_obj:
                     if  os.path.isdir('/sys/fs/bpf'):
-                        maps_path = '/sys/fs/bpf/ifstate/maps/{}'.format(self.iface)
+                        maps_path = '{}/xdp/maps/{}'.format(bpfs_ifstate_dir, self.iface)
 
                         # unbind any orphan maps
                         if os.path.isdir(maps_path):
