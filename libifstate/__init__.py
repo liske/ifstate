@@ -20,7 +20,13 @@ except Exception as err:
         raise
 
 try:
-    from libifstate.xdp import XDP
+    from libifstate.bpf import libbpf, BPF
+
+    try:
+        from libifstate.xdp import XDP
+    except ModuleNotFoundError:
+        # ignore missing plugin
+        pass
 except ModuleNotFoundError:
     # ignore missing plugin
     pass
@@ -45,6 +51,7 @@ class IfState():
         logger.debug('IfState {}'.format(__version__))
         self.links = {}
         self.addresses = {}
+        self.bpf_progs = None
         self.neighbours = {}
         self.ignore = {}
         self.vrrp = {
@@ -109,6 +116,16 @@ class IfState():
                     if iface in ifstates['options']['sysctl']:
                         self.sysctl.add(
                             iface, ifstates['options']['sysctl'][iface])
+
+        # load BPF programs
+        if 'bpf' in ifstates:
+            if not self.features['bpf']:
+                raise FeatureMissingError("bpf")
+
+            if self.bpf_progs is None:
+                self.bpf_progs = BPF()
+            for name, config in ifstates['bpf'].items():
+                self.bpf_progs.add(name, config)
 
         # add interfaces from config
         for ifstate in ifstates['interfaces']:
@@ -275,6 +292,9 @@ class IfState():
                 logger.info("\nconfiguring {} interface sysctl".format(iface))
                 self.sysctl.apply(iface, do_apply)
 
+        if not self.bpf_progs is None:
+            self.bpf_progs.apply(do_apply)
+
         for stage in range(2):
             if stage == 0:
                 logger.info("\nconfiguring interface links")
@@ -381,7 +401,7 @@ class IfState():
                     logger.debug('skipped due to no xdp settings', extra={
                                  'iface': name})
                 else:
-                    xdp.apply(do_apply)
+                    xdp.apply(do_apply, self.bpf_progs)
 
         if any(not x is None for x in self.addresses.values()):
             logger.info("\nconfiguring interface ip addresses...")

@@ -15,7 +15,7 @@ class XDP():
         self.iface = iface
         self.xdp = xdp
 
-    def apply(self, do_apply):
+    def apply(self, do_apply, bpf_progs):
         self.link = next(iter(ipr.get_links(ifname=self.iface)), None)
 
         if self.link == None:
@@ -24,6 +24,10 @@ class XDP():
 
         # get ifindex
         self.idx = self.link['index']
+
+        # new BPF instance (from pinned, bpf or xdp settings)
+        new_prog_tag = None
+        new_prog_fd = None
 
         # get current BPF tag, if any
         current_prog_tag = None
@@ -51,14 +55,22 @@ class XDP():
             'iface': self.iface})
 
         # load new BPF prog
-        new_prog_tag = None
-        new_prog_fd = None
         new_obj = None
         if not self.xdp:
             new_prog_fd = -1
         elif 'pinned' in self.xdp:
             fh = open(self.xdp["pinned"], 'r')
             new_prog_fd = fh.fileno()
+        elif 'bpf' in self.xdp:
+            if bpf_progs is not None:
+                (new_prog_fd, new_prog_tag) = bpf_progs.get_bpf(self.xdp["bpf"])
+
+            if new_prog_fd == -1:
+                logger.warning("BPF program '{}' not loaded for {}".format(
+                    self.xdp["bpf"], self.iface))
+            else:
+                logger.debug('new prog tag: {}'.format(new_prog_tag), extra={
+                            'iface': self.iface})
         elif 'object' in self.xdp:
             new_obj = libbpf.bpf_object__open_file(
                 os.fsencode(self.xdp["object"]),
@@ -104,7 +116,7 @@ class XDP():
             assert False, "unhandled XDP settings"
 
         # get new prog tag
-        if new_prog_fd != -1:
+        if new_prog_fd != -1 and new_prog_tag == None:
             info = struct_bpf_prog_info()
             sz = ctypes.c_uint(ctypes.sizeof(info))
             rc = libbpf.bpf_obj_get_info_by_fd(new_prog_fd, ctypes.byref(info), ctypes.byref(sz))
@@ -176,8 +188,8 @@ class XDP():
                         if os.path.isdir(maps_path):
                             shutil.rmtree(maps_path)
 
-                        # create a new map directory
-                        os.makedirs(maps_path)
+                        # create a new maps directory
+                        os.makedirs(maps_path, exist_ok=True)
 
                         libbpf.bpf_object__pin_maps(
                             new_obj,

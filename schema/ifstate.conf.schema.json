@@ -962,6 +962,31 @@
                 }
             }
         },
+        "bpf": {
+            "description": "load and pin eBPF programs (i.e. for XDP)",
+            "type": "object",
+            "patternProperties": {
+                "": {
+                    "description": "BPF program",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "object",
+                        "section"
+                    ],
+                    "properties": {
+                        "object": {
+                            "description": "BPF ELF file to load",
+                            "type": "string"
+                        },
+                        "section": {
+                            "description": "program's section name",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "cshaper": {
             "description": "cshaper templates",
             "type": "object",
@@ -3234,6 +3259,20 @@
                                         "description": "path to already pinned XDP program",
                                         "type": "string",
                                         "format": "^/sys/fs/bfd/."
+                                    }
+                                }
+                            },
+                            {
+                                "description": "BPF program from ifstate's bpf config section",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                    "bpf"
+                                ],
+                                "properties": {
+                                    "bpf": {
+                                        "description": "BPF program (key in bpf config section)",
+                                        "type": "string"
                                     }
                                 }
                             }
