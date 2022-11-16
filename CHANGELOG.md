@@ -1,5 +1,17 @@
 # ChangeLog
 
+## 1.8.0 - 2022-11-17
+
+Changes:
+- brport: add settings to show commands
+- bpf: add shared bpf programs support
+- shell: add tab completion
+- xdp: pin maps for loaded objects
+
+Fixes:
+- xdp: fix error handling on libbpf.bpf_object__open_file
+- xdp: fix load of pinned programs
+
 ## 1.7.0 - 2022-11-13
 
 Changes:
