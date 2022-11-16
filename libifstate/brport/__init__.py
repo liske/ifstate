@@ -79,7 +79,7 @@ class BRPort():
                     raise
                 excpts.add('brport', err, **(self.brport))
 
-    def show(idx, config):
+    def show(showall, idx, config):
         brport_state = next(iter(ipr.brport('dump', index=idx)), None)
 
         if not brport_state:
@@ -87,6 +87,6 @@ class BRPort():
 
         proinfo = next(iter(brport_state.get_attrs('IFLA_PROTINFO')))
 
-        dump = filter_ifla_dump(proinfo, BRPort.ILFA_DEFAULTS, "IFLA_BRPORT")
+        dump = filter_ifla_dump(showall, proinfo, BRPort.ILFA_DEFAULTS, "IFLA_BRPORT")
         if dump:
             config['brport'] = dump

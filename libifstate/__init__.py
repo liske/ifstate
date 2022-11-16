@@ -522,7 +522,7 @@ class IfState():
                 if not mtu is None and not mtu in [1500, 65536]:
                     ifs_link['link']['mtu'] = mtu
 
-                brport.BRPort.show(ipr_link['index'], ifs_link)
+                brport.BRPort.show(showall, ipr_link['index'], ifs_link)
 
                 ifs_links.append(ifs_link)
 
