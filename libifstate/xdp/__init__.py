@@ -64,7 +64,7 @@ class XDP():
             )
             if not obj:
                 logger.warning('XDP open on {} failed: {}'.format(
-                    self.iface, os.strerror(-current_prog_fd)))
+                    self.iface, os.strerror(ctypes.get_errno())))
                 return
 
             logger.debug('loaded object: {}'.format(libbpf.bpf_object__name(obj).decode('ascii')), extra={
