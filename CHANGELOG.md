@@ -10,7 +10,7 @@ Changes:
 
 Fixes:
 - xdp: fix error handling on libbpf.bpf_object__open_file
-- xdp: fix load of pinned programs
+- xdp: fix loading of pinned programs
 
 ## 1.7.0 - 2022-11-13
 
