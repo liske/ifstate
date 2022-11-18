@@ -133,23 +133,10 @@ libbpf.bpf_object__name.argtypes = (
 )
 libbpf.bpf_object__name.restype = c_char_p
 
-libbpf.bpf_link__pin.argtypes = (
-    POINTER(struct_bpf_link),   # const struct bpf_link *link
-    c_char_p,                   # const char *path
-)
-libbpf.bpf_link__pin.restype = c_int
-
-
 libbpf.bpf_program__fd.argtypes = (
     POINTER(struct_bpf_program),    # const struct bpf_program *prog
 )
 libbpf.bpf_program__fd.restype = c_int
-
-libbpf.bpf_program__pin.argtypes = (
-    POINTER(struct_bpf_program),    # struct bpf_program *prog
-    c_char_p,                       # const char *path
-)
-libbpf.bpf_program__pin.restype = c_int
 
 libbpf.bpf_prog_get_fd_by_id.argtypes = (
     c_uint,     # c_uint id
