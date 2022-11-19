@@ -188,22 +188,26 @@ class BPF():
             if os.path.isfile(prog_pin_filename):
                 current_prog_fd = libbpf.bpf_obj_get( os.fsencode(prog_pin_filename) )
 
-                self.bpf_fds[name] = current_prog_fd
-
-                current_prog_info = struct_bpf_prog_info()
-                current_prog_size = ctypes.c_uint(
-                    ctypes.sizeof(current_prog_info))
-                rc = libbpf.bpf_obj_get_info_by_fd(current_prog_fd, ctypes.byref(
-                    current_prog_info), ctypes.byref(current_prog_size))
-                if rc == 0:
-                    current_prog_tag = bytes(current_prog_info.tag).hex()
-                    self.bpf_tags[name] = current_prog_tag
-
-                    logger.debug('current prog tag: {}'.format(current_prog_tag), extra={
-                        'iface': name})
-                else:
+                if current_prog_fd >= 0:
                     logger.warning('could not get current BPF obj info for {}: {}'.format(
-                        name, os.strerror(-rc)))
+                        name, os.strerror(-current_prog_fd)))
+                else:
+                    self.bpf_fds[name] = current_prog_fd
+
+                    current_prog_info = struct_bpf_prog_info()
+                    current_prog_size = ctypes.c_uint(
+                        ctypes.sizeof(current_prog_info))
+                    rc = libbpf.bpf_obj_get_info_by_fd(current_prog_fd, ctypes.byref(
+                        current_prog_info), ctypes.byref(current_prog_size))
+                    if rc == 0:
+                        current_prog_tag = bytes(current_prog_info.tag).hex()
+                        self.bpf_tags[name] = current_prog_tag
+
+                        logger.debug('current prog tag: {}'.format(current_prog_tag), extra={
+                            'iface': name})
+                    else:
+                        logger.warning('could not get current BPF obj info for {}: {}'.format(
+                            name, os.strerror(-rc)))
 
             # load new BPF prog
             new_prog_tag = None
