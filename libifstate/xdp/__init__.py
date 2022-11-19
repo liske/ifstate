@@ -60,6 +60,10 @@ class XDP():
             new_prog_fd = -1
         elif 'pinned' in self.xdp:
             new_prog_fd = libbpf.bpf_obj_get( os.fsencode(self.xdp["pinned"]) )
+
+            if new_prog_fd < 0:
+                logger.warning("pinned BPF object '{}' cannot be opened: {}".format(
+                    self.xdp["pinned"], os.strerror(-new_prog_fd)))
         elif 'bpf' in self.xdp:
             if bpf_progs is not None:
                 (new_prog_fd, new_prog_tag) = bpf_progs.get_bpf(self.xdp["bpf"])
@@ -70,47 +74,6 @@ class XDP():
             else:
                 logger.debug('new prog tag: {}'.format(new_prog_tag), extra={
                             'iface': self.iface})
-        elif 'object' in self.xdp:
-            new_obj = libbpf.bpf_object__open_file(
-                os.fsencode(self.xdp["object"]),
-                None,
-            )
-            if not new_obj:
-                logger.warning('XDP open on {} failed: {}'.format(
-                    self.iface, os.strerror(ctypes.get_errno())))
-                return
-
-            logger.debug('loaded object: {}'.format(libbpf.bpf_object__name(new_obj).decode('ascii')), extra={
-                        'iface': self.iface})
-
-            rc = libbpf.bpf_object__load(new_obj)
-            if rc < 0:
-                logger.warning('XDP load on {} failed: {}'.format(
-                    self.iface, os.strerror(-rc)))
-                return
-
-            prog = libbpf.bpf_object__next_program(new_obj, None)
-            while prog:
-                section = libbpf.bpf_program__section_name(prog).decode('ascii')
-
-                logger.debug('  section: {}'.format(section), extra={
-                            'iface': self.iface})
-
-                if section == self.xdp.get('section', 'xdp'):
-                    break
-                prog = libbpf.bpf_object__next_program(new_obj, prog)
-
-            if not prog:
-                logger.warning('XDP section {} on {} not found'.format(
-                    self.xdp.get('section'), self.iface))
-                return
-
-            # get prog fd
-            new_prog_fd = libbpf.bpf_program__fd(prog)
-            if not new_prog_fd:
-                logger.warning('XDP failed to get prog fd on {}'.format(
-                    self.iface))
-                return
         else:
             assert False, "unhandled XDP settings"
 
@@ -161,41 +124,18 @@ class XDP():
                     if not isinstance(err, netlinkerror_classes):
                         raise
 
-                    if new_prog_fd == -1:
+                    # try again: detaching XDP first
+                    try:
+                        ipr.link('set', index=self.idx, xdp_fd=-1)
+
+                        ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
+                        attach_ok = True
+                    except Exception as err:
+                        if not isinstance(err, netlinkerror_classes):
+                            raise
+
                         logger.warning('attaching XDP program on {} failed: {}'.format(
                             self.iface, err.args[1]))
-                    else:
-                        # try again: detaching XDP first
-                        try:
-                            ipr.link('set', index=self.idx, xdp_fd=-1)
-
-                            ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
-                            attach_ok = True
-                        except Exception as err:
-                            if not isinstance(err, netlinkerror_classes):
-                                raise
-
-                            logger.warning('attaching XDP program on {} failed: {}'.format(
-                                self.iface, err.args[1]))
-
-                # pin maps if a new object has been attached
-                if attach_ok and new_obj:
-                    if  os.path.isdir('/sys/fs/bpf'):
-                        maps_path = '{}/xdp/maps/{}'.format(bpfs_ifstate_dir, self.iface)
-
-                        # unbind any orphan maps
-                        if os.path.isdir(maps_path):
-                            shutil.rmtree(maps_path)
-
-                        # create a new maps directory
-                        os.makedirs(maps_path, exist_ok=True)
-
-                        libbpf.bpf_object__pin_maps(
-                            new_obj,
-                            os.fsencode(maps_path))
-                    else:
-                        logger.debug('bpfs is not mounted, skipping maps pinning', extra={
-                                'iface': self.iface})
 
             if new_prog_fd == -1:
                 logger.info('detach', extra={
