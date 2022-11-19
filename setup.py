@@ -18,13 +18,10 @@ def version():
 
 def install_requires():
     requires = [
-        "jsonschema"
+        "jsonschema",
+        "pyroute2",
+        "pyyaml"
     ]
-
-    try:
-        import pyroute2
-    except ModuleNotFoundError:
-        requires.append('pyroute2')
 
     return requires
 
@@ -45,6 +42,9 @@ setup(
     },
     install_requires=install_requires(),
     extras_require={
+        'shell': [
+            'pygments'
+        ],
         'wireguard': [
             'wgnlpy'
         ]
