@@ -167,14 +167,15 @@ class BPF():
         progs_pin_dir = "{}/bpf/progs".format(bpfs_ifstate_dir)
         maps_pin_dir = "{}/bpf/maps".format(bpfs_ifstate_dir)
         pinning = False
-        if os.path.isdir('/sys/fs/bpf'):
+        if os.path.ismount('/sys/fs/bpf'):
+            logger.debug('bpfs is mounted, enable pinning')
             pinning = True
 
             if do_apply:
                 os.makedirs(progs_pin_dir, exist_ok=True)
                 os.makedirs(maps_pin_dir, exist_ok=True)
         else:
-            logger.debug('bpfs is not mounted, skipping maps pinning')
+            logger.debug('bpfs is not mounted, skipping pinning')
 
         # load (and pin) bpf programs
         for name, config in self.bpf_progs.items():
