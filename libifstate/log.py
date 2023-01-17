@@ -70,7 +70,8 @@ class IfStateLogging:
             format='%(bol)s%(prefix)s%(style)s%(message)s%(eol)s',
         )
 
-        f = IfStateLogFilter(sys.stderr.isatty())
+        is_terminal = sys.stderr is not None and sys.stderr.isatty()
+        f = IfStateLogFilter(is_terminal)
         logger.addFilter(f)
 
         qu = queue.SimpleQueue()
