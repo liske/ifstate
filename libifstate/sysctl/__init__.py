@@ -12,8 +12,13 @@ class Sysctl():
 
     def set_sysctl(self, iface, family, key, val, do_apply):
         fn = '/proc/sys/net/{}/conf/{}/{}'.format(family, iface, key)
-        with open(fn) as fh:
-            current = fh.readline().rstrip()
+        try:
+            with open(fn) as fh:
+                current = fh.readline().rstrip()
+        except OSError as err:
+            logger.warning('reading sysctl {}/{} failed: {}'.format(
+                family, key, err.args[1]))
+            return
         if current == str(val):
             logger.info(
                 'ok', extra={'iface': "{}/{}".format(family, key), 'style': IfStateLogging.STYLE_OK})
