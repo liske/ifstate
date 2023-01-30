@@ -309,6 +309,9 @@ class Link(ABC):
                 # set state later
                 state = self.settings.pop('state', None)
 
+                # prevent altname conflict
+                self.prevent_altname_conflict()
+
                 # add link
                 ipr.link('add', **(self.settings))
                 self.idx = next(iter(ipr.link_lookup(
@@ -417,11 +420,12 @@ class Link(ABC):
             self.set_ethtool_state(self.get_if_attr(
                 'ifname'), has_ethtool_changes, do_apply)
 
-            if self.get_if_attr('ifname') == self.settings['ifname']:
-                logger.info('change', extra={
+            has_ifname_change = self.get_if_attr('ifname') != self.settings['ifname']
+            if has_ifname_change:
+                logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={
                             'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
             else:
-                logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={
+                logger.info('change', extra={
                             'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
 
             logger.debug("ip link set: {}".format(
@@ -430,6 +434,9 @@ class Link(ABC):
                 # temp. remove special settings
                 state = self.settings.pop('state', None)
                 peer = self.settings.pop('peer', None)
+
+                if has_ifname_change:
+                    self.prevent_altname_conflict()
 
                 try:
                     ipr.link('set', index=self.idx, **(self.settings))
@@ -507,6 +514,35 @@ class Link(ABC):
             deps.extend(self.brport.depends())
 
         return deps
+
+    def prevent_altname_conflict(self):
+        '''
+        When renaming interfaces a interface name conflict could
+        happen on the IFLA_ALT_IFNAME property (Linux 5.5+). Remove
+        the altname from the other interface in such case, it may be
+        the same interface if it is renamed to one of it's altnames.
+        '''
+
+        logger.debug('checking altname conflict', extra={'iface': self.settings['ifname']})
+
+        # get link candidate having the ifname as altname
+        try:
+            link = next(iter(ipr.link('get', altname=self.settings['ifname'])), None)
+        except Exception as err:
+            if not isinstance(err, netlinkerror_classes):
+                raise
+            return
+
+        # pyroute2 may return the interface having ifname rather than
+        # altname set - only remove altname if it is set
+        properties = link.get_attr('IFLA_PROP_LIST')
+        if properties is not None and self.settings['ifname'] in properties.get_attrs('IFLA_ALT_IFNAME'):
+            logger.debug('  found: %s (%d)', link.get_attr('IFLA_IFNAME'), link['index'], extra={'iface': self.settings['ifname']})
+            try:
+                ipr.link('property_del', index=link['index'], altname=self.settings['ifname'])
+            except Exception as err:
+                if not isinstance(err, netlinkerror_classes):
+                    raise
 
     @classmethod
     def name2nla(self, name):
