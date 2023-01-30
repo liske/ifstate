@@ -326,8 +326,7 @@ class IfState():
                     else:
                         deps = link.depends()
                         if all(x in applied for x in deps):
-                            self.sysctl.apply(name, do_apply)
-                            excpts = link.apply(do_apply)
+                            excpts = link.apply(do_apply, self.sysctl)
                             if excpts.has_errno(errno.EEXIST):
                                 retry = True
                             applied.append(name)

@@ -248,7 +248,7 @@ class Link(ABC):
     def match_vrrp_state(self, vrrp_type, vrrp_name, vrrp_state):
         return self.match_vrrp_select(vrrp_type, vrrp_name) and (vrrp_state in self.vrrp['states'])
 
-    def apply(self, do_apply):
+    def apply(self, do_apply, sysctl):
         excpts = ExceptionCollector(self.settings['ifname'])
         osettings = copy.deepcopy(self.settings)
 
@@ -285,20 +285,20 @@ class Link(ABC):
                     excpts.add('set', err, state='down', ifname='{}!')
 
             if self.cap_create and self.get_if_attr('kind') != self.settings['kind']:
-                self.recreate(do_apply, excpts)
+                self.recreate(do_apply, sysctl, excpts)
             else:
                 excpts.set_quiet(self.cap_create)
-                self.update(do_apply, excpts)
+                self.update(do_apply, sysctl, excpts)
                 if self.cap_create and list(excpts.get_all(lambda x: x['op'] != 'brport')):
                     excpts.reset()
-                    self.recreate(do_apply, excpts)
+                    self.recreate(do_apply, sysctl, excpts)
         else:
-            self.create(do_apply, excpts)
+            self.create(do_apply, sysctl, excpts)
 
         self.settings = osettings
         return excpts
 
-    def create(self, do_apply, excpts, oper="add"):
+    def create(self, do_apply, sysctl, excpts, oper="add"):
         logger.info(
             oper, extra={'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
 
@@ -315,6 +315,9 @@ class Link(ABC):
                     ifname=self.settings['ifname'])), None)
 
                 if self.idx is not None:
+                    # set sysctl settings if required
+                    sysctl.apply(self.settings['ifname'], do_apply)
+
                     # set brport settings if required
                     if self.brport:
                         if self.brport.has_changes(self.idx):
@@ -338,7 +341,7 @@ class Link(ABC):
             self.set_ethtool_state(
                 self.settings['ifname'], self.ethtool.keys(), do_apply)
 
-    def recreate(self, do_apply, excpts):
+    def recreate(self, do_apply, sysctl, excpts):
         logger.debug('has wrong link kind %s, removing', self.settings['kind'], extra={
                      'iface': self.settings['ifname']})
         if do_apply:
@@ -349,9 +352,9 @@ class Link(ABC):
                     raise
                 excpts.add('del', err)
         self.idx = None
-        self.create(do_apply, excpts, "replace")
+        self.create(do_apply, ifstate, excpts, "replace")
 
-    def update(self, do_apply, excpts):
+    def update(self, do_apply, sysctl, excpts):
         logger.debug('checking link', extra={'iface': self.settings['ifname']})
 
         old_state = self.iface['state']
@@ -403,8 +406,13 @@ class Link(ABC):
                         if not isinstance(err, netlinkerror_classes):
                             raise
                         excpts.add('set', err, state='down')
+
                 if not 'state' in self.settings:
                     self.settings['state'] = 'up'
+
+            # set sysctl settings
+            sysctl.apply(self.get_if_attr(
+                'ifname'), do_apply, self.settings['ifname'])
 
             self.set_ethtool_state(self.get_if_attr(
                 'ifname'), has_ethtool_changes, do_apply)
@@ -415,6 +423,9 @@ class Link(ABC):
             else:
                 logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={
                             'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
+
+            logger.debug("ip link set: {}".format(
+                " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
             if do_apply:
                 # temp. remove special settings
                 state = self.settings.pop('state', None)
@@ -446,6 +457,10 @@ class Link(ABC):
             if has_brport_changes:
                 self.brport.apply(do_apply, self.idx, excpts)
         else:
+            # set sysctl settings
+            sysctl.apply(self.get_if_attr(
+                'ifname'), do_apply)
+
             self.set_ethtool_state(self.get_if_attr(
                 'ifname'), has_ethtool_changes, do_apply)
 
