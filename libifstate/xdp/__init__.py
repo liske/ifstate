@@ -31,8 +31,13 @@ class XDP():
 
         # get current BPF tag, if any
         current_prog_tag = None
-        current_prog_id = self.link.get_attr('IFLA_XDP', {}).get('IFLA_XDP_PROG_ID')
-        current_attached = self.link.get_attr('IFLA_XDP', {}).get('IFLA_XDP_ATTACHED')
+        current_prog_id = None
+        current_attached = None
+        ifla_xdp = self.link.get_attr('IFLA_XDP')
+        if ifla_xdp is not None:
+            current_prog_id = ifla_xdp.get_attr('IFLA_XDP_PROG_ID')
+            current_attached = ifla_xdp.get_attr('IFLA_XDP_ATTACHED')
+
         if current_prog_id:
             current_prog_fd = libbpf.bpf_prog_get_fd_by_id(current_prog_id)
             if current_prog_fd < 0:
