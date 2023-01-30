@@ -48,8 +48,8 @@ class BPF():
                 current_prog_fd = libbpf.bpf_obj_get(
                     os.fsencode(prog_pin_filename))
 
-                if current_prog_fd >= 0:
-                    logger.warning('could not get current BPF obj info for {}: {}'.format(
+                if current_prog_fd < 0:
+                    logger.warning('could not get current BPF obj fd for {}: {}'.format(
                         name, os.strerror(-current_prog_fd)))
                 else:
                     self.bpf_fds[name] = current_prog_fd
