@@ -1,5 +1,30 @@
 # ChangeLog
 
+## 1.8.1 - 2023-01-30
+
+Changes:
+- bpf: add missing map pinning
+- bpf: cleanup unused libbpf1 bindings
+- bpf: improve error handling
+- sysctl: apply settings before interface state is set to up
+- xdp: improve error handling
+
+Fixes:
+- bpf: do not reload unchanged bpf programs due to broken error condition
+- bpf: fix bpffs mount detection
+- link: drop IFLA_ALT_IFNAME conflict on IFLA_IFNAME on rename or create
+- logging: don't crash if stderr is closed<sup>1</sup> (liske/ifstate#5)
+- sysctl: fix setting for renamed interfaces<sup>2</sup>
+- sysctl: handle procfs errors gracefully<sup>3</sup> (liske/ifstate#6)
+- xdp: fix broken detection of current attached xdp
+
+**This release fixes critical bugs that could cause a host to not get a working network configuration at boot time.**
+
+Remarks:
+1) This could break the complete network setup if a host is booted with a broken `console=` kernel parameter.
+2) The sysctl settings were applied using the wrong interface name. Combined with 3. it breaks the network setup during boot if the sysctl setting was used on a interface which needs to be renamed.
+3) Do not crash if a procfs file cannot be opened.
+
 ## 1.8.0 - 2022-11-17
 
 Changes:
