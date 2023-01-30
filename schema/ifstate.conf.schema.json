@@ -1009,7 +1009,7 @@
                             "type": "string"
                         },
                         "section": {
-                            "description": "program's section name",
+                            "description": "BPF program's section name",
                             "type": "string"
                         }
                     }
@@ -3228,7 +3228,9 @@
                             {
                                 "description": "remove attached XDP program",
                                 "type": "boolean",
-                                "enum": [ false ]
+                                "enum": [
+                                    false
+                                ]
                             },
                             {
                                 "description": "attach already pinned XDP program",
