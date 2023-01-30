@@ -902,6 +902,35 @@
                     }
                 ]
             }
+        },
+        "xdp_mode": {
+            "mode": {
+                "oneOf": [
+                    {
+                        "description": "force attach mode of the XDP program (`auto`: let the kernel choose, `xdp`: run inside driver, `xdpgeneric`: driver-independent before SKB allocation, `xdpoffload`: offload to SmartNIC co-processor)",
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "xdp",
+                            "xdpgeneric",
+                            "xdpoffload"
+                        ],
+                        "default": "auto"
+                    },
+                    {
+                        "description": "allowed attach modes of the XDP program (`xdp`: run inside driver, `xdpgeneric`: driver-independent before SKB allocation, `xdpoffload`: offload to SmartNIC co-processor)",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "xdp",
+                                "xdpgeneric",
+                                "xdpoffload"
+                            ]
+                        }
+                    }
+                ]
+            }
         }
     },
     "additionalProperties": false,
@@ -980,7 +1009,7 @@
                             "type": "string"
                         },
                         "section": {
-                            "description": "program's section name",
+                            "description": "BPF program's section name",
                             "type": "string"
                         }
                     }
@@ -3199,53 +3228,9 @@
                             {
                                 "description": "remove attached XDP program",
                                 "type": "boolean",
-                                "enum": [ false ]
-                            },
-                            {
-                                "description": "attach XDP program from object file",
-                                "type": "object",
-                                "additionalProperties": false,
-                                "required": [
-                                    "object"
-                                ],
-                                "properties": {
-                                    "mode": {
-                                        "oneOf": [
-                                            {
-                                                "description": "force attach mode of the XDP program (`auto`: let the kernel choose, `xdp`: run inside driver, `xdpgeneric`: driver-independent before SKB allocation, `xdpoffload`: offload to SmartNIC co-processor)",
-                                                "type": "string",
-                                                "enum": [
-                                                    "auto",
-                                                    "xdp",
-                                                    "xdpgeneric",
-                                                    "xdpoffload"
-                                                ],
-                                                "default": "auto"
-                                            },
-                                            {
-                                                "description": "allowed attach modes of the XDP program (`xdp`: run inside driver, `xdpgeneric`: driver-independent before SKB allocation, `xdpoffload`: offload to SmartNIC co-processor)",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "xdp",
-                                                        "xdpgeneric",
-                                                        "xdpoffload"
-                                                    ]
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    "object": {
-                                        "description": "BPF ELF file to load",
-                                        "type": "string"
-                                    },
-                                    "section": {
-                                        "description": "XDP program's section name",
-                                        "type": "string",
-                                        "default": "xdp"
-                                    }
-                                }
+                                "enum": [
+                                    false
+                                ]
                             },
                             {
                                 "description": "attach already pinned XDP program",
@@ -3255,6 +3240,9 @@
                                     "pinned"
                                 ],
                                 "properties": {
+                                    "mode": {
+                                        "$ref": "#/$defs/xdp_mode"
+                                    },
                                     "pinned": {
                                         "description": "path to already pinned XDP program",
                                         "type": "string",
@@ -3270,6 +3258,9 @@
                                     "bpf"
                                 ],
                                 "properties": {
+                                    "mode": {
+                                        "$ref": "#/$defs/xdp_mode"
+                                    },
                                     "bpf": {
                                         "description": "BPF program (key in bpf config section)",
                                         "type": "string"
