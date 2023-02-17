@@ -2,7 +2,7 @@ from libifstate.exception import LinkDuplicate
 from libifstate.link.base import ethtool_path, Link
 from libifstate.address import Addresses
 from libifstate.neighbour import Neighbours
-from libifstate.routing import Tables, Rules
+from libifstate.routing import Tables, Rules, RTLookups
 from libifstate.sysctl import Sysctl
 from libifstate.parser import Parser
 from libifstate.tc import TC
@@ -507,6 +507,8 @@ class IfState():
                                 if attr in Link.attr_value_maps:
                                     ifs_link['link'][attr] = Link.attr_value_maps[attr].get(
                                         v, v)
+                                elif attr in Link.attr_value_lookup:
+                                    ifs_link['link'][attr] = Link.attr_value_lookup[attr].lookup_str(v)
                                 else:
                                     ifs_link['link'][attr] = v
                 else:
@@ -523,6 +525,11 @@ class IfState():
                     businfo = ipr.get_businfo(name)
                     if not businfo is None:
                         ifs_link['link']['businfo'] = businfo
+
+                # add device group if not 0
+                group = ipr_link.get_attr('IFLA_GROUP')
+                if not group is None and not group == 0:
+                    ifs_link['link']['group'] = RTLookups.group.lookup_str(group)
 
                 for attr in ['link', 'master', 'gre_link', 'ip6gre_link', 'vxlan_link', 'xfrm_link']:
                     ref = ipr_link.get_attr('IFLA_{}'.format(attr.upper()))

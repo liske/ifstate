@@ -1,6 +1,7 @@
 from libifstate.util import logger, ipr, IfStateLogging
 from libifstate.exception import ExceptionCollector, LinkTypeUnknown, netlinkerror_classes
 from libifstate.brport import BRPort
+from libifstate.routing import RTLookups
 from abc import ABC, abstractmethod
 import os
 import subprocess
@@ -71,6 +72,9 @@ class Link(ABC):
             0x8100: '802.1q',
         },
     }
+    attr_value_lookup = {
+        'group': RTLookups.group,
+    }
 
     def __new__(cls, *args, **kwargs):
         cname = cls.__name__
@@ -119,6 +123,10 @@ class Link(ABC):
             if attr in self.settings and type(self.settings[attr]) != int:
                 self.settings[attr] = next((k for k, v in mappings.items(
                 ) if v == self.settings[attr]), self.settings[attr])
+
+        for attr, lookup in self.attr_value_lookup.items():
+            if attr in self.settings and type(self.settings[attr]) != int:
+                self.settings[attr] = lookup.lookup_id(self.settings[attr])
 
     def _drill_attr(self, data, keys):
         key = keys[0]

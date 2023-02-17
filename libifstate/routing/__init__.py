@@ -71,6 +71,7 @@ class RTLookups():
     realms = RTLookup('rt_realms')
     scopes = RTLookup('rt_scopes')
     protos = RTLookup('rt_protos')
+    group = RTLookup('group')
 
 
 class Tables(collections.abc.Mapping):
