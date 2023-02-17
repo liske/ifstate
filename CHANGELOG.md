@@ -1,5 +1,21 @@
 # ChangeLog
 
+## 1.8.2 - 2023-02-17
+
+Changes:
+- link: add missing device group support
+
+Fixes:
+- link: fix TypeError exception when a physical link is missing (#8)
+- routing: handle unresolvable rt lookups gracefully
+
+**This release fixes a bug that could cause a host to not get a working network configuration at boot time.**
+
+When a physical link is missing ifstate prints a warning about it. Due to
+a TypeError exception (#8) ifstate did crash in the link configuration
+phase. This breaks all ip configuration if any referenced physical link
+was missing.
+
 ## 1.8.1 - 2023-01-30
 
 Changes:
