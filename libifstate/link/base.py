@@ -126,7 +126,13 @@ class Link(ABC):
 
         for attr, lookup in self.attr_value_lookup.items():
             if attr in self.settings and type(self.settings[attr]) != int:
-                self.settings[attr] = lookup.lookup_id(self.settings[attr])
+                try:
+                    self.settings[attr] = lookup.lookup_id(self.settings[attr])
+                except KeyError as err:
+                    # mapping not available - catch exception and skip it
+                    logger.warning('ignoring unknown group "%s"', self.settings[attr],
+                                   extra={'iface': self.settings['ifname']})
+                    del(self.settings[attr])
 
     def _drill_attr(self, data, keys):
         key = keys[0]
@@ -428,7 +434,8 @@ class Link(ABC):
             self.set_ethtool_state(self.get_if_attr(
                 'ifname'), has_ethtool_changes, do_apply)
 
-            has_ifname_change = self.get_if_attr('ifname') != self.settings['ifname']
+            has_ifname_change = self.get_if_attr(
+                'ifname') != self.settings['ifname']
             if has_ifname_change:
                 logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={
                             'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
@@ -531,11 +538,13 @@ class Link(ABC):
         the same interface if it is renamed to one of it's altnames.
         '''
 
-        logger.debug('checking altname conflict', extra={'iface': self.settings['ifname']})
+        logger.debug('checking altname conflict', extra={
+                     'iface': self.settings['ifname']})
 
         # get link candidate having the ifname as altname
         try:
-            link = next(iter(ipr.link('get', altname=self.settings['ifname'])), None)
+            link = next(
+                iter(ipr.link('get', altname=self.settings['ifname'])), None)
         except Exception as err:
             if not isinstance(err, netlinkerror_classes):
                 raise
@@ -545,9 +554,11 @@ class Link(ABC):
         # altname set - only remove altname if it is set
         properties = link.get_attr('IFLA_PROP_LIST')
         if properties is not None and self.settings['ifname'] in properties.get_attrs('IFLA_ALT_IFNAME'):
-            logger.debug('  found: %s (%d)', link.get_attr('IFLA_IFNAME'), link['index'], extra={'iface': self.settings['ifname']})
+            logger.debug('  found: %s (%d)', link.get_attr(
+                'IFLA_IFNAME'), link['index'], extra={'iface': self.settings['ifname']})
             try:
-                ipr.link('property_del', index=link['index'], altname=self.settings['ifname'])
+                ipr.link('property_del',
+                         index=link['index'], altname=self.settings['ifname'])
             except Exception as err:
                 if not isinstance(err, netlinkerror_classes):
                     raise

@@ -73,6 +73,20 @@ class RTLookups():
     protos = RTLookup('rt_protos')
     group = RTLookup('group')
 
+RT_LOOKUPS_DICT = {
+    'table': RTLookups.tables,
+    'scope': RTLookups.scopes,
+    'proto': RTLookups.protos,
+    'realm': RTLookups.realms,
+}
+
+RT_LOOKUPS_DEFAULTS = {
+    'table': 254,
+    'scope': 0,
+    'proto': 3,
+    'realm': 0,
+    'tos': 0,
+}
 
 class Tables(collections.abc.Mapping):
     def __init__(self):
@@ -95,14 +109,19 @@ class Tables(collections.abc.Mapping):
     def add(self, route):
         dst = ip_network(route['to'])
         rt = {
-            'table': RTLookups.tables.lookup_id(route.get('table', 254)),
             'type': route.get('type', 'unicast'),
             'dst': dst.with_prefixlen,
-            'scope': RTLookups.scopes.lookup_id(route.get('scope', 0)),
-            'proto': RTLookups.protos.lookup_id(route.get('proto', 3)),
-            'realm': RTLookups.realms.lookup_id(route.get('realm', 0)),
-            'tos': route.get('tos', 0)
         }
+
+        for key, lookup in RT_LOOKUPS_DICT.items():
+            try:
+                rt[key] = route.get(key, RT_LOOKUPS_DEFAULTS[key])
+                rt[key] = lookup.lookup_id(rt[key])
+            except KeyError as err:
+                # mapping not available - catch exception and skip it
+                logger.warning('ignoring unknown %s "%s"', key, rt[key],
+                               extra={'iface': rt['dst']})
+                rt[key] = RT_LOOKUPS_DEFAULTS[key]
 
         if type(rt['type']) == str:
             rt['type'] = rt_type[rt['type']]
