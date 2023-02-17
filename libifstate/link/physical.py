@@ -9,5 +9,5 @@ class PhysicalLink(Link):
         self.cap_ethtool = True
         self.ethtool = ethtool
  
-    def create(self, do_apply, oper="add"):
+    def create(self, do_apply, sysctl, excpts, oper="add"):
         logger.warning('Unable to create missing physical link: {}'.format(self.settings.get('ifname')))
