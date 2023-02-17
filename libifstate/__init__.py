@@ -528,7 +528,7 @@ class IfState():
 
                 # add device group if not 0
                 group = ipr_link.get_attr('IFLA_GROUP')
-                if not group is None and not group == 0:
+                if not group is None and group != 0:
                     ifs_link['link']['group'] = RTLookups.group.lookup_str(group)
 
                 for attr in ['link', 'master', 'gre_link', 'ip6gre_link', 'vxlan_link', 'xfrm_link']:
