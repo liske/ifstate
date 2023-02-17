@@ -2,7 +2,7 @@
     "$id": "https://ifstate.net/schema/ifstate.conf.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ifstate.conf",
-    "description": "IfState 1.8.0+ Configuration Schema",
+    "description": "IfState 1.8.2 Configuration Schema",
     "type": "object",
     "required": [
         "interfaces"
@@ -165,6 +165,13 @@
             "type": "string",
             "description": "link mac address (xx:xx:xx:xx:xx:xx)",
             "pattern": "^([a-f0-9]{2}:){5}[a-f0-9]{2}$"
+        },
+        "iface-link_group": {
+            "type": [
+                "integer",
+                "string"
+            ],
+            "description": "specifies a device group name or index"
         },
         "iface-link_link": {
             "type": [
@@ -1223,6 +1230,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -1252,6 +1262,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
                                     },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
@@ -1283,6 +1296,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -1312,6 +1328,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
                                     },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
@@ -1343,6 +1362,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -1372,6 +1394,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
                                     },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
@@ -1403,6 +1428,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -1432,6 +1460,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
                                     },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
@@ -1463,6 +1494,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -1492,6 +1526,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
                                     },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
@@ -1523,6 +1560,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -1553,6 +1593,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
                                     },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
@@ -1778,6 +1821,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -1828,6 +1874,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "permaddr": {
                                         "description": "select interface by permanent address [ethtool -P]",
                                         "$ref": "#/$defs/iface-link_address"
@@ -1871,6 +1920,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -1907,6 +1959,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "peer": {
                                         "$ref": "#/$defs/iface-link_link"
                                     },
@@ -1942,6 +1997,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
                                     },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
@@ -1997,6 +2055,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -2041,6 +2102,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -2079,6 +2143,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
                                     },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
@@ -2122,6 +2189,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
                                     },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
@@ -2169,6 +2239,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -2210,6 +2283,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
                                     },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
@@ -2255,6 +2331,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -2297,6 +2376,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -2328,6 +2410,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
                                     },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
