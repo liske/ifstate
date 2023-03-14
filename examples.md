@@ -24,8 +24,11 @@ This is a collection of configuration examples for different interface link type
 - [simple bandwidth shaping with cshaper](examples/cshaper.md)
 - [traffic control shaping](examples/tc-shaping.md)
 
+## XDP/BPF
+- [pin a eBPF program for eXpress Data Path (XDP) routing](examples/bpf.md)
+- [attach XDP program to interface](examples/xdp.md)
+
 ## Misc
 - [permanent neighbour/ARP tables entries](examples/neigh.md)
 - [ethtool hardware settings](examples/ethtool.md)
 - [sysctl interface settings](examples/sysctl.md)
-- [attach XDP program to interface](examples/xdp.md)
