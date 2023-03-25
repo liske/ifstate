@@ -369,7 +369,7 @@ class Link(ABC):
                     raise
                 excpts.add('del', err)
         self.idx = None
-        self.create(do_apply, ifstate, excpts, "replace")
+        self.create(do_apply, sysctl, excpts, "replace")
 
     def update(self, do_apply, sysctl, excpts):
         logger.debug('checking link', extra={'iface': self.settings['ifname']})
