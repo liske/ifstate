@@ -1449,13 +1449,15 @@
                                 }
                             },
                             {
-                                "description": "Virtual software device",
+                                "description": "Virtual software device (TUN/TAP)",
                                 "required": [
-                                    "kind"
+                                    "kind",
+                                    "tun_type"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
-                                        "const": "tuntap",
+                                        "const": "tun",
                                         "description": "link type"
                                     },
                                     "address": {
@@ -1478,6 +1480,82 @@
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "tun_type": {
+                                        "description": "device mode (Ethernet headers)",
+                                        "default": "tap",
+                                        "enum": [
+                                            1,
+                                            "tun",
+                                            2,
+                                            "tap"
+                                        ]
+                                    },
+                                    "tun_pi": {
+                                        "description": "provide packet information",
+                                        "type": [
+                                            "boolean",
+                                            "integer"
+                                        ],
+                                        "default": false,
+                                        "enum": [
+                                            0,
+                                            false,
+                                            1,
+                                            true
+                                        ]
+                                    },
+                                    "tun_persist": {
+                                        "description": "persistent device; non-persistent devices cannot be created",
+                                        "type": [
+                                            "boolean",
+                                            "integer"
+                                        ],
+                                        "default": false,
+                                        "enum": [
+                                            0,
+                                            false,
+                                            1,
+                                            true
+                                        ]
+                                    },
+                                    "tun_vnet_hdr": {
+                                        "description": "prepend frames with struct virtio_net_hdr",
+                                        "default": false,
+                                        "enum": [
+                                            0,
+                                            false,
+                                            1,
+                                            true
+                                        ]
+                                    },
+                                    "tun_multi_queue": {
+                                        "description": "enable multiqueue tuntap",
+                                        "type": [
+                                            "boolean",
+                                            "integer"
+                                        ],
+                                        "default": false,
+                                        "enum": [
+                                            0,
+                                            false,
+                                            1,
+                                            true
+                                        ]
+                                    },
+                                    "tun_owner": {
+                                        "description": "device owner",
+                                        "type": [
+                                            "integer",
+                                            "string"
+                                        ]
+                                    },
+                                    "tun_group": {
+                                        "description": "device group",
+                                        "type": [
+                                            "integer",
+                                            "string"
+                                        ]
                                     }
                                 }
                             },

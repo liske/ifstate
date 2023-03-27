@@ -66,6 +66,11 @@ class Link(ABC):
             1: "bandwidth",
             2: "count",
         },
+        # === tuntap ===
+        'tun_type': {
+            1: 'tun',
+            2: 'tap',
+        },
         # === vlan ===
         'vlan_protocol': {
             0x88a8: '802.1ad',
