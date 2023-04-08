@@ -137,7 +137,7 @@ def main():
                 pass
         elif args.action == Actions.VRRP_FIFO:
             status_pattern = re.compile(
-                r'(group|instance) "([^"]+)" (unknown|fault|backup|master)$', re.IGNORECASE)
+                r'(group|instance) "([^"]+)" (unknown|fault|backup|master)( \d+)?$', re.IGNORECASE)
 
             with open(args.fifo) as fifo:
                 for line in fifo:
