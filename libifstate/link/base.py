@@ -510,13 +510,14 @@ class Link(ABC):
                 self.brport.apply(do_apply, self.idx, excpts)
 
             if has_state_changes:
-                try:
-                    ipr.link('set', index=self.idx,
-                             state=self.settings["state"])
-                except Exception as err:
-                    if not isinstance(err, netlinkerror_classes):
-                        raise
-                    excpts.add('set', err, state=state)
+                if do_apply:
+                    try:
+                        ipr.link('set', index=self.idx,
+                                 state=self.settings["state"])
+                    except Exception as err:
+                        if not isinstance(err, netlinkerror_classes):
+                            raise
+                        excpts.add('set', err, state=state)
                 logger.info('change', extra={
                             'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
 
