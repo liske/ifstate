@@ -4,6 +4,14 @@ import queue
 import sys
 
 logger = logging.getLogger('ifstate')
+logger.propagate = False
+
+formatter = logging.Formatter('%(bol)s%(prefix)s%(style)s%(message)s%(eol)s', defaults={
+    'bol': '',
+    'eol': '',
+    'prefix': '',
+})
+
 
 class IfStateLogFilter(logging.Filter):
     def __init__(self, terminal):
@@ -12,32 +20,30 @@ class IfStateLogFilter(logging.Filter):
 
     def filter(self, record):
         record.levelshort = record.levelname[:1]
+
         if hasattr(record, 'iface'):
             record.prefix = " {:15} ".format(record.iface)
         else:
             record.prefix = ''
 
-        if self.terminal:
+        if self.terminal and record.levelno >= logging.WARNING:
             if record.levelno >= logging.ERROR:
                 record.bol = IfStateLogging.ANSI_RED
-            elif record.levelno >= logging.WARNING:
-                record.bol = IfStateLogging.ANSI_MAGENTA
             else:
-                record.bol = ''
+                record.bol = IfStateLogging.ANSI_MAGENTA
             record.eol = IfStateLogging.ANSI_RESET
         else:
             record.bol = ''
             record.eol = ''
 
-        if hasattr(record, 'style'):
-            if self.terminal:
-                record.style = IfStateLogging.colorize(record.style)
-            else:
-                record.style = ""
+        if self.terminal and hasattr(record, 'style'):
+            record.style = IfStateLogging.colorize(record.style)
+            record.eol = IfStateLogging.ANSI_RESET
         else:
             record.style = ""
 
         return True
+
 
 class IfStateLogging:
     STYLE_OK = "ok"
@@ -67,16 +73,26 @@ class IfStateLogging:
 
         logging.basicConfig(
             level=level,
-            format='%(bol)s%(prefix)s%(style)s%(message)s%(eol)s',
         )
 
         is_terminal = sys.stderr is not None and sys.stderr.isatty()
-        f = IfStateLogFilter(is_terminal)
-        logger.addFilter(f)
+
+        # add custom logging handlers
+        if not handlers:
+            handlers = []
+
+            # log to stderr
+            stream = logging.StreamHandler(sys.stderr)
+            stream.addFilter(IfStateLogFilter(is_terminal))
+            stream.setFormatter(formatter)
+            handlers.append(stream)
 
         qu = queue.SimpleQueue()
-        logger.addHandler(QueueHandler(qu))
-        self.listener = QueueListener(qu, *handlers, respect_handler_level=True)
+        queue_handler = QueueHandler(qu)
+        queue_handler.setLevel(level)
+        logger.addHandler(queue_handler)
+        self.listener = QueueListener(
+            qu, *handlers, respect_handler_level=True)
         self.listener.start()
 
     def quit(self):
