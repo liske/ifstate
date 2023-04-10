@@ -274,6 +274,9 @@ class IfState():
             vrrp_type = vrrp_type.lower()
             vrrp_state = vrrp_state.lower()
 
+        # check which links to remove or ignore:
+        #   remove: vrrp type & name matches, but vrrp state not
+        #   ignore: vrrp type & name does not match
         for ifname, link in self.links.items():
             if ifname in self.vrrp['links']:
                 if not by_vrrp:
@@ -285,6 +288,8 @@ class IfState():
                         vrrp_remove.append(ifname)
             elif by_vrrp:
                 vrrp_ignore.append(ifname)
+        logger.debug("vrrp remove links: {}".format(", ".join(vrrp_remove)))
+        logger.debug("vrrp ignore links: {}".format(", ".join(vrrp_ignore)))
 
         self.ipaddr_ignore = set()
         for ip in self.ignore.get('ipaddr', []):
