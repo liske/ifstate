@@ -1,5 +1,6 @@
 import logging
 from logging.handlers import QueueHandler, QueueListener
+import os
 import queue
 import sys
 
@@ -14,9 +15,9 @@ formatter = logging.Formatter('%(bol)s%(prefix)s%(style)s%(message)s%(eol)s', de
 
 
 class IfStateLogFilter(logging.Filter):
-    def __init__(self, terminal):
+    def __init__(self, is_terminal):
         super().__init__()
-        self.terminal = terminal
+        self.is_terminal = is_terminal
 
     def filter(self, record):
         record.levelshort = record.levelname[:1]
@@ -26,7 +27,7 @@ class IfStateLogFilter(logging.Filter):
         else:
             record.prefix = ''
 
-        if self.terminal and record.levelno >= logging.WARNING:
+        if self.is_terminal and record.levelno >= logging.WARNING:
             if record.levelno >= logging.ERROR:
                 record.bol = IfStateLogging.ANSI_RED
             else:
@@ -36,7 +37,7 @@ class IfStateLogFilter(logging.Filter):
             record.bol = ''
             record.eol = ''
 
-        if self.terminal and hasattr(record, 'style'):
+        if self.is_terminal and hasattr(record, 'style'):
             record.style = IfStateLogging.colorize(record.style)
             record.eol = IfStateLogging.ANSI_RESET
         else:
@@ -67,7 +68,7 @@ class IfStateLogging:
             return IfStateLogging.ANSI_YELLOW
         return ""
 
-    def __init__(self, level, handlers=[]):
+    def __init__(self, level, handlers=[], action=None):
         if level != logging.DEBUG:
             sys.tracebacklimit = 0
 
@@ -75,17 +76,29 @@ class IfStateLogging:
             level=level,
         )
 
-        is_terminal = sys.stderr is not None and sys.stderr.isatty()
+        has_stderr = sys.stderr is not None
+        is_terminal = has_stderr and sys.stderr.isatty()
 
         # add custom logging handlers
         if not handlers:
             handlers = []
 
-            # log to stderr
-            stream = logging.StreamHandler(sys.stderr)
-            stream.addFilter(IfStateLogFilter(is_terminal))
-            stream.setFormatter(formatter)
-            handlers.append(stream)
+            if has_stderr:
+                # log to stderr
+                stream = logging.StreamHandler(sys.stderr)
+                stream.addFilter(IfStateLogFilter(is_terminal))
+                stream.setFormatter(formatter)
+                handlers.append(stream)
+
+            # log to syslog
+            syslog = logging.handlers.SysLogHandler('/dev/log', facility=logging.handlers.SysLogHandler.LOG_DAEMON)
+            if action is None:
+                syslog.ident = 'ifstate[{}] '.format(os.getpid())
+            else:
+                syslog.ident = 'ifstate-{}[{}] '.format(action, os.getpid())
+            syslog.addFilter(IfStateLogFilter(False))
+            syslog.setFormatter(formatter)
+            handlers.append(syslog)
 
         qu = queue.SimpleQueue()
         queue_handler = QueueHandler(qu)

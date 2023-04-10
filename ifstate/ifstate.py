@@ -86,7 +86,7 @@ def main():
         shell()
         exit(0)
 
-    ifslog = IfStateLogging(lvl)
+    ifslog = IfStateLogging(lvl, action=args.action)
     ifs = IfState()
 
     if args.action in [Actions.SHOW, Actions.SHOWALL]:
