@@ -262,7 +262,7 @@ class IfState():
 
     def _apply(self, do_apply, vrrp_type, vrrp_name, vrrp_state):
         vrrp_ignore = []
-        vrrp_remove = []
+        vrrp_disable = []
 
         by_vrrp = not None in [
             vrrp_type, vrrp_name, vrrp_state]
@@ -285,11 +285,11 @@ class IfState():
                     if not link.match_vrrp_select(vrrp_type, vrrp_name):
                         vrrp_ignore.append(ifname)
                     elif not vrrp_name in self.vrrp[vrrp_type] or not vrrp_state in self.vrrp[vrrp_type][vrrp_name] or not ifname in self.vrrp[vrrp_type][vrrp_name][vrrp_state]:
-                        vrrp_remove.append(ifname)
+                        vrrp_disable.append(ifname)
             elif by_vrrp:
                 vrrp_ignore.append(ifname)
-        logger.debug("vrrp remove links: {}".format(", ".join(vrrp_remove)))
-        logger.debug("vrrp ignore links: {}".format(", ".join(vrrp_ignore)))
+        logger.debug("vrrp links to be disabled: {}".format(", ".join(vrrp_disable)))
+        logger.debug("vrrp links to be ignored: {}".format(", ".join(vrrp_ignore)))
 
         self.ipaddr_ignore = set()
         for ip in self.ignore.get('ipaddr', []):
@@ -311,10 +311,10 @@ class IfState():
             if stage == 0:
                 logger.info("\nconfiguring interface links")
 
-                for ifname in vrrp_remove:
-                    logger.debug('to be removed due to vrrp constraint',
+                for ifname in vrrp_disable:
+                    logger.debug('to be disabled due to vrrp constraint',
                                  extra={'iface': ifname})
-                    del self.links[ifname]
+                    self.links[ifname].settings['state'] = 'down'
             else:
                 logger.info("\nconfiguring interface links (stage 2)")
 
@@ -337,7 +337,7 @@ class IfState():
                         applied.append(name)
                     else:
                         deps = link.depends()
-                        if all(x in applied for x in deps):
+                        if all(x in applied+vrrp_ignore for x in deps):
                             excpts = link.apply(do_apply, self.sysctl)
                             if excpts.has_errno(errno.EEXIST):
                                 retry = True
