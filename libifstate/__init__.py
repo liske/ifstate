@@ -267,6 +267,13 @@ class IfState():
         by_vrrp = not None in [
             vrrp_type, vrrp_name, vrrp_state]
 
+        if by_vrrp:
+            logger.info("vrrp state change: {} {} => {}".format(vrrp_type, vrrp_name, vrrp_state))
+
+            # ifstate schema requires lower case keywords
+            vrrp_type = vrrp_type.lower()
+            vrrp_state = vrrp_state.lower()
+
         for ifname, link in self.links.items():
             if ifname in self.vrrp['links']:
                 if not by_vrrp:
