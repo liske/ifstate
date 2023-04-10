@@ -113,7 +113,7 @@ class Link(ABC):
                          'ip6gre_link', 'vxlan_link', 'xfrm_link']
         self.idx = None
 
-        if 'address' in self.settings:
+        if 'address' in self.settings and self.settings['kind'] == 'physical':
             self.settings['address'] = self.settings['address'].lower()
             self.idx = next(iter(ipr.link_lookup(
                 address=self.settings['address'])), None)
