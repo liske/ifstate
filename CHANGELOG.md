@@ -1,5 +1,18 @@
 # ChangeLog
 
+## 1.8.3 - 2023-04-12
+
+Fixes:
+- link: fix broken interface recreation (liske/ifstate#13)
+- link: fix unusable tun/tap implementation (liske/ifstate#14)
+- link: do not change link states in check mode (liske/ifstate#16)
+- link:  fix handling of multiple interface with same mac address (liske/ifstate#18)
+- logging: fix using always lastResort logger (liske/ifstate#20)
+- vrrp: fix broken fifo instance handling due to extra priority values (liske/ifstate#15)
+
+Changes:
+- logging: add syslog logging while running detached (i.e. vrrp script)
+
 ## 1.8.2 - 2023-02-17
 
 Changes:
