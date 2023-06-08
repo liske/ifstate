@@ -7,12 +7,7 @@ import sys
 logger = logging.getLogger('ifstate')
 logger.propagate = False
 
-formatter = logging.Formatter('%(bol)s%(prefix)s%(style)s%(message)s%(eol)s', defaults={
-    'bol': '',
-    'eol': '',
-    'prefix': '',
-})
-
+formatter = logging.Formatter('%(bol)s%(prefix)s%(style)s%(message)s%(eol)s')
 
 class IfStateLogFilter(logging.Filter):
     def __init__(self, is_terminal):
