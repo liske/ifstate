@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.8.4 - 2023-06-08
+
+Fixes:
+- logging: drop defaults from logging formatter to be python 3.9 compatible (closes #21)
+
 ## 1.8.3 - 2023-04-12
 
 Fixes:
