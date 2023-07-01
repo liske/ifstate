@@ -460,6 +460,15 @@ class Link(ABC):
 
                 try:
                     ipr.link('set', index=self.idx, **(self.settings))
+
+                    for setting in self.settings.keys():
+                        if self.get_if_attr(setting) != self.settings[setting]:
+                            if self.cap_create:
+                                logger.debug('  %s: setting could not be changed', setting, extra={'iface': self.settings['ifname']})
+                                excpts.add('set', Exception('ip link set'), **{setting: self.settings[setting]})
+                            else:
+                                logger.warning('%s setting could not be changed', setting,
+                                               extra={'iface': self.settings['ifname']})
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
