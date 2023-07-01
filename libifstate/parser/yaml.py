@@ -1,6 +1,6 @@
 from libifstate.util import logger
 from libifstate.parser.base import Parser
-from libifstate.exception import ParserOpenError, ParserIncludeError
+from libifstate.exception import ParserOpenError, ParserParseError, ParserIncludeError
 import yaml
 import os
 
@@ -28,6 +28,8 @@ class Loader(yaml.SafeLoader):
                 return yaml.load(fh, Loader)
         except OSError as ex:
             raise ParserIncludeError(ex)
+        except yaml.parser.ParserError as ex:
+            raise ParserParseError(ex)
 
 
 class YamlParser(Parser):
@@ -38,3 +40,5 @@ class YamlParser(Parser):
                 self.ifstates = yaml.load(fh, Loader)
         except OSError as ex:
             raise ParserOpenError(ex)
+        except yaml.parser.ParserError as ex:
+            raise ParserParseError(ex)

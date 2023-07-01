@@ -55,6 +55,9 @@ class FeatureMissingError(Exception):
     def __init__(self, feature):
         self.feature = feature
 
+    def exit_code(self):
+        return 5
+
 
 class LinkCannotAdd(Exception):
     pass
@@ -79,16 +82,25 @@ class ParserValidationError(Exception):
     def __init__(self, detail):
         self.detail = detail
 
+    def exit_code(self):
+        return 4
+
 class ParserOSError(Exception):
     def __init__(self, oserr):
         self.fn = oserr.filename
         self.msg = oserr.strerror
 
 class ParserOpenError(ParserOSError):
-    pass
+    def exit_code(self):
+        return 1
 
 class ParserIncludeError(ParserOSError):
-    pass
+    def exit_code(self):
+        return 3
+
+class ParserParseError(Exception):
+    def exit_code(self):
+        return 2
 
 class RouteDupblicate(Exception):
     pass

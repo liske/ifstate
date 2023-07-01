@@ -2,7 +2,7 @@
 
 from libifstate.parser import YamlParser
 from libifstate import __version__, IfState
-from libifstate.exception import FeatureMissingError, LinkNoConfigFound, ParserValidationError, ParserOpenError, ParserIncludeError
+from libifstate.exception import FeatureMissingError, LinkNoConfigFound, ParserValidationError, ParserOpenError, ParserParseError, ParserIncludeError
 from libifstate.util import logger, IfStateLogging
 from collections import namedtuple
 from copy import deepcopy
@@ -33,6 +33,50 @@ ACTIONS_HELP = {
     "VRRP_FIFO": "run as keepalived notify_fifo_script",
     "SHELL"    : "launch interactive python shell (pyroute2)",
 }
+
+class IfsConfigHandler():
+    def __init__(self, fn, soft_schema):
+        self.fn = fn
+        self.soft_schema = soft_schema
+
+        self.ifs = self.load_config()
+
+    def sighup_handler(self, signum, frame):
+        logger.info("SIGHUP: reloading configuration")
+        try:
+            self.ifs = self.load_config()
+        except Exception:
+            pass
+
+    def load_config(self):
+        try:
+            parser = YamlParser(self.fn)
+        except ParserOpenError as ex:
+            logger.error(
+                "Config loading from {} failed: {}".format(ex.fn, ex.msg))
+            raise ex
+        except ParserParseError as ex:
+            logger.error("Config parsing failed:\n\n{}".format(str(ex)))
+            raise ex
+        except ParserIncludeError as ex:
+            logger.error(
+                "Config include file {} failed: {}".format(ex.fn, ex.msg))
+            raise ex
+
+        try:
+            ifstates = parser.config()
+
+            ifs = IfState()
+            ifs.update(ifstates, self.soft_schema)
+            return ifs
+        except ParserValidationError as ex:
+            logger.error("Config validation failed for {}".format(ex.detail))
+            raise ex
+        except FeatureMissingError as ex:
+            logger.error(
+                "Config uses unavailable feature: {}".format(ex.feature))
+            raise ex
+
 
 def shell():
     from ifstate.shell import IfStateConsole
@@ -87,13 +131,13 @@ def main():
         exit(0)
 
     ifslog = IfStateLogging(lvl, action=args.action)
-    ifs = IfState()
 
     if args.action in [Actions.SHOW, Actions.SHOWALL]:
         # preserve dict order on python 3.7+
         if sys.version_info >= (3, 7):
             yaml.add_representer(
                 dict, lambda self, data: yaml.representer.SafeRepresenter.represent_dict(self, data.items()))
+        ifs = IfState()
         print(yaml.dump(ifs.show(args.action == Actions.SHOWALL)))
 
         ifslog.quit()
@@ -101,41 +145,25 @@ def main():
 
     if args.action in [Actions.CHECK, Actions.APPLY, Actions.VRRP, Actions.VRRP_FIFO]:
         try:
-            parser = YamlParser(args.config)
-        except ParserOpenError as ex:
-            logger.error(
-                "Config loading from {} failed: {}".format(ex.fn, ex.msg))
+            ifs_config = IfsConfigHandler(args.config, args.soft_schema)
+        except (ParserOpenError,
+                ParserParseError,
+                ParserIncludeError,
+                ParserValidationError,
+                FeatureMissingError) as ex:
             ifslog.quit()
-            exit(1)
-        except yaml.parser.ParserError as ex:
-            logger.error("Config parsing failed:\n\n{}".format(str(ex)))
-            ifslog.quit()
-            exit(2)
-        except ParserIncludeError as ex:
-            logger.error(
-                "Config include file {} failed: {}".format(ex.fn, ex.msg))
-            ifslog.quit()
-            exit(3)
-
-        try:
-            ifstates = parser.config()
-            ifs.update(ifstates, args.soft_schema)
-        except ParserValidationError as ex:
-            logger.error("Config validation failed for {}".format(ex.detail))
-            ifslog.quit()
-            exit(4)
-        except FeatureMissingError as ex:
-            logger.error(
-                "Config uses unavailable feature: {}".format(ex.feature))
-            ifslog.quit()
-            exit(5)
+            exit(ex.exit_code())
 
         if args.action == Actions.CHECK:
             try:
-                ifs.check()
+                ifs_config.ifs.check()
             except LinkNoConfigFound:
                 pass
         elif args.action == Actions.VRRP_FIFO:
+            signal.signal(signal.SIGHUP, ifs_config.sighup_handler)
+            signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+            signal.signal(signal.SIGTERM, signal.SIG_IGN)
+
             status_pattern = re.compile(
                 r'(group|instance) "([^"]+)" (unknown|fault|backup|master)( \d+)?$', re.IGNORECASE)
 
@@ -143,11 +171,8 @@ def main():
                 for line in fifo:
                     m = status_pattern.match(line.strip())
                     if m:
-                        signal.signal(signal.SIGHUP, signal.SIG_IGN)
-                        signal.signal(signal.SIGPIPE, signal.SIG_IGN)
-                        signal.signal(signal.SIGTERM, signal.SIG_IGN)
                         try:
-                            ifs_tmp = deepcopy(ifs)
+                            ifs_tmp = deepcopy(ifs_config.ifs)
                             ifs_tmp.apply(m.group(1), m.group(2), m.group(3))
                         except:
                             pass
@@ -158,9 +183,9 @@ def main():
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
             try:
                 if args.action == Actions.APPLY:
-                    ifs.apply()
+                    ifs_config.ifs.apply()
                 elif args.action == Actions.VRRP:
-                    ifs.apply(
+                    ifs_config.ifs.apply(
                         args.type, args.name, args.state)
             except LinkNoConfigFound:
                 pass

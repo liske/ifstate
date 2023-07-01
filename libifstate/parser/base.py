@@ -1,6 +1,7 @@
 from libifstate.util import logger
 from libifstate.exception import ParserValidationError
 from abc import ABC, abstractmethod
+from copy import deepcopy
 
 
 class Parser(ABC):
@@ -98,7 +99,7 @@ class Parser(ABC):
 
     def config(self):
         # merge builtin defaults with config
-        cfg = (self.merge(self._default_ifstates, self.ifstates))
+        cfg = (self.merge(deepcopy(Parser._default_ifstates), self.ifstates))
 
         # 'ignore' should still be an object
         try:
