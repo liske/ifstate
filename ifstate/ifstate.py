@@ -6,6 +6,7 @@ from libifstate.exception import FeatureMissingError, LinkNoConfigFound, ParserV
 from libifstate.util import logger, IfStateLogging
 from collections import namedtuple
 from copy import deepcopy
+from setproctitle import setproctitle
 
 import argparse
 import logging
@@ -125,6 +126,11 @@ def main():
         lvl = logging.ERROR
     else:
         lvl = logging.INFO
+
+    if args.action == Actions.VRRP_FIFO:
+        setproctitle("ifstate-{}@{}".format(args.action, args.fifo))
+    else:
+        setproctitle("ifstate-{}".format(args.action))
 
     if args.action == Actions.SHELL:
         shell()

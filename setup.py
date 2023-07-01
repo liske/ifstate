@@ -20,7 +20,8 @@ def install_requires():
     requires = [
         "jsonschema",
         "pyroute2",
-        "pyyaml"
+        "pyyaml",
+        "setproctitle"
     ]
 
     return requires
