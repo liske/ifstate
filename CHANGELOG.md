@@ -1,9 +1,20 @@
 # ChangeLog
 
+## 1.8.5 - 2023-07-01
+
+Changes:
+- vrrp: add SIGHUP handler for config reloading (vrrp-fifo)
+- vrrp: set process title to ease reloading by SIGHUP (vrrp-fifo)
+
+Fixes:
+- link: recreate virtual interfaces if settings could not be changed (liske/ifstate#17, liske/ifstate#23)
+
+Before this release it was possible that some link settings were not changed unnoticed (if the kernel did not throw a netlink error). A known setting is the `vlan_id` for vlan links which cannot be changed after link creation nor throws any netlink error. This condition is now detected and the interface is recreated using the correct settings.
+
 ## 1.8.4 - 2023-06-08
 
 Fixes:
-- logging: drop defaults from logging formatter to be python 3.9 compatible (closes #21)
+- logging: drop defaults from logging formatter to be python 3.9 compatible (liske/ifstate#21)
 
 ## 1.8.3 - 2023-04-12
 
