@@ -4,6 +4,10 @@ title: Examples
 
 This is a collection of configuration examples for different interface link types and routing setups.
 
+## Keepalived
+- [VRRP with notify_fifo script (recommended)](examples/vrrp-fifo.md)
+- [VRRP with notify script](examples/vrrp.md)
+
 ## Links
 - [Bonding Interface w/ LACP (802.3ad)](examples/lacp.md)
 - [EoGRE Layer 2 Tunnel](examples/gretap.md)
