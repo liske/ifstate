@@ -23,7 +23,8 @@ options:
   --version             show program`s version number and exit
   -v, --verbose         be more verbose
   -q, --quiet           be more quiet, print only warnings and errors
-  -s, --soft-schema     ignore schema validation errors, expect ifstatecli to trigger internal exceptions
+  -s, --soft-schema     ignore schema validation errors, expect ifstatecli
+                        to trigger internal exceptions
   -c CONFIG, --config CONFIG
                         configuration YaML filename
 ```
