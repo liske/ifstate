@@ -5,7 +5,7 @@ title: Examples
 This is a collection of configuration examples for different interface link types and routing setups.
 
 ## Keepalived
-- [VRRP with notify_fifo script (recommended)](examples/vrrp-fifo.md)
+- [VRRP with notify_fifo script (prefered)](examples/vrrp-fifo.md)
 - [VRRP with notify script](examples/vrrp.md)
 
 ## Links

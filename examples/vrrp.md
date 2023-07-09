@@ -1,10 +1,10 @@
 # Example: VRRP with keepalived's notify script
 
-This example uses keepalived for VRRP and ifstate as vrrp_fifo script:
+This basic example uses keepalived for VRRP and ifstate as vrrp_fifo script:
 - use keepalived for VRRP
 - use ifstate as notify script to configure the floating virtual IP
 
-*Keepalived recommends to prefere [notify_fifo](vrrp-fifo.md) over notify scripts! The fifo is more efficient (keepalived + ifstate) and prevents race conditions since no notify scripts might run in parallel.*
+*Keepalived recommends to use [notify_fifo](vrrp-fifo.md) over notify scripts! The fifo is more efficient (keepalived + ifstate) and prevents race conditions as no notify scripts run in parallel.*
 
 [Back](../examples.md)
 
