@@ -20,7 +20,7 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  --version             show program's version number and exit
+  --version             show program`s version number and exit
   -v, --verbose         be more verbose
   -q, --quiet           be more quiet, print only warnings and errors
   -s, --soft-schema     ignore schema validation errors, expect ifstatecli to trigger internal exceptions
