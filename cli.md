@@ -135,10 +135,10 @@ including internal default settings from the `ignore` section.
 
 The `vrrp` action can be used to run ifstate as a notify script from *keepalived*. If possible it is recommended to use the `vrrp-fifo` action as notify_fifo script.
 
-[More...](examples.md#keepalived)
+[More…](examples.md#keepalived)
 
 ## vrrp-fifo
 
 The `vrrp-fifo` action can be used to run ifstate as a notify_fifo script from *keepalived*.
 
-[More...](examples.md#keepalived)
+[More…](examples.md#keepalived)

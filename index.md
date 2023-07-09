@@ -51,7 +51,7 @@ pip3 install ifstate
 
 This will also install all python dependencies if not already statisfied.
 
-[More...](install.md)
+[More…](install.md)
 
 # Usage
 
@@ -105,6 +105,6 @@ configuring routing table main...
 
 It is possible to create a configuration template from the currently available interfaces using the `ifstatecli show` command.
 
-[More...](cli.md)
+[More…](cli.md)
 
 <a rel="me" href="https://ibh.social/@liske"></a>
