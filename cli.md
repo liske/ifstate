@@ -5,20 +5,25 @@ title: CLI
 # Usage
 
 ```bash
-usage: ifstatecli [-h] [--version] [-v | -q] [-s] [-c CONFIG]
-                  {apply,check,show,showall}
+usage: ifstatecli [-h] [--version] [-v | -q] [-s] [-c CONFIG] {apply,check,shell,show,showall,vrrp,vrrp-fifo} ...
 
 positional arguments:
-  {apply,check,show,showall}
+  {apply,check,shell,show,showall,vrrp,vrrp-fifo}
                         specifies the action to perform
+    apply               update the network config
+    check               dry run update the network config
+    shell               launch interactive python shell (pyroute2)
+    show                show running network config
+    showall             show running network config (more settings)
+    vrrp                run as keepalived notify script
+    vrrp-fifo           run as keepalived notify_fifo_script
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --version             show program's version number and exit
   -v, --verbose         be more verbose
   -q, --quiet           be more quiet, print only warnings and errors
-  -s, --soft-schema     ignore schema validation errors, expect ifstatecli to
-                        trigger internal exceptions
+  -s, --soft-schema     ignore schema validation errors, expect ifstatecli to trigger internal exceptions
   -c CONFIG, --config CONFIG
                         configuration YaML filename
 ```
@@ -48,6 +53,29 @@ configuring ip addresses...
 ## check
 
 The *check* action will parse the config file and does a **dry run** of the *apply* action.
+
+
+## shell
+
+*For advanced users!*
+
+The `shell` action starts a interactive python shell with a pyroute2 object (symbol `ìpr`). To get highlighting in `pprint` you need to install the `Pygments` python module.
+
+```shell
+# ifstatecli shell
+Links:
+   1: lo
+   2: eth0
+   3: eth1
+   4: eth2
+   5: eth3
+
+Symbols:
+  ipr = pyroute2.IPRoute()
+
+ifstate 1.8.5; pyroute2 0.7.8
+>>> pprint(ipr.get_links(1)[0])
+```
 
 
 ## show
@@ -101,3 +129,16 @@ You should consider removing any unnecessary options.
 
 The `showall` action will print a configuration for the running network config
 including internal default settings from the `ignore` section.
+
+
+## vrrp
+
+The `vrrp` action can be used to run ifstate as a notify script from *keepalived*. If possible it is recommended to use the `vrrp-fifo` action as notify_fifo script.
+
+[More...](examples.md#keepalived)
+
+## vrrp-fifo
+
+The `vrrp-fifo` action can be used to run ifstate as a notify_fifo script from *keepalived*.
+
+[More...](examples.md#keepalived)
