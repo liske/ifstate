@@ -995,6 +995,17 @@
                 },
                 "rules": {
                     "$ref": "#/$defs/ignore-rules"
+                },
+                "netns": {
+                    "description": "netns namespaces matching this list of regex will be ignored",
+                    "type": "array",
+                    "items": {
+                        "description": "regex to match interface name",
+                        "examples": [
+                            "^tenant-\\d+"
+                        ],
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -3633,6 +3644,30 @@
                                 ],
                                 "description": "select the ip protocol to match"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "namespaces": {
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                ".+": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "interfaces"
+                    ],
+                    "properties": {
+                        "options": {
+                            "$ref": "#/properties/options"
+                        },
+                        "interfaces": {
+                            "$ref": "#/properties/interfaces"
+                        },
+                        "routing": {
+                            "$ref": "#/properties/routing"
                         }
                     }
                 }
