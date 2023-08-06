@@ -53,6 +53,15 @@ This will also install all python dependencies if not already statisfied.
 
 [More…](install.md)
 
+# Presentations
+
+The following recordings of public talks about IfState are available online:
+
+- [Declarative network configuration with ifstate](https://youtu.be/n1ZTGrwXPkY)
+  at [AlpineConf 2021](https://alpinelinux.org/conf/) (in English)
+- [Deklarative Netzwerkkonfiguration mit IfState](https://media.ccc.de/v/clt23-225-deklarative-netzwerkkonfiguration-mit-ifstate)
+  at [Chemnitzer Linux-Tage 2023](https://chemnitzer.linux-tage.de/2023/de/programm/beitrag/225) (in German)
+
 # Usage
 
 Be aware that using the `ifstatecli` command will by default **shutdown and remove any interfaces** which are not declared in the configuration. It ships with a build-in ignore list for some well-known interfaces which should not handled by *IfState* (i.e. `docker0`, `veth`, ...).
