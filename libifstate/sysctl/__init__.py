@@ -4,7 +4,7 @@ import os
 
 
 class Sysctl():
-    def __init__(self):
+    def __init__(self, netns):
         self.sysctls = {}
 
     def add(self, iface, sysctl):

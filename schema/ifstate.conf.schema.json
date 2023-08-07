@@ -3666,6 +3666,9 @@
                         "interfaces": {
                             "$ref": "#/properties/interfaces"
                         },
+                        "neighbours": {
+                            "$ref": "#/properties/neighbours"
+                        },
                         "routing": {
                             "$ref": "#/properties/routing"
                         }

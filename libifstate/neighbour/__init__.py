@@ -1,10 +1,11 @@
-from libifstate.util import logger, ipr, IfStateLogging
+from libifstate.util import logger, IfStateLogging
 from libifstate.exception import netlinkerror_classes
 from ipaddress import ip_address
 
 
 class Neighbours():
-    def __init__(self, iface, neighbours):
+    def __init__(self, netns, iface, neighbours):
+        self.netns = netns
         self.iface = iface
         self.neighbours = {}
         for neigh in neighbours:
@@ -14,7 +15,7 @@ class Neighbours():
         logger.debug('getting neighbours', extra={'iface': self.iface})
 
         # get ifindex
-        idx = next(iter(ipr.link_lookup(ifname=self.iface)), None)
+        idx = next(iter(self.netns.ipr.link_lookup(ifname=self.iface)), None)
 
         if idx == None:
             logger.warning('link missing', extra={'iface': self.iface})
@@ -23,7 +24,7 @@ class Neighbours():
         # get neighbour entries (only NUD_PERMANENT)
         ipr_neigh = {}
         neigh_add = {}
-        for neigh in ipr.get_neighbours(ifindex=idx, state=128):
+        for neigh in self.netns.ipr.get_neighbours(ifindex=idx, state=128):
             ip = ip_address(neigh.get_attr('NDA_DST'))
             ipr_neigh[ip] = neigh.get_attr('NDA_LLADDR')
 
@@ -40,7 +41,7 @@ class Neighbours():
                 '-%s', str(ip), extra={'iface': self.iface, 'style': IfStateLogging.STYLE_DEL})
             try:
                 if do_apply:
-                    ipr.neigh("del", ifindex=idx, dst=str(
+                    self.netns.ipr.neigh("del", ifindex=idx, dst=str(
                         ip))
             except Exception as err:
                 if not isinstance(err, netlinkerror_classes):
@@ -60,7 +61,7 @@ class Neighbours():
                         'state': 128
                     }
 
-                    ipr.neigh('replace', **opts)
+                    self.netns.ipr.neigh('replace', **opts)
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise

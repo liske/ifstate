@@ -1,4 +1,4 @@
-from libifstate.util import logger, ipr, IfStateLogging
+from libifstate.util import logger, IfStateLogging
 from libifstate.exception import RouteDupblicate, netlinkerror_classes
 from ipaddress import ip_address, ip_network, IPv6Network
 from pyroute2.netlink.rtnl.fibmsg import FR_ACT_VALUES
@@ -89,7 +89,8 @@ RT_LOOKUPS_DEFAULTS = {
 }
 
 class Tables(collections.abc.Mapping):
-    def __init__(self):
+    def __init__(self, netns):
+        self.netns = netns
         self.tables = {
             254: [],
         }
@@ -148,7 +149,7 @@ class Tables(collections.abc.Mapping):
 
     def show_routes(self, ignores):
         routes = []
-        for route in ipr.get_routes(family=AF_INET) + ipr.get_routes(family=AF_INET6):
+        for route in self.netns.ipr.get_routes(family=AF_INET) + self.netns.ipr.get_routes(family=AF_INET6):
             # skip routes from local table
             table = route.get_attr('RTA_TABLE')
             if table == 255:
@@ -180,7 +181,7 @@ class Tables(collections.abc.Mapping):
 
             dev = route.get_attr('RTA_OIF')
             if dev:
-                link = next(iter(ipr.get_links(dev)), None)
+                link = next(iter(self.netns.ipr.get_links(dev)), None)
                 if link:
                     rt['dev'] = link.get_attr('IFLA_IFNAME', dev)
                 else:
@@ -221,7 +222,7 @@ class Tables(collections.abc.Mapping):
 
     def kernel_routes(self, table):
         routes = []
-        for route in ipr.get_routes(table=table, family=AF_INET) + ipr.get_routes(table=table, family=AF_INET6):
+        for route in self.netns.ipr.get_routes(table=table, family=AF_INET) + self.netns.ipr.get_routes(table=table, family=AF_INET6):
             # ignore RTM_F_CLONED routes
             if route['flags'] & 512:
                 continue
@@ -279,7 +280,7 @@ class Tables(collections.abc.Mapping):
             for route in croutes:
                 if 'oif' in route and type(route['oif']) == str:
                     route['oif'] = next(
-                        iter(ipr.link_lookup(ifname=route['oif'])), None)
+                        iter(self.netns.ipr.link_lookup(ifname=route['oif'])), None)
                 found = False
                 identical = False
                 for i, kroute in enumerate(kroutes):
@@ -305,7 +306,7 @@ class Tables(collections.abc.Mapping):
                         " ".join("{}={}".format(k, v) for k, v in route.items())))
                     try:
                         if do_apply:
-                            ipr.route('replace', **route)
+                            self.netns.ipr.route('replace', **route)
                     except Exception as err:
                         if not isinstance(err, netlinkerror_classes):
                             raise
@@ -325,7 +326,7 @@ class Tables(collections.abc.Mapping):
                     'del', extra={'iface': route['dst'], 'style': IfStateLogging.STYLE_DEL})
                 try:
                     if do_apply:
-                        ipr.route('del', **route)
+                        self.netns.ipr.route('del', **route)
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
@@ -334,7 +335,8 @@ class Tables(collections.abc.Mapping):
 
 
 class Rules():
-    def __init__(self):
+    def __init__(self, netns):
+        self.netns = netns
         self.rules = []
 
     def add(self, rule):
@@ -386,7 +388,7 @@ class Rules():
 
     def kernel_rules(self):
         rules = []
-        for rule in ipr.get_rules(family=AF_INET) + ipr.get_rules(family=AF_INET6):
+        for rule in self.netns.ipr.get_rules(family=AF_INET) + self.netns.ipr.get_rules(family=AF_INET6):
             ru = {
                 'action': FR_ACT_VALUES.get(rule['action']),
                 'table': rule.get_attr('FRA_TABLE'),
@@ -477,7 +479,7 @@ class Rules():
                     " ".join("{}={}".format(k, v) for k, v in rule.items())))
                 try:
                     if do_apply:
-                        ipr.rule('add', **rule)
+                        self.netns.ipr.rule('add', **rule)
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
@@ -499,7 +501,7 @@ class Rules():
                 'del', extra={'iface': '#{}'.format(rule['priority']), 'style': IfStateLogging.STYLE_DEL})
             try:
                 if do_apply:
-                    ipr.rule('del', **rule)
+                    self.netns.ipr.rule('del', **rule)
             except Exception as err:
                 if not isinstance(err, netlinkerror_classes):
                     raise

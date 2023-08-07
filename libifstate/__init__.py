@@ -3,7 +3,6 @@ from libifstate.link.base import ethtool_path, Link
 from libifstate.address import Addresses
 from libifstate.neighbour import Neighbours
 from libifstate.routing import Tables, Rules, RTLookups
-from libifstate.sysctl import Sysctl
 from libifstate.parser import Parser
 from libifstate.tc import TC
 from libifstate.exception import netlinkerror_classes
@@ -31,7 +30,8 @@ except ModuleNotFoundError:
     # ignore missing plugin
     pass
 
-from libifstate.util import logger, ipr, IfStateLogging
+from libifstate.netns import NetNS
+from libifstate.util import logger, IfStateLogging
 from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, ParserValidationError
 from ipaddress import ip_network, ip_interface
 from jsonschema import validate, ValidationError, FormatChecker
@@ -49,22 +49,12 @@ __version__ = "1.8.5"
 class IfState():
     def __init__(self):
         logger.debug('IfState {}'.format(__version__))
-        self.links = {}
-        self.addresses = {}
-        self.bpf_progs = None
-        self.neighbours = {}
-        self.ignore = {}
-        self.vrrp = {
-            'links': [],
-            'group': {},
-            'instance': {},
+
+        self.namespaces = {
+            '': NetNS(None),
         }
-        self.tables = None
-        self.rules = None
-        self.sysctl = Sysctl()
-        self.tc = {}
-        self.wireguard = {}
-        self.xdp = {}
+        self.bpf_progs = None
+        self.ignore = {}
         self.features = {
             'brport': True,
             'link': True,
@@ -108,15 +98,6 @@ class IfState():
             else:
                 raise ParserValidationError(detail)
 
-        # parse options
-        if 'options' in ifstates:
-            # parse global sysctl settings
-            if 'sysctl' in ifstates['options']:
-                for iface in ['all', 'default']:
-                    if iface in ifstates['options']['sysctl']:
-                        self.sysctl.add(
-                            iface, ifstates['options']['sysctl'][iface])
-
         # load BPF programs
         if 'bpf' in ifstates:
             if not self.features['bpf']:
@@ -127,41 +108,60 @@ class IfState():
             for name, config in ifstates['bpf'].items():
                 self.bpf_progs.add(name, config)
 
+        # add ignore list items
+        self.ignore.update(ifstates['ignore'])
+
+        self._update(self.namespaces[''], ifstates)
+        if 'namespaces' in ifstates:
+            for netns_name, netns_ifstates in ifstates['namespaces'].items():
+                self.namespaces[netns_name] = NetNS(netns_name)
+                self._update(self.namespaces[netns_name], netns_ifstates)
+
+    def _update(self, netns, ifstates):
+        # parse options
+        if 'options' in ifstates:
+            # parse global sysctl settings
+            if 'sysctl' in ifstates['options']:
+                for iface in ['all', 'default']:
+                    if iface in ifstates['options']['sysctl']:
+                        netns.sysctl.add(
+                            iface, ifstates['options']['sysctl'][iface])
+
         # add interfaces from config
         for ifstate in ifstates['interfaces']:
             name = ifstate['name']
-            if name in self.links:
+            if name in netns.links:
                 raise LinkDuplicate()
             if 'link' in ifstate:
-                self.links[name] = Link(
-                    name, ifstate['link'], ifstate.get('ethtool'), ifstate.get('vrrp'), ifstate.get('brport'))
+                netns.links[name] = Link(
+                    netns, name, ifstate['link'], ifstate.get('ethtool'), ifstate.get('vrrp'), ifstate.get('brport'))
             else:
-                self.links[name] = None
+                netns.links[name] = None
 
             if 'addresses' in ifstate:
-                self.addresses[name] = Addresses(name, ifstate['addresses'])
+                netns.addresses[name] = Addresses(netns, name, ifstate['addresses'])
             else:
-                self.addresses[name] = None
+                netns.addresses[name] = None
 
             if 'neighbours' in ifstate:
-                self.neighbours[name] = Neighbours(name, ifstate['neighbours'])
+                netns.neighbours[name] = Neighbours(netns, name, ifstate['neighbours'])
             else:
-                self.neighbours[name] = None
+                netns.neighbours[name] = None
 
             if 'vrrp' in ifstate:
                 ktype = ifstate['vrrp']['type']
                 kname = ifstate['vrrp']['name']
                 kstates = ifstate['vrrp']['states']
-                if not kname in self.vrrp[ktype]:
-                    self.vrrp[ktype][kname] = {}
+                if not kname in netns.vrrp[ktype]:
+                    netns.vrrp[ktype][kname] = {}
                 for kstate in kstates:
-                    if not kstate in self.vrrp[ktype][kname]:
-                        self.vrrp[ktype][kname][kstate] = []
-                    self.vrrp[ktype][kname][kstate].append(name)
-                self.vrrp['links'].append(name)
+                    if not kstate in netns.vrrp[ktype][kname]:
+                        netns.vrrp[ktype][kname][kstate] = []
+                    netns.vrrp[ktype][kname][kstate].append(name)
+                netns.vrrp['links'].append(name)
 
             if 'sysctl' in ifstate:
-                self.sysctl.add(name, ifstate['sysctl'])
+                netns.sysctl.add(name, ifstate['sysctl'])
 
             if 'cshaper' in ifstate:
                 profile_name = ifstate['cshaper'].get(
@@ -222,45 +222,46 @@ class IfState():
                 del ifstate['cshaper']
 
             if 'tc' in ifstate:
-                self.tc[name] = TC(
-                    name, ifstate['tc'])
+                netns.tc[name] = TC(
+                    netns, name, ifstate['tc'])
 
             if 'wireguard' in ifstate:
                 if not self.features['wireguard']:
                     raise FeatureMissingError("wireguard")
 
-                self.wireguard[name] = WireGuard(name, ifstate['wireguard'])
+                netns.wireguard[name] = WireGuard(netns, name, ifstate['wireguard'])
 
             if 'xdp' in ifstate:
                 if not self.features['xdp']:
                     raise FeatureMissingError("xdp")
 
-                self.xdp[name] = XDP(name, ifstate['xdp'])
+                netns.xdp[name] = XDP(netns, name, ifstate['xdp'])
 
         # add routing from config
         if 'routing' in ifstates:
             if 'routes' in ifstates['routing']:
-                if self.tables is None:
-                    self.tables = Tables()
+                if netns.tables is None:
+                    netns.tables = Tables(netns)
                 for route in ifstates['routing']['routes']:
-                    self.tables.add(route)
+                    netns.tables.add(route)
 
             if 'rules' in ifstates['routing']:
-                if self.rules is None:
-                    self.rules = Rules()
+                if netns.rules is None:
+                    netns.rules = Rules(netns)
                 for rule in ifstates['routing']['rules']:
-                    self.rules.add(rule)
-
-        # add ignore list items
-        self.ignore.update(ifstates['ignore'])
+                    netns.rules.add(rule)
 
     def apply(self, vrrp_type=None, vrrp_name=None, vrrp_state=None):
-        self._apply(True, vrrp_type, vrrp_name, vrrp_state)
+        self._apply(True, self.namespaces[''], vrrp_type, vrrp_name, vrrp_state)
+        for name, netns in self.namespaces.items():
+            self._apply(True, netns, vrrp_type, vrrp_name, vrrp_state)
 
     def check(self, vrrp_type=None, vrrp_name=None, vrrp_state=None):
-        self._apply(False, vrrp_type, vrrp_name, vrrp_state)
+        self._apply(False, self.namespaces[''], vrrp_type, vrrp_name, vrrp_state)
+        for name, netns in self.namespaces.items():
+            self._apply(False, netns, vrrp_type, vrrp_name, vrrp_state)
 
-    def _apply(self, do_apply, vrrp_type, vrrp_name, vrrp_state):
+    def _apply(self, do_apply, netns, vrrp_type, vrrp_name, vrrp_state):
         vrrp_ignore = []
         vrrp_disable = []
 
@@ -277,14 +278,14 @@ class IfState():
         # check which links to remove or ignore:
         #   remove: vrrp type & name matches, but vrrp state not
         #   ignore: vrrp type & name does not match
-        for ifname, link in self.links.items():
-            if ifname in self.vrrp['links']:
+        for ifname, link in netns.links.items():
+            if ifname in netns.vrrp['links']:
                 if not by_vrrp:
                     vrrp_ignore.append(ifname)
                 else:
                     if not link.match_vrrp_select(vrrp_type, vrrp_name):
                         vrrp_ignore.append(ifname)
-                    elif not vrrp_name in self.vrrp[vrrp_type] or not vrrp_state in self.vrrp[vrrp_type][vrrp_name] or not ifname in self.vrrp[vrrp_type][vrrp_name][vrrp_state]:
+                    elif not vrrp_name in netns.vrrp[vrrp_type] or not vrrp_state in netns.vrrp[vrrp_type][vrrp_name] or not ifname in netns.vrrp[vrrp_type][vrrp_name][vrrp_state]:
                         vrrp_disable.append(ifname)
             elif by_vrrp:
                 vrrp_ignore.append(ifname)
@@ -295,14 +296,14 @@ class IfState():
         for ip in self.ignore.get('ipaddr', []):
             self.ipaddr_ignore.add(ip_network(ip))
 
-        if not any(not x is None for x in self.links.values()):
+        if not any(not x is None for x in netns.links.values()):
             logger.error("DANGER: Not a single link config has been found!")
             raise LinkNoConfigFound()
 
         for iface in ['all', 'default']:
-            if self.sysctl.has_settings(iface):
+            if netns.sysctl.has_settings(iface):
                 logger.info("\nconfiguring {} interface sysctl".format(iface))
-                self.sysctl.apply(iface, do_apply)
+                netns.sysctl.apply(iface, do_apply)
 
         if not self.bpf_progs is None:
             self.bpf_progs.apply(do_apply)
@@ -314,15 +315,15 @@ class IfState():
                 for ifname in vrrp_disable:
                     logger.debug('to be disabled due to vrrp constraint',
                                  extra={'iface': ifname})
-                    self.links[ifname].settings['state'] = 'down'
+                    netns.links[ifname].settings['state'] = 'down'
             else:
                 logger.info("\nconfiguring interface links (stage 2)")
 
             retry = False
             applied = []
-            while len(applied) + len(vrrp_ignore) < len(self.links):
+            while len(applied) + len(vrrp_ignore) < len(netns.links):
                 last = len(applied)
-                for name, link in self.links.items():
+                for name, link in netns.links.items():
                     if name in applied:
                         continue
 
@@ -338,17 +339,17 @@ class IfState():
                     else:
                         deps = link.depends()
                         if all(x in applied+vrrp_ignore for x in deps):
-                            excpts = link.apply(do_apply, self.sysctl)
+                            excpts = link.apply(do_apply, netns.sysctl)
                             if excpts.has_errno(errno.EEXIST):
                                 retry = True
                             applied.append(name)
                 if last == len(applied):
                     raise LinkCircularLinked()
 
-            for link in ipr.get_links():
+            for link in netns.ipr.get_links():
                 name = link.get_attr('IFLA_IFNAME')
                 # skip links on ignore list
-                if not name in self.links and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
+                if not name in netns.links and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
                     info = link.get_attr('IFLA_LINKINFO')
                     # remove virtual interface
                     if info is not None:
@@ -357,9 +358,9 @@ class IfState():
                             'del', extra={'iface': name, 'style': IfStateLogging.STYLE_DEL})
                         if do_apply:
                             try:
-                                ipr.link('set', index=link.get(
+                                netns.ipr.link('set', index=link.get(
                                     'index'), state='down')
-                                ipr.link('del', index=link.get('index'))
+                                netns.ipr.link('del', index=link.get('index'))
                             except Exception as err:
                                 if not isinstance(err, netlinkerror_classes):
                                     raise
@@ -378,7 +379,7 @@ class IfState():
                                 'iface': name, 'style': IfStateLogging.STYLE_CHG})
                             if do_apply:
                                 try:
-                                    ipr.link('set', index=link.get(
+                                    netns.ipr.link('set', index=link.get(
                                         'index'), state='down')
                                 except Exception as err:
                                     if not isinstance(err, netlinkerror_classes):
@@ -388,10 +389,10 @@ class IfState():
             if not retry:
                 break
 
-        if any(not x is None for x in self.tc.values()):
+        if any(not x is None for x in netns.tc.values()):
             logger.info("\nconfiguring interface traffic control...")
 
-            for name, tc in self.tc.items():
+            for name, tc in netns.tc.items():
                 if name in vrrp_ignore:
                     logger.debug('skipped due to vrrp constraint',
                                  extra={'iface': name})
@@ -401,10 +402,10 @@ class IfState():
                 else:
                     tc.apply(do_apply)
 
-        if any(not x is None for x in self.xdp.values()):
+        if any(not x is None for x in netns.xdp.values()):
             logger.info("\nconfiguring eXpress Data Path...")
 
-            for name, xdp in self.xdp.items():
+            for name, xdp in netns.xdp.items():
                 if name in vrrp_ignore:
                     logger.debug('skipped due to vrrp constraint',
                                  extra={'iface': name})
@@ -414,16 +415,16 @@ class IfState():
                 else:
                     xdp.apply(do_apply, self.bpf_progs)
 
-        if any(not x is None for x in self.addresses.values()):
+        if any(not x is None for x in netns.addresses.values()):
             logger.info("\nconfiguring interface ip addresses...")
             # add empty objects for unhandled interfaces
-            for link in ipr.get_links():
+            for link in netns.ipr.get_links():
                 name = link.get_attr('IFLA_IFNAME')
                 # skip links on ignore list
-                if not name in self.addresses and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
-                    self.addresses[name] = Addresses(name, [])
+                if not name in netns.addresses and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
+                    netns.addresses[name] = Addresses(netns, name, [])
 
-            for name, addresses in self.addresses.items():
+            for name, addresses in netns.addresses.items():
                 if name in vrrp_ignore:
                     logger.debug('skipped due to vrrp constraint',
                                  extra={'iface': name})
@@ -436,16 +437,16 @@ class IfState():
         else:
             logger.debug("\nno interface ip addressing to be applied")
 
-        if any(not x is None for x in self.neighbours.values()):
+        if any(not x is None for x in netns.neighbours.values()):
             logger.info("\nconfiguring interface neighbours...")
             # add empty objects for unhandled interfaces
-            for link in ipr.get_links():
+            for link in netns.ipr.get_links():
                 name = link.get_attr('IFLA_IFNAME')
                 # skip links on ignore list
-                if not name in self.neighbours and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
-                    self.neighbours[name] = Neighbours(name, [])
+                if not name in netns.neighbours and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
+                    netns.neighbours[name] = Neighbours(name, [])
 
-            for name, neighbours in self.neighbours.items():
+            for name, neighbours in netns.neighbours.items():
                 if name in vrrp_ignore:
                     logger.debug('skipped due to vrrp constraint',
                                  extra={'iface': name})
@@ -457,15 +458,15 @@ class IfState():
         else:
             logger.debug("\nno interface neighbours to be applied")
 
-        if not self.tables is None:
-            self.tables.apply(self.ignore.get('routes', []), do_apply)
+        if not netns.tables is None:
+            netns.tables.apply(self.ignore.get('routes', []), do_apply)
 
-        if not self.rules is None:
-            self.rules.apply(self.ignore.get('rules', []), do_apply)
+        if not netns.rules is None:
+            netns.rules.apply(self.ignore.get('rules', []), do_apply)
 
-        if len(self.wireguard):
+        if len(netns.wireguard):
             logger.info("\nconfiguring WireGuard...")
-            for iface, wireguard in self.wireguard.items():
+            for iface, wireguard in netns.wireguard.items():
                 if iface in vrrp_ignore:
                     logger.debug('skipped due to vrrp constraint',
                                  extra={'iface': name})
@@ -483,7 +484,7 @@ class IfState():
             ipaddr_ignore.append(ip_network(ip))
 
         ifs_links = []
-        for ipr_link in ipr.get_links():
+        for ipr_link in netns.ipr.get_links():
             name = ipr_link.get_attr('IFLA_IFNAME')
             # skip links on ignore list
             if not any(re.match(regex, name) for regex in Parser._default_ifstates['ignore']['ifname_builtin']):
@@ -495,7 +496,7 @@ class IfState():
                     },
                 }
 
-                for addr in ipr.get_addr(index=ipr_link['index']):
+                for addr in netns.ipr.get_addr(index=ipr_link['index']):
                     if addr['flags'] & IFA_F_PERMANENT == IFA_F_PERMANENT:
                         ip = ip_interface(addr.get_attr(
                             'IFA_ADDRESS') + '/' + str(addr['prefixlen']))
@@ -528,13 +529,13 @@ class IfState():
                     addr = ipr_link.get_attr('IFLA_ADDRESS')
                     if not addr is None:
                         ifs_link['link']['address'] = addr
-                    permaddr = ipr.get_permaddr(name)
+                    permaddr = netns.ipr.get_permaddr(name)
                     if not permaddr is None:
                         if addr is None:
                             ifs_link['link']['addr'] = permaddr
                         elif addr != permaddr:
                             ifs_link['link']['permaddr'] = permaddr
-                    businfo = ipr.get_businfo(name)
+                    businfo = netns.ipr.get_businfo(name)
                     if not businfo is None:
                         ifs_link['link']['businfo'] = businfo
 
@@ -547,7 +548,7 @@ class IfState():
                     ref = ipr_link.get_attr('IFLA_{}'.format(attr.upper()))
                     if ref is not None:
                         try:
-                            ifs_link['link'][attr] = ipr.get_ifname_by_index(
+                            ifs_link['link'][attr] = netns.ipr.get_ifname_by_index(
                                 ref)
                         except Exception as err:
                             if not isinstance(err, netlinkerror_classes):

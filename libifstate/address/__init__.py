@@ -1,11 +1,12 @@
-from libifstate.util import logger, ipr, IfStateLogging
+from libifstate.util import logger, IfStateLogging
 from libifstate.exception import netlinkerror_classes
 from ipaddress import ip_interface
 from pyroute2.netlink.rtnl.ifaddrmsg import IFA_F_PERMANENT
 
 
 class Addresses():
-    def __init__(self, iface, addresses):
+    def __init__(self, netns, iface, addresses):
+        self.netns = netns
         self.iface = iface
         self.addresses = []
         for address in addresses:
@@ -15,7 +16,7 @@ class Addresses():
         logger.debug('getting addresses', extra={'iface': self.iface})
 
         # get ifindex
-        idx = next(iter(ipr.link_lookup(ifname=self.iface)), None)
+        idx = next(iter(self.netns.ipr.link_lookup(ifname=self.iface)), None)
 
         if idx == None:
             logger.warning('link missing', extra={'iface': self.iface})
@@ -24,7 +25,7 @@ class Addresses():
         # get active ip addresses
         ipr_addr = {}
         addr_add = []
-        for addr in ipr.get_addr(index=idx):
+        for addr in self.netns.ipr.get_addr(index=idx):
             ip = ip_interface(addr.get_attr('IFA_ADDRESS') +
                               '/' + str(addr['prefixlen']))
             ipr_addr[ip] = addr
@@ -44,7 +45,7 @@ class Addresses():
                         '-%s', ip.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_DEL})
                     try:
                         if do_apply:
-                            ipr.addr("del", index=idx, address=str(
+                            self.netns.ipr.addr("del", index=idx, address=str(
                                 ip.ip), mask=ip.network.prefixlen)
                     except Exception as err:
                         if not isinstance(err, netlinkerror_classes):
@@ -57,7 +58,7 @@ class Addresses():
                         extra={'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
             if do_apply:
                 try:
-                    ipr.addr("add", index=idx, address=str(
+                    self.netns.ipr.addr("add", index=idx, address=str(
                         addr.ip), mask=addr.network.prefixlen)
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
