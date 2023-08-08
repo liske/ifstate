@@ -13,13 +13,13 @@ class Addresses():
             self.addresses.append(ip_interface(address))
 
     def apply(self, ignore, ign_dynamic, do_apply):
-        logger.debug('getting addresses', extra={'iface': self.iface})
+        logger.debug('getting addresses', extra={'iface': self.iface, 'netns': self.netns})
 
         # get ifindex
         idx = next(iter(self.netns.ipr.link_lookup(ifname=self.iface)), None)
 
         if idx == None:
-            logger.warning('link missing', extra={'iface': self.iface})
+            logger.warning('link missing', extra={'iface': self.iface, 'netns': self.netns})
             return
 
         # get active ip addresses
@@ -33,7 +33,7 @@ class Addresses():
         for addr in self.addresses:
             if addr in ipr_addr:
                 logger.info(' %s', addr.with_prefixlen, extra={
-                            'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
+                            'iface': self.iface, 'netns': self.netns, 'style': IfStateLogging.STYLE_OK})
                 del ipr_addr[addr]
             else:
                 addr_add.append(addr)
@@ -42,7 +42,7 @@ class Addresses():
             if not any(ip in net for net in ignore):
                 if not ign_dynamic or ipr_addr[ip]['flags'] & IFA_F_PERMANENT == IFA_F_PERMANENT:
                     logger.info(
-                        '-%s', ip.with_prefixlen, extra={'iface': self.iface, 'style': IfStateLogging.STYLE_DEL})
+                        '-%s', ip.with_prefixlen, extra={'iface': self.iface, 'netns': self.netns, 'style': IfStateLogging.STYLE_DEL})
                     try:
                         if do_apply:
                             self.netns.ipr.addr("del", index=idx, address=str(
@@ -55,7 +55,7 @@ class Addresses():
 
         for addr in addr_add:
             logger.info('+%s', addr.with_prefixlen,
-                        extra={'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
+                        extra={'iface': self.iface, 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
             if do_apply:
                 try:
                     self.netns.ipr.addr("add", index=idx, address=str(

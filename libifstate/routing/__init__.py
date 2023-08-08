@@ -121,7 +121,7 @@ class Tables(collections.abc.Mapping):
             except KeyError as err:
                 # mapping not available - catch exception and skip it
                 logger.warning('ignoring unknown %s "%s"', key, rt[key],
-                               extra={'iface': rt['dst']})
+                               extra={'iface': rt['dst'], 'netns': self.netns})
                 rt[key] = RT_LOOKUPS_DEFAULTS[key]
 
         if type(rt['type']) == str:
@@ -273,7 +273,8 @@ class Tables(collections.abc.Mapping):
     def apply(self, ignores, do_apply):
         for table, croutes in self.tables.items():
             pfx = RTLookups.tables.lookup_str(table)
-            logger.info('\nconfiguring routing table {}...'.format(pfx))
+            logger.info('', extra={'netns': self.netns})
+            logger.info('configuring routing table {}...'.format(pfx), extra={'netns': self.netns})
 
             kroutes = self.kernel_routes(table)
 
@@ -293,14 +294,14 @@ class Tables(collections.abc.Mapping):
 
                 if identical:
                     logger.info(
-                        'ok', extra={'iface': route['dst'], 'style': IfStateLogging.STYLE_OK})
+                        'ok', extra={'iface': route['dst'], 'netns': self.netns, 'style': IfStateLogging.STYLE_OK})
                 else:
                     if found:
                         logger.info('change', extra={
-                                    'iface': route['dst'], 'style': IfStateLogging.STYLE_CHG})
+                                    'iface': route['dst'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
                     else:
                         logger.info(
-                            'add', extra={'iface': route['dst'], 'style': IfStateLogging.STYLE_CHG})
+                            'add', extra={'iface': route['dst'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
 
                     logger.debug("ip route replace: {}".format(
                         " ".join("{}={}".format(k, v) for k, v in route.items())))
@@ -323,7 +324,7 @@ class Tables(collections.abc.Mapping):
                     continue
 
                 logger.info(
-                    'del', extra={'iface': route['dst'], 'style': IfStateLogging.STYLE_DEL})
+                    'del', extra={'iface': route['dst'], 'netns': self.netns, 'style': IfStateLogging.STYLE_DEL})
                 try:
                     if do_apply:
                         self.netns.ipr.route('del', **route)
@@ -458,7 +459,8 @@ class Rules():
         return rules
 
     def apply(self, ignores, do_apply):
-        logger.info('\nconfiguring routing rules...')
+        logger.info('', extra={'netns': self.netns})
+        logger.info('configuring routing rules...', extra={'netns': self.netns})
         krules = self.kernel_rules()
         for rule in self.rules:
             found = False
@@ -470,10 +472,10 @@ class Rules():
 
             if found:
                 logger.info(
-                    'ok', extra={'iface': '#{}'.format(rule['priority']), 'style': IfStateLogging.STYLE_OK})
+                    'ok', extra={'iface': '#{}'.format(rule['priority']), 'netns': self.netns, 'style': IfStateLogging.STYLE_OK})
             else:
                 logger.info(
-                    'add', extra={'iface': '#{}'.format(rule['priority']), 'style': IfStateLogging.STYLE_CHG})
+                    'add', extra={'iface': '#{}'.format(rule['priority']), 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
 
                 logger.debug("ip rule add: {}".format(
                     " ".join("{}={}".format(k, v) for k, v in rule.items())))
@@ -498,7 +500,7 @@ class Rules():
                 continue
 
             logger.info(
-                'del', extra={'iface': '#{}'.format(rule['priority']), 'style': IfStateLogging.STYLE_DEL})
+                'del', extra={'iface': '#{}'.format(rule['priority']), 'netns': self.netns, 'style': IfStateLogging.STYLE_DEL})
             try:
                 if do_apply:
                     self.netns.ipr.rule('del', **rule)

@@ -137,7 +137,7 @@ class Link(ABC):
                 except KeyError as err:
                     # mapping not available - catch exception and skip it
                     logger.warning('ignoring unknown group "%s"', self.settings[attr],
-                                   extra={'iface': self.settings['ifname']})
+                                   extra={'iface': self.settings['ifname'], 'netns': self.netns})
                     del(self.settings[attr])
 
     def _drill_attr(self, data, keys):
@@ -193,7 +193,7 @@ class Link(ABC):
 
             if not os.path.isfile(fn):
                 logger.debug('no prior ethtool %s state available', setting,
-                             extra={'iface': self.settings['ifname']})
+                             extra={'iface': self.settings['ifname'], 'netns': self.netns})
                 continue
 
             try:
@@ -224,7 +224,7 @@ class Link(ABC):
             return
 
         logger.info(
-            'change (ethtool)', extra={'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
+            'change (ethtool)', extra={'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
 
         if not do_apply:
             return
@@ -320,7 +320,7 @@ class Link(ABC):
 
     def create(self, do_apply, sysctl, excpts, oper="add"):
         logger.info(
-            oper, extra={'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
+            oper, extra={'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
 
         logger.debug("ip link add: {}".format(
             " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
@@ -366,7 +366,7 @@ class Link(ABC):
 
     def recreate(self, do_apply, sysctl, excpts):
         logger.debug('has wrong link kind %s, removing', self.settings['kind'], extra={
-                     'iface': self.settings['ifname']})
+                     'iface': self.settings['ifname'], 'netns': self.netns})
         if do_apply:
             try:
                 self.netns.ipr.link('del', index=self.idx)
@@ -378,14 +378,14 @@ class Link(ABC):
         self.create(do_apply, sysctl, excpts, "replace")
 
     def update(self, do_apply, sysctl, excpts):
-        logger.debug('checking link', extra={'iface': self.settings['ifname']})
+        logger.debug('checking link', extra={'iface': self.settings['ifname'], 'netns': self.netns})
 
         old_state = self.iface['state']
         has_link_changes = False
         has_state_changes = False
         for setting in self.settings.keys():
             logger.debug('  %s: %s => %s', setting, self.get_if_attr(
-                setting), self.settings[setting], extra={'iface': self.settings['ifname']})
+                setting), self.settings[setting], extra={'iface': self.settings['ifname'], 'netns': self.netns})
             if setting == "state":
                 has_state_changes = self.get_if_attr(
                     setting) != self.settings[setting]
@@ -418,10 +418,10 @@ class Link(ABC):
 
         if has_link_changes:
             logger.debug('needs to be configured', extra={
-                         'iface': self.settings['ifname']})
+                         'iface': self.settings['ifname'], 'netns': self.netns})
             if old_state != 'down':
                 logger.debug('shutting down', extra={
-                             'iface': self.settings['ifname']})
+                             'iface': self.settings['ifname'], 'netns': self.netns})
                 if do_apply:
                     try:
                         self.netns.ipr.link('set', index=self.idx, state='down')
@@ -444,10 +444,10 @@ class Link(ABC):
                 'ifname') != self.settings['ifname']
             if has_ifname_change:
                 logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={
-                            'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
+                            'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
             else:
                 logger.info('change', extra={
-                            'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
+                            'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
 
             logger.debug("ip link set: {}".format(
                 " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
@@ -528,11 +528,11 @@ class Link(ABC):
                             raise
                         excpts.add('set', err, state=state)
                 logger.info('change', extra={
-                            'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
+                            'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
 
             else:
                 logger.info(
-                    'ok', extra={'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_OK})
+                    'ok', extra={'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_OK})
 
     def depends(self):
         deps = []
@@ -554,7 +554,7 @@ class Link(ABC):
         '''
 
         logger.debug('checking altname conflict', extra={
-                     'iface': self.settings['ifname']})
+                     'iface': self.settings['ifname'], 'netns': self.netns})
 
         # get link candidate having the ifname as altname
         try:
@@ -570,7 +570,7 @@ class Link(ABC):
         properties = link.get_attr('IFLA_PROP_LIST')
         if properties is not None and self.settings['ifname'] in properties.get_attrs('IFLA_ALT_IFNAME'):
             logger.debug('  found: %s (%d)', link.get_attr(
-                'IFLA_IFNAME'), link['index'], extra={'iface': self.settings['ifname']})
+                'IFLA_IFNAME'), link['index'], extra={'iface': self.settings['ifname'], 'netns': self.netns})
             try:
                 self.netns.ipr.link('property_del',
                          index=link['index'], altname=self.settings['ifname'])

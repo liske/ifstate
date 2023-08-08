@@ -30,7 +30,7 @@ except ModuleNotFoundError:
     # ignore missing plugin
     pass
 
-from libifstate.netns import NetNS
+from libifstate.netns import NetNS, prepare_netns
 from libifstate.util import logger, IfStateLogging
 from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, ParserValidationError
 from ipaddress import ip_network, ip_interface
@@ -50,9 +50,8 @@ class IfState():
     def __init__(self):
         logger.debug('IfState {}'.format(__version__))
 
-        self.namespaces = {
-            '': NetNS(None),
-        }
+        self.namespaces = {}
+        self.root_netns = NetNS(None)
         self.bpf_progs = None
         self.ignore = {}
         self.features = {
@@ -111,7 +110,7 @@ class IfState():
         # add ignore list items
         self.ignore.update(ifstates['ignore'])
 
-        self._update(self.namespaces[''], ifstates)
+        self._update(self.root_netns, ifstates)
         if 'namespaces' in ifstates:
             for netns_name, netns_ifstates in ifstates['namespaces'].items():
                 self.namespaces[netns_name] = NetNS(netns_name)
@@ -167,14 +166,14 @@ class IfState():
                 profile_name = ifstate['cshaper'].get(
                     'profile', 'default')
                 logger.debug('cshaper profile {} enabled'.format(profile_name),
-                             extra={'iface': name})
+                             extra={'iface': name, 'netns': netns})
                 cshaper_profile = ifstates['cshaper'][profile_name]
 
                 # ingress
                 ifb_name = re.sub(
                     cshaper_profile['ingress_ifname']['search'], cshaper_profile['ingress_ifname']['replace'], name)
                 logger.debug('cshaper ifb name {}'.format(ifb_name),
-                             extra={'iface': name})
+                             extra={'iface': name, 'netns': netns})
 
                 ifb_state = {
                     'name': ifb_name,
@@ -194,7 +193,7 @@ class IfState():
                 # egress
                 if 'tc' in ifstate:
                     logger.warning(
-                        'cshaper settings replaces tc settings', extra={'iface': name})
+                        'cshaper settings replaces tc settings', extra={'iface': name, 'netns': netns})
 
                 ifstate['tc'] = {
                     'ingress': True,
@@ -252,16 +251,27 @@ class IfState():
                     netns.rules.add(rule)
 
     def apply(self, vrrp_type=None, vrrp_name=None, vrrp_state=None):
-        self._apply(True, self.namespaces[''], vrrp_type, vrrp_name, vrrp_state)
+        if len(self.namespaces) > 0:
+            prepare_netns(True, self.namespaces.keys())
+
+        self._apply(True, self.root_netns, vrrp_type, vrrp_name, vrrp_state)
         for name, netns in self.namespaces.items():
+            logger.info('')
             self._apply(True, netns, vrrp_type, vrrp_name, vrrp_state)
 
     def check(self, vrrp_type=None, vrrp_name=None, vrrp_state=None):
-        self._apply(False, self.namespaces[''], vrrp_type, vrrp_name, vrrp_state)
+        if len(self.namespaces) > 0:
+            prepare_netns(False, self.namespaces.keys())
+
+        self._apply(False, self.root_netns, vrrp_type, vrrp_name, vrrp_state)
         for name, netns in self.namespaces.items():
+            logger.info('')
             self._apply(False, netns, vrrp_type, vrrp_name, vrrp_state)
 
     def _apply(self, do_apply, netns, vrrp_type, vrrp_name, vrrp_state):
+        if not netns.netns is None:
+            logger.info("entering netns", extra={'netns': netns})
+
         vrrp_ignore = []
         vrrp_disable = []
 
@@ -269,7 +279,7 @@ class IfState():
             vrrp_type, vrrp_name, vrrp_state]
 
         if by_vrrp:
-            logger.info("vrrp state change: {} {} => {}".format(vrrp_type, vrrp_name, vrrp_state))
+            logger.info("vrrp state change: {} {} => {}".format(vrrp_type, vrrp_name, vrrp_state), extra={'netns': netns})
 
             # ifstate schema requires lower case keywords
             vrrp_type = vrrp_type.lower()
@@ -289,8 +299,8 @@ class IfState():
                         vrrp_disable.append(ifname)
             elif by_vrrp:
                 vrrp_ignore.append(ifname)
-        logger.debug("vrrp links to be disabled: {}".format(", ".join(vrrp_disable)))
-        logger.debug("vrrp links to be ignored: {}".format(", ".join(vrrp_ignore)))
+        logger.debug("vrrp links to be disabled: {}".format(", ".join(vrrp_disable)), extra={'netns': netns})
+        logger.debug("vrrp links to be ignored: {}".format(", ".join(vrrp_ignore)), extra={'netns': netns})
 
         self.ipaddr_ignore = set()
         for ip in self.ignore.get('ipaddr', []):
@@ -302,7 +312,8 @@ class IfState():
 
         for iface in ['all', 'default']:
             if netns.sysctl.has_settings(iface):
-                logger.info("\nconfiguring {} interface sysctl".format(iface))
+                logger.info("", extra={'netns': netns})
+                logger.info("configuring {} interface sysctl".format(iface), extra={'netns': netns})
                 netns.sysctl.apply(iface, do_apply)
 
         if not self.bpf_progs is None:
@@ -310,14 +321,16 @@ class IfState():
 
         for stage in range(2):
             if stage == 0:
-                logger.info("\nconfiguring interface links")
+                logger.info("", extra={'netns': netns})
+                logger.info("configuring interface links...", extra={'netns': netns})
 
                 for ifname in vrrp_disable:
                     logger.debug('to be disabled due to vrrp constraint',
                                  extra={'iface': ifname})
                     netns.links[ifname].settings['state'] = 'down'
             else:
-                logger.info("\nconfiguring interface links (stage 2)")
+                logger.info("", extra={'netns': netns})
+                logger.info("configuring interface links (stage 2)...", extra={'netns': netns})
 
             retry = False
             applied = []
@@ -329,12 +342,12 @@ class IfState():
 
                     if name in vrrp_ignore:
                         logger.debug('skipped due to vrrp constraint',
-                                     extra={'iface': name})
+                                     extra={'iface': name, 'netns': netns})
                         continue
 
                     if link is None:
                         logger.debug('skipped due to no link settings',
-                                     extra={'iface': name})
+                                     extra={'iface': name, 'netns': netns})
                         applied.append(name)
                     else:
                         deps = link.depends()
@@ -355,7 +368,7 @@ class IfState():
                     if info is not None:
                         kind = info.get_attr('IFLA_INFO_KIND')
                         logger.info(
-                            'del', extra={'iface': name, 'style': IfStateLogging.STYLE_DEL})
+                            'del', extra={'iface': name, 'netns': netns, 'style': IfStateLogging.STYLE_DEL})
                         if do_apply:
                             try:
                                 netns.ipr.link('set', index=link.get(
@@ -365,18 +378,18 @@ class IfState():
                                 if not isinstance(err, netlinkerror_classes):
                                     raise
                                 logger.warning('removing link {} failed: {}'.format(
-                                    name, err.args[1]))
+                                    name, err.args[1]), extra={'netns': netns})
                     # shutdown physical interfaces
                     else:
                         if name in vrrp_ignore:
                             logger.warning('vrrp', extra={
-                                'iface': name, 'style': IfStateLogging.STYLE_OK})
+                                'iface': name, 'netns': netns, 'style': IfStateLogging.STYLE_OK})
                         if link.get('state') == 'down':
                             logger.warning('orphan', extra={
-                                'iface': name, 'style': IfStateLogging.STYLE_OK})
+                                'iface': name, 'netns': netns, 'style': IfStateLogging.STYLE_OK})
                         else:
                             logger.warning('orphan', extra={
-                                'iface': name, 'style': IfStateLogging.STYLE_CHG})
+                                'iface': name, 'netns': netns, 'style': IfStateLogging.STYLE_CHG})
                             if do_apply:
                                 try:
                                     netns.ipr.link('set', index=link.get(
@@ -385,38 +398,41 @@ class IfState():
                                     if not isinstance(err, netlinkerror_classes):
                                         raise
                                     logger.warning('updating link {} failed: {}'.format(
-                                        name, err.args[1]))
+                                        name, err.args[1]), extra={'netns': netns})
             if not retry:
                 break
 
         if any(not x is None for x in netns.tc.values()):
-            logger.info("\nconfiguring interface traffic control...")
+            logger.info("", extra={'netns': netns})
+            logger.info("configuring interface traffic control...", extra={'netns': netns})
 
             for name, tc in netns.tc.items():
                 if name in vrrp_ignore:
                     logger.debug('skipped due to vrrp constraint',
-                                 extra={'iface': name})
+                                 extra={'iface': name, 'netns': netns})
                 elif tc is None:
                     logger.debug('skipped due to no tc settings', extra={
-                                 'iface': name})
+                                 'iface': name, 'netns': netns})
                 else:
                     tc.apply(do_apply)
 
         if any(not x is None for x in netns.xdp.values()):
-            logger.info("\nconfiguring eXpress Data Path...")
+            logger.info("", extra={'netns': netns})
+            logger.info("configuring eXpress Data Path...", extra={'netns': netns})
 
             for name, xdp in netns.xdp.items():
                 if name in vrrp_ignore:
                     logger.debug('skipped due to vrrp constraint',
-                                 extra={'iface': name})
+                                 extra={'iface': name, 'netns': netns})
                 elif xdp is None:
                     logger.debug('skipped due to no xdp settings', extra={
-                                 'iface': name})
+                                 'iface': name, 'netns': netns})
                 else:
                     xdp.apply(do_apply, self.bpf_progs)
 
         if any(not x is None for x in netns.addresses.values()):
-            logger.info("\nconfiguring interface ip addresses...")
+            logger.info('', extra={'netns': netns})
+            logger.info("configuring interface ip addresses...", extra={'netns': netns})
             # add empty objects for unhandled interfaces
             for link in netns.ipr.get_links():
                 name = link.get_attr('IFLA_IFNAME')
@@ -427,18 +443,20 @@ class IfState():
             for name, addresses in netns.addresses.items():
                 if name in vrrp_ignore:
                     logger.debug('skipped due to vrrp constraint',
-                                 extra={'iface': name})
+                                 extra={'iface': name, 'netns': netns})
                 elif addresses is None:
                     logger.debug('skipped due to no address settings', extra={
-                                 'iface': name})
+                                 'iface': name, 'netns': netns})
                 else:
                     addresses.apply(self.ipaddr_ignore, self.ignore.get(
                         'ipaddr_dynamic', True), do_apply)
         else:
-            logger.debug("\nno interface ip addressing to be applied")
+            logger.debug("", extra={'netns': netns})
+            logger.debug("no interface ip addressing to be applied", extra={'netns': netns})
 
         if any(not x is None for x in netns.neighbours.values()):
-            logger.info("\nconfiguring interface neighbours...")
+            logger.info("", extra={'netns': netns})
+            logger.info("configuring interface neighbours...", extra={'netns': netns})
             # add empty objects for unhandled interfaces
             for link in netns.ipr.get_links():
                 name = link.get_attr('IFLA_IFNAME')
@@ -449,14 +467,15 @@ class IfState():
             for name, neighbours in netns.neighbours.items():
                 if name in vrrp_ignore:
                     logger.debug('skipped due to vrrp constraint',
-                                 extra={'iface': name})
+                                 extra={'iface': name, 'netns': netns})
                 elif neighbours is None:
                     logger.debug('skipped due to no address settings', extra={
-                                 'iface': name})
+                                 'iface': name, 'netns': netns})
                 else:
                     neighbours.apply(do_apply)
         else:
-            logger.debug("\nno interface neighbours to be applied")
+            logger.debug("", extra={'netns': netns})
+            logger.debug("no interface neighbours to be applied", extra={'netns': netns})
 
         if not netns.tables is None:
             netns.tables.apply(self.ignore.get('routes', []), do_apply)
@@ -465,11 +484,12 @@ class IfState():
             netns.rules.apply(self.ignore.get('rules', []), do_apply)
 
         if len(netns.wireguard):
-            logger.info("\nconfiguring WireGuard...")
+            logger.info("", extra={'netns': netns})
+            logger.info("configuring WireGuard...", extra={'netns': netns})
             for iface, wireguard in netns.wireguard.items():
                 if iface in vrrp_ignore:
                     logger.debug('skipped due to vrrp constraint',
-                                 extra={'iface': name})
+                                 extra={'iface': name, 'netns': netns})
                     continue
                 wireguard.apply(do_apply)
 
@@ -554,7 +574,7 @@ class IfState():
                             if not isinstance(err, netlinkerror_classes):
                                 raise
                             logger.warning('lookup {} failed: {}'.format(
-                                attr, err.args[1]), extra={'iface': name})
+                                attr, err.args[1]), extra={'iface': name, 'netns': netns})
                             ifs_link['link'][attr] = ref
 
                 mtu = ipr_link.get_attr('IFLA_MTU')
