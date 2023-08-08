@@ -453,8 +453,10 @@ class Link(ABC):
                 " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
             if do_apply:
                 # temp. remove special settings
-                state = self.settings.pop('state', None)
-                peer = self.settings.pop('peer', None)
+                skipped_settings = {}
+                for setting in ['state', 'peer', 'kind', 'businfo', 'permaddr']:
+                    if setting in self.settings:
+                        skipped_settings[setting] = self.settings.pop(setting)
 
                 if has_ifname_change:
                     self.prevent_altname_conflict()
@@ -476,16 +478,13 @@ class Link(ABC):
                     excpts.add('set', err, **(self.settings))
 
                 # restore settings
-                if state is not None:
-                    self.settings['state'] = state
-                if peer is not None:
-                    self.settings['peer'] = peer
+                for setting, value in skipped_settings.items():
+                    self.settings[setting] = value
 
                 try:
-                    if not state is None:
+                    if 'state' in self.settings['state']:
                         # restore state setting for recreate
-                        self.settings['state'] = state
-                        self.netns.ipr.link('set', index=self.idx, state=state)
+                        self.netns.ipr.link('set', index=self.idx, state=self.settings['state'])
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
