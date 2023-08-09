@@ -1,5 +1,5 @@
 from libifstate.log import logger, IfStateLogging
-from pyroute2 import IPRoute, NetNS
+from pyroute2 import IPRoute, NetNS, netns
 
 from pyroute2.netlink.rtnl.tcmsg import tcmsg
 from pyroute2.netlink.rtnl import RTM_DELTFILTER
@@ -40,7 +40,6 @@ STRUCT_DRVINFO = struct.Struct(
 
 ETHTOOL_GPERMADDR = 0x00000020  # Get permanent hardware address
 L2_ADDRLENGTH = 6  # L2 address length
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 def filter_ifla_dump(showall, ifla, defaults, prefix="IFLA"):
     dump = {}
@@ -55,6 +54,11 @@ def filter_ifla_dump(showall, ifla, defaults, prefix="IFLA"):
     return dump
 
 class IPRouteExt(IPRoute):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.__sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
     def del_filter_by_info(self, index=0, handle=0, info=0, parent=0):
         msg = tcmsg()
         msg['index'] = index
@@ -79,7 +83,7 @@ class IPRouteExt(IPRoute):
             "utf-8"), data.buffer_info()[0])
 
         try:
-            r = fcntl.ioctl(sock.fileno(), SIOCETHTOOL, ifr)
+            r = fcntl.ioctl(self.__sock.fileno(), SIOCETHTOOL, ifr)
         except OSError:
             return None
 
@@ -96,7 +100,7 @@ class IPRouteExt(IPRoute):
             "utf-8"), data.buffer_info()[0])
 
         try:
-            r = fcntl.ioctl(sock.fileno(), SIOCETHTOOL, ifr)
+            r = fcntl.ioctl(self.__sock.fileno(), SIOCETHTOOL, ifr)
         except OSError:
             return None
 
@@ -134,6 +138,15 @@ class IPRouteExt(IPRoute):
 
 
 class NetNSExt(NetNS):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        try:
+            netns.pushns(self.netns)
+            self.__sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        finally:
+            netns.popns()
+
     def del_filter_by_info(self, index=0, handle=0, info=0, parent=0):
         msg = tcmsg()
         msg['index'] = index
@@ -158,7 +171,7 @@ class NetNSExt(NetNS):
             "utf-8"), data.buffer_info()[0])
 
         try:
-            r = fcntl.ioctl(sock.fileno(), SIOCETHTOOL, ifr)
+            r = fcntl.ioctl(self.__sock.fileno(), SIOCETHTOOL, ifr)
         except OSError:
             return None
 
@@ -175,7 +188,7 @@ class NetNSExt(NetNS):
             "utf-8"), data.buffer_info()[0])
 
         try:
-            r = fcntl.ioctl(sock.fileno(), SIOCETHTOOL, ifr)
+            r = fcntl.ioctl(self.__sock.fileno(), SIOCETHTOOL, ifr)
         except OSError:
             return None
 
