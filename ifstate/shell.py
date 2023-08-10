@@ -6,7 +6,7 @@ import os
 import readline
 
 import pprint
-from libifstate.util import ipr
+from libifstate.netns import NetNS
 
 has_pygments = False
 try:
@@ -32,6 +32,8 @@ class IfStateConsole(code.InteractiveConsole):
         print_func = pprint.pprint
         if has_pygments:
             print_func = pygments_print
+
+        ipr = NetNS(None).ipr
 
         print("Links:")
         for link in ipr.get_links():
