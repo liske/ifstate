@@ -84,7 +84,7 @@ class Link(ABC):
     def __new__(cls, *args, **kwargs):
         cname = cls.__name__
         if cname == Link.__name__:
-            cname = "{}Link".format(args[2]['kind'].lower().capitalize())
+            cname = "{}Link".format(args[3]['kind'].lower().capitalize())
 
         for c in Link.__subclasses__():
             if c.__name__ == cname:
@@ -93,7 +93,8 @@ class Link(ABC):
         return super().__new__(GenericLink)
         #raise LinkTypeUnknown()
 
-    def __init__(self, netns, name, link, ethtool, vrrp, brport):
+    def __init__(self, ifstate, netns, name, link, ethtool, vrrp, brport):
+        self.ifstate = ifstate
         self.netns = netns
         self.cap_create = True
         self.cap_ethtool = False
@@ -113,17 +114,38 @@ class Link(ABC):
         self.attr_idx = ['link', 'master', 'gre_link',
                          'ip6gre_link', 'vxlan_link', 'xfrm_link']
         self.idx = None
+        self.link_registry_search_args = []
+
+        # prepare link registry search filters
+        if 'businfo' in self.settings:
+            self.settings['businfo'] = self.settings['businfo'].lower()
+            self.link_registry_search_args.append({
+                'kind': self.settings['kind'],
+                'businfo': self.settings['businfo'],
+            })
+
+        if 'permaddr' in self.settings:
+            self.settings['permaddr'] = self.settings['permaddr'].lower()
+            self.link_registry_search_args.append({
+                'kind': self.settings['kind'],
+                'permaddr': self.settings['permaddr'],
+            })
 
         if 'address' in self.settings and self.settings['kind'] == 'physical':
             self.settings['address'] = self.settings['address'].lower()
-            self.idx = next(iter(self.netns.ipr.link_lookup(
-                address=self.settings['address'])), None)
-        if 'permaddr' in self.settings:
-            self.settings['permaddr'] = self.settings['permaddr'].lower()
-            self.idx = self.netns.ipr.get_iface_by_permaddr(self.settings['permaddr'])
-        if 'businfo' in self.settings:
-            self.settings['businfo'] = self.settings['businfo'].lower()
-            self.idx = self.netns.ipr.get_iface_by_businfo(self.settings['businfo'])
+            self.link_registry_search_args.append({
+                'kind': self.settings['kind'],
+                'address': self.settings['address'],
+                'netns': netns.netns,
+            })
+
+        self.link_registry_search_args.append({
+            'kind': self.settings['kind'],
+            'ifname': name,
+            'netns': netns.netns,
+        })
+
+        self.search_link_registry()
 
         for attr, mappings in self.attr_value_maps.items():
             if attr in self.settings and type(self.settings[attr]) != int:
@@ -139,6 +161,18 @@ class Link(ABC):
                     logger.warning('ignoring unknown group "%s"', self.settings[attr],
                                    extra={'iface': self.settings['ifname'], 'netns': self.netns})
                     del(self.settings[attr])
+
+    def search_link_registry(self):
+        for args in self.link_registry_search_args:
+            item = self.ifstate.link_registry.get_link(**args)
+            if item is not None:
+                item.link = self
+                return item
+
+        logger.debug('no link found: %s', self.link_registry_search_args,
+                     extra={'iface': self.settings['ifname'], 'netns': self.netns})
+
+        return None
 
     def _drill_attr(self, data, keys):
         key = keys[0]
@@ -278,16 +312,34 @@ class Link(ABC):
                 self.settings[attr] = next(iter(self.netns.ipr.link_lookup(
                     ifname=self.settings[attr])), self.settings[attr])
 
-        if self.idx is None:
-            self.idx = next(iter(self.netns.ipr.link_lookup(
-                ifname=self.settings['ifname'])), None)
+        # get interface from registry
+        item = self.search_link_registry()
+
+        # move interface into netns if required
+        if item is not None and item.netns.netns != self.netns.netns:
+            logger.info(
+                'netns', extra={'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
+
+            if do_apply:
+                try:
+                    # move link into target netns
+                    item.update_netns(self.netns)
+                except Exception as err:
+                    if not isinstance(err, netlinkerror_classes):
+                        raise
+                    item.netns.ipr.link('set', index=item.attributes['index'], state='down')
+                    excpts.add('set', err, netns=self.netns.netns)
+                    return excpts
+
+        if item is not None:
+            self.idx = item.attributes['index']
 
         if self.idx is not None:
-            self.iface = next(iter(self.netns.ipr.get_links(self.idx)), None)
-            permaddr = self.netns.ipr.get_permaddr(self.iface.get_attr('IFLA_IFNAME'))
+            self.iface = next(iter(item.netns.ipr.get_links(self.idx)), None)
+            permaddr = item.netns.ipr.get_permaddr(self.iface.get_attr('IFLA_IFNAME'))
             if not permaddr is None:
                 self.iface['permaddr'] = permaddr
-            businfo = self.netns.ipr.get_businfo(self.iface.get_attr('IFLA_IFNAME'))
+            businfo = item.netns.ipr.get_businfo(self.iface.get_attr('IFLA_IFNAME'))
             if not businfo is None:
                 self.iface['businfo'] = businfo
 
@@ -594,5 +646,5 @@ class Link(ABC):
 
 
 class GenericLink(Link):
-    def __init__(self, netns, name, link, ethtool, vrrp, brport):
-        super().__init__(netns, name, link, ethtool, vrrp, brport)
+    def __init__(self, ifstate, netns, name, link, ethtool, vrrp, brport):
+        super().__init__(ifstate, netns, name, link, ethtool, vrrp, brport)

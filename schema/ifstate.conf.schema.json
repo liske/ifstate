@@ -180,12 +180,20 @@
             ],
             "description": "specifies a parent device name or index"
         },
+        "iface-link_link-netns": {
+            "type": "string",
+            "description": "specifies the parent's netns name"
+        },
         "iface-link_master": {
             "type": [
                 "integer",
                 "string"
             ],
             "description": "specifies a master device name or index"
+        },
+        "iface-link_master-netns": {
+            "type": "string",
+            "description": "specifies the master's netns name"
         },
         "iface-link_mtu": {
             "type": "integer",
@@ -1250,7 +1258,10 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "mtu": {
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                   "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
                                     "txqlen": {
@@ -1282,6 +1293,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -1316,6 +1330,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -1348,6 +1365,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -1382,6 +1402,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -1415,6 +1438,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -1447,6 +1473,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -1482,6 +1511,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -1592,6 +1624,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -1624,6 +1659,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -1658,6 +1696,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -1691,6 +1732,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -1919,6 +1963,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -1981,6 +2028,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2017,6 +2067,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2060,6 +2113,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2096,6 +2152,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2107,6 +2166,9 @@
                                     },
                                     "link": {
                                         "$ref": "#/$defs/iface-link_link"
+                                    },
+                                    "link_netns": {
+                                        "$ref": "#/$defs/iface-link_link-netns"
                                     },
                                     "vlan_id": {
                                         "type": [
@@ -2152,6 +2214,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2200,6 +2265,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2241,6 +2309,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2287,6 +2358,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2337,6 +2411,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2381,6 +2458,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2429,6 +2509,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2474,6 +2557,9 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2508,6 +2594,9 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
