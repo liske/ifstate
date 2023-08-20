@@ -1,4 +1,4 @@
-from libifstate.util import logger, IfStateLogging, IPRouteExt, NetNSExt
+from libifstate.util import logger, IfStateLogging, IPRouteExt, NetNSExt, root_ipr
 from libifstate.sysctl import Sysctl
 
 import atexit
@@ -19,7 +19,7 @@ def close_netns():
     if netns_name_root is not None:
         pyroute2.netns.remove(netns_name_root)
 
-class NetNS():
+class NetNameSpace():
     def __init__(self, name):
         self.netns = name
         self.links = {}
@@ -38,11 +38,27 @@ class NetNS():
         self.xdp = {}
 
         if name is None:
-            self.ipr = IPRouteExt()
+            self.ipr = root_ipr
         else:
             self.ipr = NetNSExt(name)
             netns_name_map[name] = self.ipr
-            netns_nsid_map[self.ipr.nsid] = self.ipr
+
+    def get_netnsid(self, peer_netns_name):
+        if peer_netns_name is None:
+            peer_ipr = root_ipr
+            peer_pid = 1
+        else:
+            peer_ipr = netns_name_map[peer_netns_name]
+            peer_pid = peer_ipr.child
+    
+        result = self.ipr.get_netnsid(pid=peer_pid)
+        if result['nsid'] == 4294967295:
+            self.ipr.set_netnsid(pid=peer_pid)
+            result = self.ipr.get_netnsid(pid=peer_pid)
+    
+        peer_nsid = result['nsid']
+
+        return (peer_ipr, peer_nsid)
 
 def prepare_netns(do_apply, target_netns_list):
     logger.info("configuring network namespaces...")
@@ -81,7 +97,7 @@ def get_netns_root():
         return netns_name_root
 
     while True:
-        name = "ifstate.mv.{}".format(secrets.token_hex(2))
+        name = "ifstate.root.{}".format(secrets.token_hex(2))
         if not name in netns_name_map:
             pyroute2.netns.attach(name, 1)
             netns_name_root = name
@@ -90,7 +106,13 @@ def get_netns_root():
 def get_netns_instances():
     netns_instances = []
     for netns_name in pyroute2.netns.listnetns():
-        netns_instances.append(NetNS(netns_name))
+        try:
+            netns_instances.append(NetNameSpace(netns_name))
+        except OSError as ex:
+            if ex.errno == 22:
+                logger.warn("Cannot open netns %s: %s", netns_name, ex.strerror)
+            else:
+               raise ex
 
     return netns_instances
 

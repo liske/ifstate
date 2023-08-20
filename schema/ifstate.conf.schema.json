@@ -181,7 +181,7 @@
             "description": "specifies a parent device name or index"
         },
         "iface-link_link-netns": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "specifies the parent's netns name"
         },
         "iface-link_master": {
@@ -192,7 +192,7 @@
             "description": "specifies a master device name or index"
         },
         "iface-link_master-netns": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "specifies the master's netns name"
         },
         "iface-link_mtu": {

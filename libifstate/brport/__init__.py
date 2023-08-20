@@ -1,4 +1,4 @@
-from libifstate.util import logger, IfStateLogging, filter_ifla_dump
+from libifstate.util import logger, IfStateLogging, filter_ifla_dump, LinkDependency
 from libifstate.exception import netlinkerror_classes
 
 
@@ -33,7 +33,8 @@ class BRPort():
         backup_port = self.brport.get('backup_port')
 
         if backup_port:
-            return (backup_port,)
+            ns = self.settings.get("backup_port_netns", self.netns.netns)
+            return (LinkDependency(backup_port, ns),)
         else:
             return ()
 

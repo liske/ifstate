@@ -20,6 +20,7 @@ import fcntl
 import struct
 import array
 import struct
+import typing
 
 # ethtool helper
 ETHTOOL_GDRVINFO = 0x00000003  # Get driver info
@@ -41,7 +42,7 @@ STRUCT_DRVINFO = struct.Struct(
 ETHTOOL_GPERMADDR = 0x00000020  # Get permanent hardware address
 L2_ADDRLENGTH = 6  # L2 address length
 
-root_ipr = IPRoute()
+root_ipr = typing.NewType("IPRouteExt", IPRoute)
 
 def filter_ifla_dump(showall, ifla, defaults, prefix="IFLA"):
     dump = {}
@@ -143,18 +144,11 @@ class NetNSExt(NetNS):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        with open('/var/run/netns/{}'.format(self.netns, 'r')) as fh:
-            self.__nsid = root_ipr.get_netnsid(fd=fh.fileno()).get('nsid')
-        
         try:
             netns.pushns(self.netns)
             self.__sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         finally:
             netns.popns()
-
-    @property
-    def nsid(self):
-        return self.__nsid
 
     def del_filter_by_info(self, index=0, handle=0, info=0, parent=0):
         msg = tcmsg()
@@ -232,3 +226,23 @@ class NetNSExt(NetNS):
             return index
 
         return link.get_attr('IFLA_IFNAME')
+
+class LinkDependency:
+    def __init__(self, ifname, netns):
+        self.ifname = ifname
+        self.netns = netns
+
+    def __hash__(self):
+        return hash((self.ifname, self.netns))
+
+    def __eq__(self, other):
+        return (self.ifname, self.netns) == (other.ifname, other.netns)
+
+    def __ne__(self, other):
+        return not(self == other)
+
+    def __str__(self):
+        return "{}[netns={}]".format(self.ifname, self.netns)
+
+
+root_ipr = IPRouteExt()

@@ -6,7 +6,7 @@ import os
 import readline
 
 import pprint
-from libifstate.netns import NetNS
+from libifstate.netns import NetNameSpace
 
 has_pygments = False
 try:
@@ -33,7 +33,7 @@ class IfStateConsole(code.InteractiveConsole):
         if has_pygments:
             print_func = pygments_print
 
-        ipr = NetNS(None).ipr
+        ipr = NetNameSpace(None).ipr
 
         print("Links:")
         for link in ipr.get_links():

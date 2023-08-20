@@ -30,8 +30,8 @@ except ModuleNotFoundError:
     # ignore missing plugin
     pass
 
-from libifstate.netns import NetNS, prepare_netns, get_netns_instances, LinkRegistry
-from libifstate.util import logger, IfStateLogging
+from libifstate.netns import NetNameSpace, prepare_netns, get_netns_instances, LinkRegistry
+from libifstate.util import logger, IfStateLogging, LinkDependency
 from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, ParserValidationError
 from ipaddress import ip_network, ip_interface
 from jsonschema import validate, ValidationError, FormatChecker
@@ -51,7 +51,7 @@ class IfState():
         logger.debug('IfState {}'.format(__version__))
 
         self.namespaces = {}
-        self.root_netns = NetNS(None)
+        self.root_netns = NetNameSpace(None)
         self.bpf_progs = None
         self.ignore = {}
         self.features = {
@@ -119,7 +119,7 @@ class IfState():
         self._update(self.root_netns, ifstates)
         if 'namespaces' in ifstates:
             for netns_name, netns_ifstates in ifstates['namespaces'].items():
-                self.namespaces[netns_name] = NetNS(netns_name)
+                self.namespaces[netns_name] = NetNameSpace(netns_name)
                 self._update(self.namespaces[netns_name], netns_ifstates)
 
     def _update(self, netns, ifstates):
@@ -298,7 +298,63 @@ class IfState():
                     logger.warning('updating link {} failed: {}'.format(
                         ifname, err.args[1]), extra={'netns': item.netns})
 
+    def _dependencies(self, netns):
+        deps = {}
+        for ifname, link in netns.links.items():
+            deps[LinkDependency(ifname, netns.netns)] = link.depends()
+
+        return deps
+
+    def _stages(self):
+        def dep(arg):
+            '''
+                Dependency resolver
+
+            "arg" is a dependency dictionary in which
+            the values are the dependencies of their respective keys.
+            '''
+            d=dict((k, set(arg[k])) for k in arg)
+            r=[]
+            while d:
+                # values not in keys (items without dep)
+                t=set(i for v in d.values() for i in v)-set(d.keys())
+                # and keys without value (items without dep)
+                t.update(k for k, v in d.items() if not v)
+
+                if len(t) == 0:
+                    logger.error("Circualar link dependency detected: ")
+                    for k, v in d.items():
+                        logger.error('  {} => {}'.format(k, ", ".join(map(str, v))))
+                    raise LinkCircularLinked()
+                # can be done right away
+                r.append(t)
+                # and cleaned up
+                d=dict(((k, v-t) for k, v in d.items() if v))
+            return r
+
+        dependencies = self._dependencies(self.root_netns)
+        for netns in self.namespaces.values():
+            dependencies.update(self._dependencies(netns))
+
+        if logger.getEffectiveLevel() <= logging.DEBUG:
+            logger.debug('dependencies dump:')
+            for ifname, deps in dependencies.items():
+                logger.debug('  %s => %s', ifname, ", ".join(map(str, deps)))
+
+        stages = dep(dependencies)
+
+        if logger.getEffectiveLevel() <= logging.DEBUG:
+            logger.debug('stages dump:')
+            i = 1
+            for stage in stages:
+                logger.debug('  #%d => %s', i, ", ".join(map(str, stage)))
+                i += 1
+
+        return stages
+
     def _apply(self, do_apply, vrrp_type=None, vrrp_name=None, vrrp_state=None):
+        stages = self._stages()
+
         if len(self.namespaces) > 0:
             prepare_netns(do_apply, self.namespaces.keys())
             logger.info("")
@@ -317,12 +373,13 @@ class IfState():
         if logger.getEffectiveLevel() <= logging.DEBUG:
             self.link_registry.debug_dump()
 
-        self._apply_netns(do_apply, self.root_netns, vrrp_type, vrrp_name, vrrp_state)
-        for name, netns in self.namespaces.items():
-            logger.info('')
-            self._apply_netns(do_apply, netns, vrrp_type, vrrp_name, vrrp_state)
+        for stage in stages:
+            self._apply_netns(do_apply, stage, self.root_netns, vrrp_type, vrrp_name, vrrp_state)
+            for name, netns in self.namespaces.items():
+                logger.info('')
+                self._apply_netns(do_apply, stage, netns, vrrp_type, vrrp_name, vrrp_state)
 
-    def _apply_netns(self, do_apply, netns, vrrp_type, vrrp_name, vrrp_state):
+    def _apply_netns(self, do_apply, stage, netns, vrrp_type, vrrp_name, vrrp_state):
         if not netns.netns is None:
             logger.info("entering netns", extra={'netns': netns})
 
@@ -343,6 +400,9 @@ class IfState():
         #   remove: vrrp type & name matches, but vrrp state not
         #   ignore: vrrp type & name does not match
         for ifname, link in netns.links.items():
+            if not link.link_ref in stage:
+                continue
+
             if ifname in netns.vrrp['links']:
                 if not by_vrrp:
                     vrrp_ignore.append(ifname)
@@ -373,100 +433,85 @@ class IfState():
         if not self.bpf_progs is None:
             self.bpf_progs.apply(do_apply)
 
-        for stage in range(2):
-            if stage == 0:
-                logger.info("", extra={'netns': netns})
-                logger.info("configuring interface links...", extra={'netns': netns})
+        logger.info("", extra={'netns': netns})
+        logger.info("configuring interface links...", extra={'netns': netns})
 
-                for ifname in vrrp_disable:
-                    logger.debug('to be disabled due to vrrp constraint',
-                                 extra={'iface': ifname})
-                    netns.links[ifname].settings['state'] = 'down'
-            else:
-                logger.info("", extra={'netns': netns})
-                logger.info("configuring interface links (stage 2)...", extra={'netns': netns})
+        for ifname in vrrp_disable:
+            logger.debug('to be disabled due to vrrp constraint',
+                         extra={'iface': ifname})
+            netns.links[ifname].settings['state'] = 'down'
 
-            retry = False
-            applied = []
-            while len(applied) + len(vrrp_ignore) < len(netns.links):
-                last = len(applied)
-                for name, link in netns.links.items():
-                    if name in applied:
-                        continue
+        retry = False
+        for name, link in netns.links.items():
+            if link.link_ref in stage:
+                if name in vrrp_ignore:
+                    logger.debug('skipped due to vrrp constraint',
+                                 extra={'iface': name, 'netns': netns})
+                    continue
 
-                    if name in vrrp_ignore:
-                        logger.debug('skipped due to vrrp constraint',
-                                     extra={'iface': name, 'netns': netns})
-                        continue
+                if link is None:
+                    logger.debug('skipped due to no link settings',
+                                 extra={'iface': name, 'netns': netns})
+                    applied.append(name)
+                else:
+                    excpts = link.apply(do_apply, netns.sysctl)
+                    if excpts.has_errno(errno.EEXIST):
+                        retry = True
 
-                    if link is None:
-                        logger.debug('skipped due to no link settings',
-                                     extra={'iface': name, 'netns': netns})
-                        applied.append(name)
-                    else:
-                        deps = link.depends()
-                        if all(x in applied+vrrp_ignore for x in deps):
-                            excpts = link.apply(do_apply, netns.sysctl)
-                            if excpts.has_errno(errno.EEXIST):
-                                retry = True
-                            applied.append(name)
-                if last == len(applied):
-                    raise LinkCircularLinked()
+        for link in netns.ipr.get_links():
+            name = link.get_attr('IFLA_IFNAME')
+            # skip links on ignore list
+            if not name in netns.links and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
+                info = link.get_attr('IFLA_LINKINFO')
+                # remove virtual interface
+                if info is not None:
+                    kind = info.get_attr('IFLA_INFO_KIND')
+                    logger.info(
+                        'del', extra={'iface': name, 'netns': netns, 'style': IfStateLogging.STYLE_DEL})
+                    if do_apply:
+                        try:
+                            netns.ipr.link('set', index=link.get(
+                                'index'), state='down')
+                            netns.ipr.link('del', index=link.get('index'))
+                        except Exception as err:
+                            if not isinstance(err, netlinkerror_classes):
+                                raise
+                            logger.warning('removing link {} failed: {}'.format(
+                                name, err.args[1]), extra={'netns': netns})
+                # shutdown physical interfaces
+                else:
+                    item = None
+                    permaddr = link.get_attr('IFLA_PERM_ADDRESS')
+                    if permaddr:
+                        item = self.link_registry.get_link(kind='physical', permaddr=permaddr)
 
-            for link in netns.ipr.get_links():
-                name = link.get_attr('IFLA_IFNAME')
-                # skip links on ignore list
-                if not name in netns.links and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
-                    info = link.get_attr('IFLA_LINKINFO')
-                    # remove virtual interface
-                    if info is not None:
-                        kind = info.get_attr('IFLA_INFO_KIND')
-                        logger.info(
-                            'del', extra={'iface': name, 'netns': netns, 'style': IfStateLogging.STYLE_DEL})
-                        if do_apply:
-                            try:
-                                netns.ipr.link('set', index=link.get(
-                                    'index'), state='down')
-                                netns.ipr.link('del', index=link.get('index'))
-                            except Exception as err:
-                                if not isinstance(err, netlinkerror_classes):
-                                    raise
-                                logger.warning('removing link {} failed: {}'.format(
-                                    name, err.args[1]), extra={'netns': netns})
-                    # shutdown physical interfaces
-                    else:
-                        item = None
-                        permaddr = link.get_attr('IFLA_PERM_ADDRESS')
-                        if permaddr:
-                            item = self.link_registry.get_link(kind='physical', permaddr=permaddr)
+                    if not item:
+                        businfo = netns.ipr.get_businfo(name)
+                        if businfo:
+                            item = self.link_registry.get_link(kind='physical', permaddr=businfo)
 
-                        if not item:
-                            businfo = netns.ipr.get_businfo(name)
-                            if businfo:
-                                item = self.link_registry.get_link(kind='physical', permaddr=businfo)
-
-                        # do not disable links belonging to other namespaces
-                        if not item:
-                            if name in vrrp_ignore:
-                                logger.warning('vrrp', extra={
-                                    'iface': name, 'netns': netns, 'style': IfStateLogging.STYLE_OK})
-                            if link.get('state') == 'down':
-                                logger.warning('orphan', extra={
-                                    'iface': name, 'netns': netns, 'style': IfStateLogging.STYLE_OK})
-                            else:
-                                logger.warning('orphan', extra={
-                                    'iface': name, 'netns': netns, 'style': IfStateLogging.STYLE_CHG})
-                                if do_apply:
-                                    try:
-                                        netns.ipr.link('set', index=link.get(
-                                            'index'), state='down')
-                                    except Exception as err:
-                                        if not isinstance(err, netlinkerror_classes):
-                                            raise
-                                        logger.warning('updating link {} failed: {}'.format(
-                                            name, err.args[1]), extra={'netns': netns})
-            if not retry:
-                break
+                    # do not disable links belonging to other namespaces
+                    if not item:
+                        if name in vrrp_ignore:
+                            logger.warning('vrrp', extra={
+                                'iface': name, 'netns': netns, 'style': IfStateLogging.STYLE_OK})
+                        if link.get('state') == 'down':
+                            logger.warning('orphan', extra={
+                                'iface': name, 'netns': netns, 'style': IfStateLogging.STYLE_OK})
+                        else:
+                            logger.warning('orphan', extra={
+                                'iface': name, 'netns': netns, 'style': IfStateLogging.STYLE_CHG})
+                            if do_apply:
+                                try:
+                                    netns.ipr.link('set', index=link.get(
+                                        'index'), state='down')
+                                except Exception as err:
+                                    if not isinstance(err, netlinkerror_classes):
+                                        raise
+                                    logger.warning('updating link {} failed: {}'.format(
+                                        name, err.args[1]), extra={'netns': netns})
+        # if not retry:
+        #     break
 
         if any(not x is None for x in netns.tc.values()):
             logger.info("", extra={'netns': netns})

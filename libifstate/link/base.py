@@ -1,4 +1,4 @@
-from libifstate.util import logger, IfStateLogging
+from libifstate.util import logger, IfStateLogging, LinkDependency
 from libifstate.exception import ExceptionCollector, LinkTypeUnknown, netlinkerror_classes
 from libifstate.brport import BRPort
 from libifstate.routing import RTLookups
@@ -10,7 +10,6 @@ import shutil
 import copy
 
 ethtool_path = shutil.which("ethtool") or '/usr/sbin/ethtool'
-
 
 class Link(ABC):
     _nla_prefix = 'IFLA_'
@@ -115,6 +114,7 @@ class Link(ABC):
                          'ip6gre_link', 'vxlan_link', 'xfrm_link']
         self.idx = None
         self.link_registry_search_args = []
+        self.link_ref = LinkDependency(name, self.netns.netns)
 
         # prepare link registry search filters
         if 'businfo' in self.settings:
@@ -308,7 +308,16 @@ class Link(ABC):
 
         # lookup for attributes requiring a interface index
         for attr in self.attr_idx:
-            if attr in self.settings:
+            netns_attr = "{}_netns".format(attr)
+            if netns_attr in self.settings:
+                # ToDo: throw exception for unknown netns
+                (peer_ipr, peer_nsid) = self.netns.get_netnsid(self.settings[netns_attr])
+                self.settings["{}_netnsid".format(attr)] = peer_nsid
+                self.settings[attr] = next(iter(peer_ipr.link_lookup(
+                    ifname=self.settings[attr])), self.settings[attr])
+
+                del(self.settings[netns_attr])
+            elif attr in self.settings:
                 self.settings[attr] = next(iter(self.netns.ipr.link_lookup(
                     ifname=self.settings[attr])), self.settings[attr])
 
@@ -517,13 +526,14 @@ class Link(ABC):
                     self.netns.ipr.link('set', index=self.idx, **(self.settings))
 
                     for setting in self.settings.keys():
-                        if self.get_if_attr(setting) != self.settings[setting]:
-                            if self.cap_create:
-                                logger.debug('  %s: setting could not be changed', setting, extra={'iface': self.settings['ifname']})
-                                excpts.add('set', Exception('ip link set'), **{setting: self.settings[setting]})
-                            else:
-                                logger.warning('%s setting could not be changed', setting,
-                                               extra={'iface': self.settings['ifname']})
+                        if not setting.endswith('_netns') or not setting[:-6] in self.attr_idx:
+                            if self.get_if_attr(setting) != self.settings[setting]:
+                                if self.cap_create:
+                                    logger.debug('  %s: setting could not be changed', setting, extra={'iface': self.settings['ifname']})
+                                    excpts.add('set', Exception('ip link set'), **{setting: self.settings[setting]})
+                                else:
+                                    logger.warning('%s setting could not be changed', setting,
+                                                   extra={'iface': self.settings['ifname']})
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
@@ -534,7 +544,7 @@ class Link(ABC):
                     self.settings[setting] = value
 
                 try:
-                    if 'state' in self.settings['state']:
+                    if 'state' in self.settings:
                         # restore state setting for recreate
                         self.netns.ipr.link('set', index=self.idx, state=self.settings['state'])
                 except Exception as err:
@@ -588,9 +598,11 @@ class Link(ABC):
 
     def depends(self):
         deps = []
+
         for attr in self.attr_idx:
             if attr in self.settings:
-                deps.append(self.settings[attr])
+                ns = self.settings.get("{}_netns".format(attr), self.netns.netns)
+                deps.append(LinkDependency(self.settings[attr], ns))
 
         if self.brport:
             deps.extend(self.brport.depends())
