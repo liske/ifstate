@@ -308,18 +308,33 @@ class Link(ABC):
 
         # lookup for attributes requiring a interface index
         for attr in self.attr_idx:
-            netns_attr = "{}_netns".format(attr)
-            if netns_attr in self.settings:
-                # ToDo: throw exception for unknown netns
-                (peer_ipr, peer_nsid) = self.netns.get_netnsid(self.settings[netns_attr])
-                self.settings["{}_netnsid".format(attr)] = peer_nsid
-                self.settings[attr] = next(iter(peer_ipr.link_lookup(
-                    ifname=self.settings[attr])), self.settings[attr])
+            if attr in self.settings:
+                netns_attr = "{}_netns".format(attr)
+                netnsid_attr = "{}_netnsid".format(attr)
+                if netns_attr in self.settings:
+                    # ToDo: throw exception for unknown netns
+                    (peer_ipr, peer_nsid) = self.netns.get_netnsid(self.settings[netns_attr])
+                    self.settings[netnsid_attr] = peer_nsid
+                    idx = next(iter(peer_ipr.link_lookup(
+                        ifname=self.settings[attr])), None)
 
-                del(self.settings[netns_attr])
-            elif attr in self.settings:
-                self.settings[attr] = next(iter(self.netns.ipr.link_lookup(
-                    ifname=self.settings[attr])), self.settings[attr])
+                    del(self.settings[netns_attr])
+                else:
+                    idx = next(iter(self.netns.ipr.link_lookup(
+                        ifname=self.settings[attr])), None)
+
+                if idx is not None:
+                    self.settings[attr] = idx
+                else:
+                    logger.warning('could not find %s "%s"', attr,
+                        self.settings[attr],
+                        extra={
+                            'iface': self.settings['ifname'],
+                            'netns': self.netns})
+                    self.settings['state'] = 'down'
+                    if netnsid_attr in self.settings:
+                        del(self.settings[netnsid_attr])
+                    del(self.settings[attr])
 
         # get interface from registry
         item = self.search_link_registry()
