@@ -53,6 +53,7 @@ class IfState():
         self.namespaces = {}
         self.root_netns = NetNameSpace(None)
         self.bpf_progs = None
+        self.defaults = []
         self.ignore = {}
         self.features = {
             'brport': True,
@@ -107,6 +108,10 @@ class IfState():
             for name, config in ifstates['bpf'].items():
                 self.bpf_progs.add(name, config)
 
+        # add interface defaults
+        if 'defaults' in ifstates:
+            self.defaults = ifstates['defaults']
+
         # add ignore list items
         self.ignore.update(ifstates['ignore'])
 
@@ -134,22 +139,36 @@ class IfState():
 
         # add interfaces from config
         for ifstate in ifstates['interfaces']:
+            defaults = self.get_defaults(
+                ifname=ifstate['name'],
+                kind=ifstate['link']['kind'])
+
             name = ifstate['name']
             if name in netns.links:
                 raise LinkDuplicate()
+            link = {}
+            if 'link' in defaults:
+                link.update(defaults['link'])
             if 'link' in ifstate:
+                link.update(ifstate['link'])
+            if link:
+                print(link)
                 netns.links[name] = Link(self,
-                    netns, name, ifstate['link'], ifstate.get('ethtool'), ifstate.get('vrrp'), ifstate.get('brport'))
+                    netns, name, link, ifstate.get('ethtool'), ifstate.get('vrrp'), ifstate.get('brport'))
             else:
                 netns.links[name] = None
 
             if 'addresses' in ifstate:
                 netns.addresses[name] = Addresses(netns, name, ifstate['addresses'])
+            elif defaults.get('clear_addresses', False):
+                netns.addresses[name] = Addresses(netns, name, [])
             else:
                 netns.addresses[name] = None
 
             if 'neighbours' in ifstate:
                 netns.neighbours[name] = Neighbours(netns, name, ifstate['neighbours'])
+            elif defaults.get('clear_neighbours', False):
+                netns.neighbours[name] = Neighbours(netns, name, [])
             else:
                 netns.neighbours[name] = None
 
@@ -702,3 +721,19 @@ class IfState():
         }
 
         return {**defaults, **{'interfaces': ifs_links, 'routing': routing}}
+
+    def get_defaults(self, **kwargs):
+        for default in self.defaults:
+            for match in default['match']:
+                matching = True
+
+                for option, regex in match.items():
+                    if not option in kwargs:
+                        matching = False
+                    elif not re.match(regex, kwargs[option]):
+                        matching = False
+
+                if matching:
+                    return default
+
+        return {}

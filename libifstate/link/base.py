@@ -565,7 +565,7 @@ class Link(ABC):
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
-                    excpts.add('set', err, state=state)
+                    excpts.add('set', err, state=self.settings['state'])
 
             if has_brport_changes:
                 self.brport.apply(do_apply, self.idx, excpts)
@@ -603,7 +603,7 @@ class Link(ABC):
                     except Exception as err:
                         if not isinstance(err, netlinkerror_classes):
                             raise
-                        excpts.add('set', err, state=state)
+                        excpts.add('set', err, state=self.settings['state'])
                 logger.info('change', extra={
                             'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
 
