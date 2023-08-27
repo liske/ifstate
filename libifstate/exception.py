@@ -70,10 +70,9 @@ class LinkTypeUnknown(Exception):
 class LinkDuplicate(Exception):
     pass
 
-
 class LinkCircularLinked(Exception):
-    pass
-
+    def exit_code(self):
+        return 5
 
 class LinkNoConfigFound(Exception):
     pass

@@ -6,14 +6,14 @@ from pwd import getpwnam
 from grp import getgrnam
 
 class TunLink(Link):
-    def __init__(self, name, link, ethtool, vrrp, brport):
+    def __init__(self, ifstate, netns, name, link, ethtool, vrrp, brport):
         if 'tun_owner' in link and isinstance(link['tun_owner'], str):
             link['tun_owner'] = getpwnam(link['tun_owner'])[2]
 
         if 'tun_group' in link and isinstance(link['tun_group'], str):
             link['tun_group'] = getgrnam(link['tun_group'])[2]
 
-        super().__init__(name, link, ethtool, vrrp, brport)
+        super().__init__(ifstate, netns, name, link, ethtool, vrrp, brport)
         self.cap_create = bool(link.get('tun_persist'))
  
     def create(self, do_apply, sysctl, excpts, oper="add"):

@@ -1,4 +1,4 @@
-from libifstate.util import logger, ipr, IfStateLogging
+from libifstate.util import logger, IfStateLogging, LinkDependency
 from libifstate.exception import ExceptionCollector, LinkTypeUnknown, netlinkerror_classes
 from libifstate.brport import BRPort
 from libifstate.routing import RTLookups
@@ -8,9 +8,9 @@ import subprocess
 import yaml
 import shutil
 import copy
+import pyroute2.netns
 
 ethtool_path = shutil.which("ethtool") or '/usr/sbin/ethtool'
-
 
 class Link(ABC):
     _nla_prefix = 'IFLA_'
@@ -84,7 +84,7 @@ class Link(ABC):
     def __new__(cls, *args, **kwargs):
         cname = cls.__name__
         if cname == Link.__name__:
-            cname = "{}Link".format(args[1]['kind'].lower().capitalize())
+            cname = "{}Link".format(args[3]['kind'].lower().capitalize())
 
         for c in Link.__subclasses__():
             if c.__name__ == cname:
@@ -93,7 +93,9 @@ class Link(ABC):
         return super().__new__(GenericLink)
         #raise LinkTypeUnknown()
 
-    def __init__(self, name, link, ethtool, vrrp, brport):
+    def __init__(self, ifstate, netns, name, link, ethtool, vrrp, brport):
+        self.ifstate = ifstate
+        self.netns = netns
         self.cap_create = True
         self.cap_ethtool = False
         self.settings = {
@@ -112,17 +114,39 @@ class Link(ABC):
         self.attr_idx = ['link', 'master', 'gre_link',
                          'ip6gre_link', 'vxlan_link', 'xfrm_link']
         self.idx = None
+        self.link_registry_search_args = []
+        self.link_ref = LinkDependency(name, self.netns.netns)
+
+        # prepare link registry search filters
+        if 'businfo' in self.settings:
+            self.settings['businfo'] = self.settings['businfo'].lower()
+            self.link_registry_search_args.append({
+                'kind': self.settings['kind'],
+                'businfo': self.settings['businfo'],
+            })
+
+        if 'permaddr' in self.settings:
+            self.settings['permaddr'] = self.settings['permaddr'].lower()
+            self.link_registry_search_args.append({
+                'kind': self.settings['kind'],
+                'permaddr': self.settings['permaddr'],
+            })
 
         if 'address' in self.settings and self.settings['kind'] == 'physical':
             self.settings['address'] = self.settings['address'].lower()
-            self.idx = next(iter(ipr.link_lookup(
-                address=self.settings['address'])), None)
-        if 'permaddr' in self.settings:
-            self.settings['permaddr'] = self.settings['permaddr'].lower()
-            self.idx = ipr.get_iface_by_permaddr(self.settings['permaddr'])
-        if 'businfo' in self.settings:
-            self.settings['businfo'] = self.settings['businfo'].lower()
-            self.idx = ipr.get_iface_by_businfo(self.settings['businfo'])
+            self.link_registry_search_args.append({
+                'kind': self.settings['kind'],
+                'address': self.settings['address'],
+                'netns': netns.netns,
+            })
+
+        self.link_registry_search_args.append({
+            'kind': self.settings['kind'],
+            'ifname': name,
+            'netns': netns.netns,
+        })
+
+        self.search_link_registry()
 
         for attr, mappings in self.attr_value_maps.items():
             if attr in self.settings and type(self.settings[attr]) != int:
@@ -136,8 +160,20 @@ class Link(ABC):
                 except KeyError as err:
                     # mapping not available - catch exception and skip it
                     logger.warning('ignoring unknown group "%s"', self.settings[attr],
-                                   extra={'iface': self.settings['ifname']})
+                                   extra={'iface': self.settings['ifname'], 'netns': self.netns})
                     del(self.settings[attr])
+
+    def search_link_registry(self):
+        for args in self.link_registry_search_args:
+            item = self.ifstate.link_registry.get_link(**args)
+            if item is not None:
+                item.link = self
+                return item
+
+        logger.debug('no link found: %s', self.link_registry_search_args,
+                     extra={'iface': self.settings['ifname'], 'netns': self.netns})
+
+        return None
 
     def _drill_attr(self, data, keys):
         key = keys[0]
@@ -181,7 +217,20 @@ class Link(ABC):
         return None
 
     def get_ethtool_fn(self, setting):
-        return "/run/ifstate-ethtool:{}_{}.state".format(self.idx, setting)
+        try:
+            os.makedirs("/run/ifstate/ethtool", exist_ok=True)
+        except:
+            pass
+
+        # try to create a unique netns independent filename
+        name = ('bi', self.iface.get('businfo'))
+        if None in name:
+            name = ('pa', self.iface.get('permaddr'))
+        if None in name:
+            name = ('id', str(self.idx))
+        name = "__".join(name)
+
+        return "/run/ifstate/ethtool/{}__{}.state".format(name, setting)
 
     def get_ethtool_state(self, settings):
         ethtool = {}
@@ -192,7 +241,7 @@ class Link(ABC):
 
             if not os.path.isfile(fn):
                 logger.debug('no prior ethtool %s state available', setting,
-                             extra={'iface': self.settings['ifname']})
+                             extra={'iface': self.settings['ifname'], 'netns': self.netns})
                 continue
 
             try:
@@ -223,7 +272,7 @@ class Link(ABC):
             return
 
         logger.info(
-            'change (ethtool)', extra={'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
+            'change (ethtool)', extra={'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
 
         if not do_apply:
             return
@@ -240,16 +289,23 @@ class Link(ABC):
             for option, value in self.ethtool[setting].items():
                 cmd.extend([option] + self.fmt_ethtool_opt(value))
             logger.debug("{}".format(" ".join(cmd)))
+
+            if self.netns.netns is not None:
+                pyroute2.netns.pushns(self.netns.netns)
             try:
-                res = subprocess.run(cmd)
-                if res.returncode != 0:
-                    logger.warning(
-                        '`{}` has failed'.format(" ".join(cmd[0:3])))
+                try:
+                    res = subprocess.run(cmd)
+                    if res.returncode != 0:
+                        logger.warning(
+                            '`{}` has failed'.format(" ".join(cmd[0:3])))
+                        return
+                except Exception as err:
+                    logger.warning('failed to run `{}`: {}'.format(
+                        " ".join(cmd[0:3]), err.args[1]))
                     return
-            except Exception as err:
-                logger.warning('failed to run `{}`: {}'.format(
-                    " ".join(cmd[0:3]), err.args[1]))
-                return
+            finally:
+                if self.netns.netns is not None:
+                    pyroute2.netns.popns()
 
             fn = self.get_ethtool_fn(setting)
             try:
@@ -274,29 +330,71 @@ class Link(ABC):
         # lookup for attributes requiring a interface index
         for attr in self.attr_idx:
             if attr in self.settings:
-                self.settings[attr] = next(iter(ipr.link_lookup(
-                    ifname=self.settings[attr])), self.settings[attr])
+                netns_attr = "{}_netns".format(attr)
+                netnsid_attr = "{}_netnsid".format(attr)
+                if netns_attr in self.settings:
+                    # ToDo: throw exception for unknown netns
+                    (peer_ipr, peer_nsid) = self.netns.get_netnsid(self.settings[netns_attr])
+                    self.settings[netnsid_attr] = peer_nsid
+                    idx = next(iter(peer_ipr.link_lookup(
+                        ifname=self.settings[attr])), None)
 
-        if self.idx is None:
-            self.idx = next(iter(ipr.link_lookup(
-                ifname=self.settings['ifname'])), None)
+                    del(self.settings[netns_attr])
+                else:
+                    idx = next(iter(self.netns.ipr.link_lookup(
+                        ifname=self.settings[attr])), None)
+
+                if idx is not None:
+                    self.settings[attr] = idx
+                else:
+                    logger.warning('could not find %s "%s"', attr,
+                        self.settings[attr],
+                        extra={
+                            'iface': self.settings['ifname'],
+                            'netns': self.netns})
+                    self.settings['state'] = 'down'
+                    if netnsid_attr in self.settings:
+                        del(self.settings[netnsid_attr])
+                    del(self.settings[attr])
+
+        # get interface from registry
+        item = self.search_link_registry()
+
+        # move interface into netns if required
+        if item is not None and item.netns.netns != self.netns.netns:
+            logger.info(
+                'netns', extra={'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
+
+            if do_apply:
+                try:
+                    # move link into target netns
+                    item.update_netns(self.netns)
+                except Exception as err:
+                    if not isinstance(err, netlinkerror_classes):
+                        raise
+                    item.netns.ipr.link('set', index=item.attributes['index'], state='down')
+                    excpts.add('set', err, netns=self.netns.netns)
+                    return excpts
+
+        if item is not None:
+            self.idx = item.attributes['index']
 
         if self.idx is not None:
-            self.iface = next(iter(ipr.get_links(self.idx)), None)
-            permaddr = ipr.get_permaddr(self.iface.get_attr('IFLA_IFNAME'))
+            self.iface = next(iter(item.netns.ipr.get_links(self.idx)), None)
+            permaddr = item.netns.ipr.get_permaddr(self.iface.get_attr('IFLA_IFNAME'))
             if not permaddr is None:
                 self.iface['permaddr'] = permaddr
-            businfo = ipr.get_businfo(self.iface.get_attr('IFLA_IFNAME'))
+            businfo = item.netns.ipr.get_businfo(self.iface.get_attr('IFLA_IFNAME'))
             if not businfo is None:
                 self.iface['businfo'] = businfo
 
             # check for ifname collisions
-            idx = next(iter(ipr.link_lookup(
+            idx = next(iter(self.netns.ipr.link_lookup(
                 ifname=self.settings['ifname'])), None)
             if idx is not None and idx != self.idx and do_apply:
                 try:
-                    ipr.link('set', index=idx, state='down')
-                    ipr.link('set', index=idx, ifname='{}!'.format(
+                    self.netns.ipr.link('set', index=idx, state='down')
+                    self.netns.ipr.link('set', index=idx, ifname='{}!'.format(
                         self.settings['ifname']))
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
@@ -319,7 +417,7 @@ class Link(ABC):
 
     def create(self, do_apply, sysctl, excpts, oper="add"):
         logger.info(
-            oper, extra={'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
+            oper, extra={'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
 
         logger.debug("ip link add: {}".format(
             " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
@@ -332,8 +430,8 @@ class Link(ABC):
                 self.prevent_altname_conflict()
 
                 # add link
-                ipr.link('add', **(self.settings))
-                self.idx = next(iter(ipr.link_lookup(
+                self.netns.ipr.link('add', **(self.settings))
+                self.idx = next(iter(self.netns.ipr.link_lookup(
                     ifname=self.settings['ifname'])), None)
 
                 if self.idx is not None:
@@ -348,7 +446,7 @@ class Link(ABC):
                     # set state if required
                     if state is not None and not excpts.has_op('brport'):
                         try:
-                            ipr.link('set', index=self.idx, state=state)
+                            self.netns.ipr.link('set', index=self.idx, state=state)
                         except Exception as err:
                             if not isinstance(err, netlinkerror_classes):
                                 raise
@@ -365,10 +463,10 @@ class Link(ABC):
 
     def recreate(self, do_apply, sysctl, excpts):
         logger.debug('has wrong link kind %s, removing', self.settings['kind'], extra={
-                     'iface': self.settings['ifname']})
+                     'iface': self.settings['ifname'], 'netns': self.netns})
         if do_apply:
             try:
-                ipr.link('del', index=self.idx)
+                self.netns.ipr.link('del', index=self.idx)
             except Exception as err:
                 if not isinstance(err, netlinkerror_classes):
                     raise
@@ -377,14 +475,14 @@ class Link(ABC):
         self.create(do_apply, sysctl, excpts, "replace")
 
     def update(self, do_apply, sysctl, excpts):
-        logger.debug('checking link', extra={'iface': self.settings['ifname']})
+        logger.debug('checking link', extra={'iface': self.settings['ifname'], 'netns': self.netns})
 
         old_state = self.iface['state']
         has_link_changes = False
         has_state_changes = False
         for setting in self.settings.keys():
             logger.debug('  %s: %s => %s', setting, self.get_if_attr(
-                setting), self.settings[setting], extra={'iface': self.settings['ifname']})
+                setting), self.settings[setting], extra={'iface': self.settings['ifname'], 'netns': self.netns})
             if setting == "state":
                 has_state_changes = self.get_if_attr(
                     setting) != self.settings[setting]
@@ -417,13 +515,13 @@ class Link(ABC):
 
         if has_link_changes:
             logger.debug('needs to be configured', extra={
-                         'iface': self.settings['ifname']})
+                         'iface': self.settings['ifname'], 'netns': self.netns})
             if old_state != 'down':
                 logger.debug('shutting down', extra={
-                             'iface': self.settings['ifname']})
+                             'iface': self.settings['ifname'], 'netns': self.netns})
                 if do_apply:
                     try:
-                        ipr.link('set', index=self.idx, state='down')
+                        self.netns.ipr.link('set', index=self.idx, state='down')
                     except Exception as err:
                         if not isinstance(err, netlinkerror_classes):
                             raise
@@ -443,52 +541,52 @@ class Link(ABC):
                 'ifname') != self.settings['ifname']
             if has_ifname_change:
                 logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={
-                            'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
+                            'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
             else:
                 logger.info('change', extra={
-                            'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
+                            'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
 
             logger.debug("ip link set: {}".format(
                 " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
             if do_apply:
                 # temp. remove special settings
-                state = self.settings.pop('state', None)
-                peer = self.settings.pop('peer', None)
+                skipped_settings = {}
+                for setting in ['state', 'peer', 'kind', 'businfo', 'permaddr']:
+                    if setting in self.settings:
+                        skipped_settings[setting] = self.settings.pop(setting)
 
                 if has_ifname_change:
                     self.prevent_altname_conflict()
 
                 try:
-                    ipr.link('set', index=self.idx, **(self.settings))
+                    self.netns.ipr.link('set', index=self.idx, **(self.settings))
 
                     for setting in self.settings.keys():
-                        if self.get_if_attr(setting) != self.settings[setting]:
-                            if self.cap_create:
-                                logger.debug('  %s: setting could not be changed', setting, extra={'iface': self.settings['ifname']})
-                                excpts.add('set', Exception('ip link set'), **{setting: self.settings[setting]})
-                            else:
-                                logger.warning('%s setting could not be changed', setting,
-                                               extra={'iface': self.settings['ifname']})
+                        if not setting.endswith('_netns') or not setting[:-6] in self.attr_idx:
+                            if self.get_if_attr(setting) != self.settings[setting]:
+                                if self.cap_create:
+                                    logger.debug('  %s: setting could not be changed', setting, extra={'iface': self.settings['ifname']})
+                                    excpts.add('set', Exception('ip link set'), **{setting: self.settings[setting]})
+                                else:
+                                    logger.warning('%s setting could not be changed', setting,
+                                                   extra={'iface': self.settings['ifname']})
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
                     excpts.add('set', err, **(self.settings))
 
                 # restore settings
-                if state is not None:
-                    self.settings['state'] = state
-                if peer is not None:
-                    self.settings['peer'] = peer
+                for setting, value in skipped_settings.items():
+                    self.settings[setting] = value
 
                 try:
-                    if not state is None:
+                    if 'state' in self.settings:
                         # restore state setting for recreate
-                        self.settings['state'] = state
-                        ipr.link('set', index=self.idx, state=state)
+                        self.netns.ipr.link('set', index=self.idx, state=self.settings['state'])
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
-                    excpts.add('set', err, state=state)
+                    excpts.add('set', err, state=self.settings['state'])
 
             if has_brport_changes:
                 self.brport.apply(do_apply, self.idx, excpts)
@@ -506,7 +604,7 @@ class Link(ABC):
                                  'iface': self.settings['ifname']})
                     if do_apply:
                         try:
-                            ipr.link('set', index=self.idx, state='down')
+                            self.netns.ipr.link('set', index=self.idx, state='down')
                         except Exception as err:
                             if not isinstance(err, netlinkerror_classes):
                                 raise
@@ -521,24 +619,26 @@ class Link(ABC):
             if has_state_changes:
                 if do_apply:
                     try:
-                        ipr.link('set', index=self.idx,
+                        self.netns.ipr.link('set', index=self.idx,
                                  state=self.settings["state"])
                     except Exception as err:
                         if not isinstance(err, netlinkerror_classes):
                             raise
-                        excpts.add('set', err, state=state)
+                        excpts.add('set', err, state=self.settings['state'])
                 logger.info('change', extra={
-                            'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_CHG})
+                            'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
 
             else:
                 logger.info(
-                    'ok', extra={'iface': self.settings['ifname'], 'style': IfStateLogging.STYLE_OK})
+                    'ok', extra={'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_OK})
 
     def depends(self):
         deps = []
+
         for attr in self.attr_idx:
             if attr in self.settings:
-                deps.append(self.settings[attr])
+                ns = self.settings.get("{}_netns".format(attr), self.netns.netns)
+                deps.append(LinkDependency(self.settings[attr], ns))
 
         if self.brport:
             deps.extend(self.brport.depends())
@@ -554,12 +654,12 @@ class Link(ABC):
         '''
 
         logger.debug('checking altname conflict', extra={
-                     'iface': self.settings['ifname']})
+                     'iface': self.settings['ifname'], 'netns': self.netns})
 
         # get link candidate having the ifname as altname
         try:
             link = next(
-                iter(ipr.link('get', altname=self.settings['ifname'])), None)
+                iter(self.netns.ipr.link('get', altname=self.settings['ifname'])), None)
         except Exception as err:
             if not isinstance(err, netlinkerror_classes):
                 raise
@@ -570,9 +670,9 @@ class Link(ABC):
         properties = link.get_attr('IFLA_PROP_LIST')
         if properties is not None and self.settings['ifname'] in properties.get_attrs('IFLA_ALT_IFNAME'):
             logger.debug('  found: %s (%d)', link.get_attr(
-                'IFLA_IFNAME'), link['index'], extra={'iface': self.settings['ifname']})
+                'IFLA_IFNAME'), link['index'], extra={'iface': self.settings['ifname'], 'netns': self.netns})
             try:
-                ipr.link('property_del',
+                self.netns.ipr.link('property_del',
                          index=link['index'], altname=self.settings['ifname'])
             except Exception as err:
                 if not isinstance(err, netlinkerror_classes):
@@ -594,5 +694,5 @@ class Link(ABC):
 
 
 class GenericLink(Link):
-    def __init__(self, name, link, ethtool, vrrp, brport):
-        super().__init__(name, link, ethtool, vrrp, brport)
+    def __init__(self, ifstate, netns, name, link, ethtool, vrrp, brport):
+        super().__init__(ifstate, netns, name, link, ethtool, vrrp, brport)

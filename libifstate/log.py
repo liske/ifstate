@@ -7,7 +7,7 @@ import sys
 logger = logging.getLogger('ifstate')
 logger.propagate = False
 
-formatter = logging.Formatter('%(bol)s%(prefix)s%(style)s%(message)s%(eol)s')
+formatter = logging.Formatter('%(namespace)s%(bol)s%(prefix)s%(style)s%(message)s%(eol)s')
 
 class IfStateLogFilter(logging.Filter):
     def __init__(self, is_terminal):
@@ -16,6 +16,11 @@ class IfStateLogFilter(logging.Filter):
 
     def filter(self, record):
         record.levelshort = record.levelname[:1]
+
+        if hasattr(record, 'netns') and record.netns.netns is not None:
+            record.namespace = "{}| ".format(record.netns.netns)
+        else:
+            record.namespace = ''
 
         if hasattr(record, 'iface'):
             record.prefix = " {:15} ".format(record.iface)

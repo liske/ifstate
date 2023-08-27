@@ -1,4 +1,4 @@
-from libifstate.util import logger, ipr, IfStateLogging
+from libifstate.util import logger, IfStateLogging
 from libifstate.exception import netlinkerror_classes
 from libifstate.bpf import libbpf, struct_bpf_prog_info, bpfs_ifstate_dir
 
@@ -11,12 +11,13 @@ import os
 import shutil
 
 class XDP():
-    def __init__(self, iface, xdp):
+    def __init__(self, netns, iface, xdp):
+        self.netns = netns
         self.iface = iface
         self.xdp = xdp
 
     def apply(self, do_apply, bpf_progs):
-        self.link = next(iter(ipr.get_links(ifname=self.iface)), None)
+        self.link = next(iter(self.netns.ipr.get_links(ifname=self.iface)), None)
 
         if self.link == None:
             logger.warning('link missing', extra={'iface': self.iface})
@@ -123,7 +124,7 @@ class XDP():
             if do_apply:
                 attach_ok = False
                 try:
-                    ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
+                    self.netns.ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
                     attach_ok = True
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
@@ -131,9 +132,9 @@ class XDP():
 
                     # try again: detaching XDP first
                     try:
-                        ipr.link('set', index=self.idx, xdp_fd=-1)
+                        self.netns.ipr.link('set', index=self.idx, xdp_fd=-1)
 
-                        ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
+                        self.netns.ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
                         attach_ok = True
                     except Exception as err:
                         if not isinstance(err, netlinkerror_classes):

@@ -2,7 +2,7 @@
 
 from libifstate.parser import YamlParser
 from libifstate import __version__, IfState
-from libifstate.exception import FeatureMissingError, LinkNoConfigFound, ParserValidationError, ParserOpenError, ParserParseError, ParserIncludeError
+from libifstate.exception import FeatureMissingError, LinkNoConfigFound, LinkCircularLinked, ParserValidationError, ParserOpenError, ParserParseError, ParserIncludeError
 from libifstate.util import logger, IfStateLogging
 from collections import namedtuple
 from copy import deepcopy
@@ -165,6 +165,9 @@ def main():
                 ifs_config.ifs.check()
             except LinkNoConfigFound:
                 pass
+            except LinkCircularLinked as ex:
+                ifslog.quit()
+                exit(ex.exit_code())
         elif args.action == Actions.VRRP_FIFO:
             signal.signal(signal.SIGHUP, ifs_config.sighup_handler)
             signal.signal(signal.SIGPIPE, signal.SIG_IGN)
@@ -195,6 +198,9 @@ def main():
                         args.type, args.name, args.state)
             except LinkNoConfigFound:
                 pass
+            except LinkCircularLinked as ex:
+                ifslog.quit()
+                exit(ex.exit_code())
 
         ifslog.quit()
 

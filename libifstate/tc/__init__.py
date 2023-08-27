@@ -1,4 +1,4 @@
-from libifstate.util import logger, ipr, IfStateLogging
+from libifstate.util import logger, IfStateLogging
 from libifstate.exception import ExceptionCollector, netlinkerror_classes
 
 
@@ -33,17 +33,18 @@ class TC():
 
         return int(l[0], 16) << 16 | int(l[1], 16)
 
-    def __init__(self, iface, tc):
+    def __init__(self, netns, iface, tc):
+        self.netns = netns
         self.iface = iface
         self.idx = None
         self.tc = tc
 
-    def get_qdisc(self, ipr_qdiscs, parent):
+    def get_qdisc(self, netns_qdiscs, parent):
         for qdisc in ipr_qdiscs:
             if qdisc['parent'] == parent:
                 return qdisc
 
-    def get_qchild(self, ipr_qdiscs, parent, slot):
+    def get_qchild(self, netns_qdiscs, parent, slot):
         for qdisc in ipr_qdiscs:
             if qdisc['parent'] == parent | slot:
                 return qdisc
@@ -58,7 +59,7 @@ class TC():
                         "parent": TC.INGRESS_PARENT,
                     }
                     try:
-                        ipr.tc("del", **opts)
+                        self.netns.ipr.tc("del", **opts)
                     except Exception as err:
                         if not isinstance(err, netlinkerror_classes):
                             raise
@@ -74,7 +75,7 @@ class TC():
                         "kind": "ingress",
                     }
                     try:
-                        ipr.tc("add", **opts)
+                        self.netns.ipr.tc("add", **opts)
                     except Exception as err:
                         if not isinstance(err, netlinkerror_classes):
                             raise
@@ -103,7 +104,7 @@ class TC():
         if recreate and do_apply:
             if qdisc is not None:
                 try:
-                    ipr.tc("del", index=self.idx, parent=qdisc["parent"])
+                    self.netns.ipr.tc("del", index=self.idx, parent=qdisc["parent"])
                 except:
                     pass
 
@@ -118,7 +119,7 @@ class TC():
         if do_apply:
             if recreate:
                 try:
-                    ipr.tc("add", **opts)
+                    self.netns.ipr.tc("add", **opts)
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
@@ -128,7 +129,7 @@ class TC():
             else:
                 # soft update for TCA_OPTIONS
                 try:
-                    ipr.tc("change", **opts)
+                    self.netns.ipr.tc("change", **opts)
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
                         raise
@@ -179,7 +180,7 @@ class TC():
                         "parent": parent,
                     }
                     try:
-                        ipr.del_filter_by_info(**opts)
+                        self.netns.ipr.del_filter_by_info(**opts)
                     except Exception as err:
                         if not isinstance(err, netlinkerror_classes):
                             raise
@@ -196,7 +197,7 @@ class TC():
                             if action["kind"] == "mirred":
                                 # get ifindex
                                 action["ifindex"] = next(
-                                    iter(ipr.link_lookup(ifname=action["dev"])), None)
+                                    iter(self.netns.ipr.link_lookup(ifname=action["dev"])), None)
 
                                 if self.idx == None:
                                     logger.warning("filter #{} references unknown interface {}".format(
@@ -206,7 +207,7 @@ class TC():
                         tc_filter["parent"] = TC.handle2int(tc_filter["parent"])
                     try:
                         try:
-                            ipr.tc("replace-filter", **tc_filter)
+                            self.netns.ipr.tc("replace-filter", **tc_filter)
                             # replace seems only to work if there is no filter
                             # => something has changed
                             changes = True
@@ -221,8 +222,8 @@ class TC():
                                 "info": tc_filter["prio"] << 16,
                                 "parent": parent,
                             }
-                            ipr.del_filter_by_info(**opts)
-                            ipr.tc("add-filter", **tc_filter)
+                            self.netns.ipr.del_filter_by_info(**opts)
+                            self.netns.ipr.tc("add-filter", **tc_filter)
 
                     except Exception as err:
                         if not isinstance(err, netlinkerror_classes):
@@ -237,7 +238,7 @@ class TC():
         excpts = ExceptionCollector(ifname=self.iface)
 
         # get ifindex
-        self.idx = next(iter(ipr.link_lookup(ifname=self.iface)), None)
+        self.idx = next(iter(self.netns.ipr.link_lookup(ifname=self.iface)), None)
 
         if self.idx == None:
             logger.warning('link missing', extra={'iface': self.iface})
@@ -248,7 +249,7 @@ class TC():
 
         # apply ingress qdics
         if "ingress" in self.tc:
-            ipr_qdiscs = ipr.get_qdiscs(index=self.idx)
+            ipr_qdiscs = self.netns.ipr.get_qdiscs(index=self.idx)
             if self.apply_ingress(self.tc["ingress"],
                                   self.get_qdisc(
                                       ipr_qdiscs, TC.INGRESS_PARENT),
@@ -259,7 +260,7 @@ class TC():
         # apply qdisc tree
         if "qdisc" in self.tc:
             if ipr_qdiscs is None:
-                ipr_qdiscs = ipr.get_qdiscs(index=self.idx)
+                ipr_qdiscs = self.netns.ipr.get_qdiscs(index=self.idx)
             logger.debug('checking qdisc tree', extra={'iface': self.iface})
             if self.apply_qtree(
                     self.tc["qdisc"],
@@ -272,8 +273,8 @@ class TC():
 
         # apply filters
         if "filter" in self.tc:
-            ipr_filters = ipr.get_filters(
-                index=self.idx) + ipr.get_filters(index=self.idx, parent=TC.INGRESS_HANDLE)
+            ipr_filters = self.netns.ipr.get_filters(
+                index=self.idx) + self.netns.ipr.get_filters(index=self.idx, parent=TC.INGRESS_HANDLE)
             logger.debug('checking filters', extra={'iface': self.iface})
             if self.apply_filter(
                     self.tc["filter"],

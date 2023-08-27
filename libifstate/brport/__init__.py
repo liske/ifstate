@@ -1,4 +1,4 @@
-from libifstate.util import logger, ipr, IfStateLogging, filter_ifla_dump
+from libifstate.util import logger, IfStateLogging, filter_ifla_dump, LinkDependency
 from libifstate.exception import netlinkerror_classes
 
 
@@ -22,7 +22,8 @@ class BRPort():
         "isolated": 0,
     }
 
-    def __init__(self, iface, brport):
+    def __init__(self, netns, iface, brport):
+        self.netns = netns
         self.iface = iface
         self.brport = brport
 
@@ -32,7 +33,8 @@ class BRPort():
         backup_port = self.brport.get('backup_port')
 
         if backup_port:
-            return (backup_port,)
+            ns = self.settings.get("backup_port_netns", self.netns.netns)
+            return (LinkDependency(backup_port, ns),)
         else:
             return ()
 
@@ -40,7 +42,7 @@ class BRPort():
         logger.debug('checking brport', extra={'iface': self.iface})
 
         has_changes = False
-        brport_state = next(iter(ipr.brport('dump', index=idx)), None)
+        brport_state = next(iter(self.netns.ipr.brport('dump', index=idx)), None)
 
         # no a bridge port
         if brport_state is None:
@@ -59,7 +61,7 @@ class BRPort():
         return has_changes
 
     def apply(self, do_apply, idx, excpts):
-        brport_state = ipr.brport('dump', index=idx)
+        brport_state = self.netns.ipr.brport('dump', index=idx)
         if brport_state == None:
             logger.warning('link is not a bridge port',
                            extra={'iface': self.iface})
@@ -73,14 +75,14 @@ class BRPort():
 
         if do_apply:
             try:
-                ipr.brport('set', index=idx, **(self.brport))
+                self.netns.ipr.brport('set', index=idx, **(self.brport))
             except Exception as err:
                 if not isinstance(err, netlinkerror_classes):
                     raise
                 excpts.add('brport', err, **(self.brport))
 
     def show(showall, idx, config):
-        brport_state = next(iter(ipr.brport('dump', index=idx)), None)
+        brport_state = next(iter(self.netns.ipr.brport('dump', index=idx)), None)
 
         if not brport_state:
             return
