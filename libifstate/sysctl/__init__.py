@@ -1,5 +1,5 @@
 from libifstate.util import logger, IfStateLogging
-import pyroute2
+import pyroute2.netns
 
 import os
 
