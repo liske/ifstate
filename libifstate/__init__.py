@@ -152,7 +152,6 @@ class IfState():
             if 'link' in ifstate:
                 link.update(ifstate['link'])
             if link:
-                print(link)
                 netns.links[name] = Link(self,
                     netns, name, link, ifstate.get('ethtool'), ifstate.get('vrrp'), ifstate.get('brport'))
             else:
@@ -443,10 +442,13 @@ class IfState():
             logger.error("DANGER: Not a single link config has been found!")
             raise LinkNoConfigFound()
 
+        had_global_sysctl = False
         for iface in ['all', 'default']:
             if netns.sysctl.has_settings(iface):
-                logger.info("", extra={'netns': netns})
-                logger.info("configuring {} interface sysctl".format(iface), extra={'netns': netns})
+                if not had_global_sysctl:
+                    logger.info("", extra={'netns': netns})
+                    logger.info("configuring global interface sysctl".format(iface), extra={'netns': netns})
+                    had_global_sysctl = True
                 netns.sysctl.apply(iface, do_apply)
 
         if not self.bpf_progs is None:
