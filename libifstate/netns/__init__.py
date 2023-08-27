@@ -167,7 +167,7 @@ class LinkRegistryItem():
         }
 
         linkinfo = link.get_attr('IFLA_LINKINFO')
-        if linkinfo:
+        if linkinfo and linkinfo.get_attr('IFLA_INFO_KIND') != None:
             self.attributes['kind'] = linkinfo.get_attr('IFLA_INFO_KIND')
         else:
             self.attributes['kind'] = "physical"
