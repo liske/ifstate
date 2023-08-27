@@ -8,6 +8,7 @@ import subprocess
 import yaml
 import shutil
 import copy
+import pyroute2.netns
 
 ethtool_path = shutil.which("ethtool") or '/usr/sbin/ethtool'
 
@@ -216,7 +217,20 @@ class Link(ABC):
         return None
 
     def get_ethtool_fn(self, setting):
-        return "/run/ifstate-ethtool:{}_{}.state".format(self.idx, setting)
+        try:
+            os.makedirs("/run/ifstate/ethtool", exist_ok=True)
+        except:
+            pass
+
+        # try to create a unique netns independent filename
+        name = ('bi', self.iface.get('businfo'))
+        if None in name:
+            name = ('pa', self.iface.get('permaddr'))
+        if None in name:
+            name = ('id', str(self.idx))
+        name = "__".join(name)
+
+        return "/run/ifstate/ethtool/{}__{}.state".format(name, setting)
 
     def get_ethtool_state(self, settings):
         ethtool = {}
@@ -275,16 +289,23 @@ class Link(ABC):
             for option, value in self.ethtool[setting].items():
                 cmd.extend([option] + self.fmt_ethtool_opt(value))
             logger.debug("{}".format(" ".join(cmd)))
+
+            if self.netns.netns is not None:
+                pyroute2.netns.pushns(self.netns.netns)
             try:
-                res = subprocess.run(cmd)
-                if res.returncode != 0:
-                    logger.warning(
-                        '`{}` has failed'.format(" ".join(cmd[0:3])))
+                try:
+                    res = subprocess.run(cmd)
+                    if res.returncode != 0:
+                        logger.warning(
+                            '`{}` has failed'.format(" ".join(cmd[0:3])))
+                        return
+                except Exception as err:
+                    logger.warning('failed to run `{}`: {}'.format(
+                        " ".join(cmd[0:3]), err.args[1]))
                     return
-            except Exception as err:
-                logger.warning('failed to run `{}`: {}'.format(
-                    " ".join(cmd[0:3]), err.args[1]))
-                return
+            finally:
+                if self.netns.netns is not None:
+                    pyroute2.netns.popns()
 
             fn = self.get_ethtool_fn(setting)
             try:
