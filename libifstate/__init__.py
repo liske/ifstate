@@ -635,6 +635,19 @@ class IfState():
         for ip in Parser._default_ifstates['ignore']['ipaddr_builtin']:
             ipaddr_ignore.append(ip_network(ip))
 
+        root_config = self._show_netns(self.root_netns, showall, ipaddr_ignore)
+        netns_instances = get_netns_instances()
+        if len(netns_instances) > 0:
+            netns_configs = {}
+            for netns in netns_instances:
+                netns_configs[netns.netns] = self._show_netns(netns, showall, ipaddr_ignore)
+
+            return {**defaults, **root_config, 'namespaces': netns_configs}
+
+
+        return {**defaults, **root_config}
+
+    def _show_netns(self, netns, showall, ipaddr_ignore):
         ifs_links = []
         for ipr_link in netns.ipr.get_links():
             name = ipr_link.get_attr('IFLA_IFNAME')
@@ -713,16 +726,17 @@ class IfState():
                 if not mtu is None and not mtu in [1500, 65536]:
                     ifs_link['link']['mtu'] = mtu
 
-                brport.BRPort.show(showall, ipr_link['index'], ifs_link)
+                brport.BRPort.show(netns.ipr, showall, ipr_link['index'], ifs_link)
 
                 ifs_links.append(ifs_link)
 
         routing = {
-            'routes': Tables().show_routes(Parser._default_ifstates['ignore']['routes_builtin']),
-            'rules': Rules().show_rules(Parser._default_ifstates['ignore']['rules_builtin']),
+            'routes': Tables(netns).show_routes(Parser._default_ifstates['ignore']['routes_builtin']),
+            'rules': Rules(netns).show_rules(Parser._default_ifstates['ignore']['rules_builtin']),
         }
 
-        return {**defaults, **{'interfaces': ifs_links, 'routing': routing}}
+        return {**{'interfaces': ifs_links, 'routing': routing}}
+
 
     def get_defaults(self, **kwargs):
         for default in self.defaults:

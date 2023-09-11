@@ -1,7 +1,6 @@
 from libifstate.util import logger, IfStateLogging, filter_ifla_dump, LinkDependency
 from libifstate.exception import netlinkerror_classes
 
-
 class BRPort():
     ILFA_DEFAULTS = {
         "priority": 32,
@@ -81,8 +80,8 @@ class BRPort():
                     raise
                 excpts.add('brport', err, **(self.brport))
 
-    def show(showall, idx, config):
-        brport_state = next(iter(self.netns.ipr.brport('dump', index=idx)), None)
+    def show(ipr, showall, idx, config):
+        brport_state = next(iter(ipr.brport('dump', index=idx)), None)
 
         if not brport_state:
             return
