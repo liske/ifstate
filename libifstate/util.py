@@ -70,11 +70,11 @@ class IPRouteExt(IPRoute):
         if parent != 0:
             msg['parent'] = parent
 
-        return tuple(ipr.nlm_request(
+        return tuple(self.nlm_request(
             msg,
             msg_type=RTM_DELTFILTER,
             msg_flags=NLM_F_REQUEST |
-            NLM_F_ACK | NLM_F_CREATE | NLM_F_EXCL
+            NLM_F_ACK
         ))
 
     def get_businfo(self, ifname):
@@ -158,11 +158,11 @@ class NetNSExt(NetNS):
         if parent != 0:
             msg['parent'] = parent
 
-        return tuple(ipr.nlm_request(
+        return tuple(self.nlm_request(
             msg,
             msg_type=RTM_DELTFILTER,
             msg_flags=NLM_F_REQUEST |
-            NLM_F_ACK | NLM_F_CREATE | NLM_F_EXCL
+            NLM_F_ACK
         ))
 
     def get_businfo(self, ifname):
@@ -238,11 +238,26 @@ class LinkDependency:
     def __eq__(self, other):
         return (self.ifname, self.netns) == (other.ifname, other.netns)
 
+    def __lt__(self, obj):
+        if self.netns is None:
+            return True
+
+        if obj.netns is None:
+            return False
+
+        if self.netns != obj.netns:
+            return self.netns < obj.netns
+
+        return self.ifname < obj.ifname
+
     def __ne__(self, other):
         return not(self == other)
 
     def __str__(self):
-        return "{}[netns={}]".format(self.ifname, self.netns)
+        if self.netns is None:
+            return "{}".format(self.ifname)
+        else:
+            return "{}[netns={}]".format(self.ifname, self.netns)
 
 
 root_ipr = IPRouteExt()

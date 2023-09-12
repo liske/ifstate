@@ -114,6 +114,12 @@ class IfState():
 
         # add ignore list items
         self.ignore.update(ifstates['ignore'])
+        self.ipaddr_ignore = set()
+        for ip in self.ignore.get('ipaddr', []):
+            self.ipaddr_ignore.add(ip_network(ip))
+
+        # save cshaper profiles
+        self.cshaper_profiles = ifstates['cshaper']
 
         # build link registry over all named netns
         self.link_registry = LinkRegistry(
@@ -161,15 +167,11 @@ class IfState():
                 netns.addresses[name] = Addresses(netns, name, ifstate['addresses'])
             elif defaults.get('clear_addresses', False):
                 netns.addresses[name] = Addresses(netns, name, [])
-            else:
-                netns.addresses[name] = None
 
             if 'neighbours' in ifstate:
                 netns.neighbours[name] = Neighbours(netns, name, ifstate['neighbours'])
             elif defaults.get('clear_neighbours', False):
                 netns.neighbours[name] = Neighbours(netns, name, [])
-            else:
-                netns.neighbours[name] = None
 
             if 'vrrp' in ifstate:
                 ktype = ifstate['vrrp']['type']
@@ -191,7 +193,7 @@ class IfState():
                     'profile', 'default')
                 logger.debug('cshaper profile {} enabled'.format(profile_name),
                              extra={'iface': name, 'netns': netns})
-                cshaper_profile = ifstates['cshaper'][profile_name]
+                cshaper_profile = deepcopy(self.cshaper_profiles[profile_name])
 
                 # ingress
                 ifb_name = re.sub(
@@ -321,6 +323,17 @@ class IfState():
         for ifname, link in netns.links.items():
             deps[LinkDependency(ifname, netns.netns)] = link.depends()
 
+        for ifname, tc in netns.tc.items():
+            for fltr in tc.tc.get('filter', []):
+                for action in fltr.get('action', []):
+                    if 'dev' in action:
+                        link = LinkDependency(ifname, netns.netns)
+                        dep = LinkDependency(action['dev'], netns.netns)
+                        if link in deps:
+                            deps[link].append(dep)
+                        else:
+                            deps[link] = [dep]
+
         return deps
 
     def _stages(self):
@@ -371,12 +384,25 @@ class IfState():
         return stages
 
     def _apply(self, do_apply, vrrp_type=None, vrrp_name=None, vrrp_state=None):
-        stages = self._stages()
-
+        # create and destroy namespaces to match config
         if len(self.namespaces) > 0:
             prepare_netns(do_apply, self.namespaces.keys())
             logger.info("")
 
+        # check if called from vrrp hook and ignore non-vrrp interfaces
+        by_vrrp = not None in [
+            vrrp_type, vrrp_name, vrrp_state]
+        if by_vrrp:
+            logger.info("vrrp state change: {} {} => {}".format(vrrp_type, vrrp_name, vrrp_state))
+
+            # ifstate schema requires lower case keywords
+            vrrp_type = vrrp_type.lower()
+            vrrp_state = vrrp_state.lower()
+
+        # get link dependency tree
+        stages = self._stages()
+
+        # remove any orphan (non-ignored) links
         logger.info("cleanup orphan interfaces...")
         cleanup_items = []
         for item in self.link_registry.registry:
@@ -388,18 +414,94 @@ class IfState():
         for item in cleanup_items:
             self.link_registry.registry.remove(item)
 
+        # dump link registry in verbose mode
         if logger.getEffectiveLevel() <= logging.DEBUG:
             self.link_registry.debug_dump()
 
+        # apply basic netns settings (sysctl + bpf)
+        logger.info("")
+        logger.info("configure common settings")
+        self._apply_netns_base(do_apply, self.root_netns)
+        for name, netns in self.namespaces.items():
+            self._apply_netns_base(do_apply, netns)
+
+        # create/modify links in order of dependencies
+        logger.info("")
+        logger.info("configure interfaces")
         for stage in stages:
-            self._apply_netns(do_apply, stage, self.root_netns, vrrp_type, vrrp_name, vrrp_state)
-            for name, netns in self.namespaces.items():
-                logger.info('')
-                self._apply_netns(do_apply, stage, netns, vrrp_type, vrrp_name, vrrp_state)
+            for link_dep in sorted(stage):
+                logger.info(" {}".format(link_dep))
+                if link_dep.netns is None:
+                    self._apply_iface(do_apply, self.root_netns, link_dep.ifname, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
+                else:
+                    self._apply_iface(do_apply, self.namespaces[link_dep.netns], link_dep.ifname, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
+
+            # self._apply_netns(do_apply, stage, self.root_netns, vrrp_type, vrrp_name, vrrp_state)
+            # for name, netns in self.namespaces.items():
+            #     logger.info('')
+            #     self._apply_netns(do_apply, stage, netns, vrrp_type, vrrp_name, vrrp_state)
+
+    def _apply_netns_base(self, do_apply, netns):
+        had_global_sysctl = False
+        for iface in ['all', 'default']:
+            if netns.sysctl.has_settings(iface):
+                if not had_global_sysctl:
+                    logger.info("", extra={'netns': netns})
+                    logger.info("configuring global interface sysctl".format(iface), extra={'netns': netns})
+                    had_global_sysctl = True
+                netns.sysctl.apply(iface, do_apply)
+
+        if not self.bpf_progs is None:
+            self.bpf_progs.apply(do_apply)
+
+    def _apply_iface(self, do_apply, netns, ifname, by_vrrp, vrrp_type, vrrp_name, vrrp_state):
+        link = netns.links[ifname]
+
+        # check for vrrp mode:
+        #   disable: vrrp type & name matches, but vrrp state not
+        #   ignore : vrrp type & name does not match
+        if ifname in netns.vrrp['links']:
+            # this is a vrrp link but not running in a vrrp action
+            if not by_vrrp:
+                return
+            else:
+                # skip if another vrrp type & name is addressed
+                if not link.match_vrrp_select(vrrp_type, vrrp_name):
+                    return
+                # vrrp type & name does match, but the state does not => disable this interface
+                elif not vrrp_name in netns.vrrp[vrrp_type] or not vrrp_state in netns.vrrp[vrrp_type][vrrp_name] or not ifname in netns.vrrp[vrrp_type][vrrp_name][vrrp_state]:
+                    logger.debug('to be disabled due to vrrp constraint',
+                                extra={'iface': ifname})
+                    link.settings['state'] = 'down'
+        # ignore if this link is not vrrp aware at all
+        elif by_vrrp:
+            return
+
+        excpts = link.apply(do_apply, netns.sysctl)
+        if excpts.has_errno(errno.EEXIST):
+            retry = True
+
+        if ifname in netns.tc:
+            netns.tc[ifname].apply(do_apply)
+
+        if ifname in netns.xdp:
+            netns.xdp[ifname].apply(do_apply, self.bpf_progs)
+
+        if ifname in netns.addresses and netns.addresses[ifname]:
+            netns.addresses[ifname].apply(self.ipaddr_ignore, self.ignore.get(
+                'ipaddr_dynamic', True), do_apply)
+
+        if ifname in netns.neighbours:
+            netns.neighbours[ifname].apply(do_apply)
+
+        if ifname in netns.wireguard:
+            netns.wireguard[ifname].apply(do_apply)
 
     def _apply_netns(self, do_apply, stage, netns, vrrp_type, vrrp_name, vrrp_state):
         if not netns.netns is None:
             logger.info("entering netns", extra={'netns': netns})
+
+        stage_ifnames = [x.ifname for x in stage  if x.netns == netns.netns]
 
         vrrp_ignore = []
         vrrp_disable = []
@@ -441,18 +543,6 @@ class IfState():
         if not any(not x is None for x in netns.links.values()):
             logger.error("DANGER: Not a single link config has been found!")
             raise LinkNoConfigFound()
-
-        had_global_sysctl = False
-        for iface in ['all', 'default']:
-            if netns.sysctl.has_settings(iface):
-                if not had_global_sysctl:
-                    logger.info("", extra={'netns': netns})
-                    logger.info("configuring global interface sysctl".format(iface), extra={'netns': netns})
-                    had_global_sysctl = True
-                netns.sysctl.apply(iface, do_apply)
-
-        if not self.bpf_progs is None:
-            self.bpf_progs.apply(do_apply)
 
         logger.info("", extra={'netns': netns})
         logger.info("configuring interface links...", extra={'netns': netns})
@@ -531,8 +621,6 @@ class IfState():
                                         raise
                                     logger.warning('updating link {} failed: {}'.format(
                                         name, err.args[1]), extra={'netns': netns})
-        # if not retry:
-        #     break
 
         if any(not x is None for x in netns.tc.values()):
             logger.info("", extra={'netns': netns})
@@ -563,6 +651,7 @@ class IfState():
                     xdp.apply(do_apply, self.bpf_progs)
 
         if any(not x is None for x in netns.addresses.values()):
+            # ToDo: only touch interfaces in the current stage, cleanup unlisted interfaces should happen later
             logger.info('', extra={'netns': netns})
             logger.info("configuring interface ip addresses...", extra={'netns': netns})
             # add empty objects for unhandled interfaces
@@ -594,7 +683,7 @@ class IfState():
                 name = link.get_attr('IFLA_IFNAME')
                 # skip links on ignore list
                 if not name in netns.neighbours and not any(re.match(regex, name) for regex in self.ignore.get('ifname', [])):
-                    netns.neighbours[name] = Neighbours(name, [])
+                    netns.neighbours[name] = Neighbours(netns, name, [])
 
             for name, neighbours in netns.neighbours.items():
                 if name in vrrp_ignore:

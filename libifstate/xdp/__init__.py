@@ -144,15 +144,11 @@ class XDP():
                             self.iface, err.args[1]))
 
             if new_prog_fd == -1:
-                logger.info('detach', extra={
-                            'iface': self.iface, 'style': IfStateLogging.STYLE_DEL})
+                logger.log_del('xdp', 'detach')
             else:
-                logger.info('change', extra={
-                            'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
+                logger.log_change('xdp')
         else:
-            logger.info(
-                'ok',
-                extra={'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
+            logger.log_ok('xdp')
 
 try:
     libbpf.bpf_obj_get_info_by_fd

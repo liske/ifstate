@@ -32,8 +32,7 @@ class Addresses():
 
         for addr in self.addresses:
             if addr in ipr_addr:
-                logger.info(' %s', addr.with_prefixlen, extra={
-                            'iface': self.iface, 'netns': self.netns, 'style': IfStateLogging.STYLE_OK})
+                logger.log_ok('addresses', '= {}'.format(addr.with_prefixlen))
                 del ipr_addr[addr]
             else:
                 addr_add.append(addr)
@@ -41,8 +40,7 @@ class Addresses():
         for ip, addr in ipr_addr.items():
             if not any(ip in net for net in ignore):
                 if not ign_dynamic or ipr_addr[ip]['flags'] & IFA_F_PERMANENT == IFA_F_PERMANENT:
-                    logger.info(
-                        '-%s', ip.with_prefixlen, extra={'iface': self.iface, 'netns': self.netns, 'style': IfStateLogging.STYLE_DEL})
+                    logger.log_del('addresses', '- {}'.format(ip.with_prefixlen))
                     try:
                         if do_apply:
                             self.netns.ipr.addr("del", index=idx, address=str(
@@ -54,8 +52,7 @@ class Addresses():
                             str(ip.ip), ip.network.prefixlen, err.args[1]))
 
         for addr in addr_add:
-            logger.info('+%s', addr.with_prefixlen,
-                        extra={'iface': self.iface, 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
+            logger.log_change('addresses', '+ {}'.format(addr.with_prefixlen))
             if do_apply:
                 try:
                     self.netns.ipr.addr("add", index=idx, address=str(

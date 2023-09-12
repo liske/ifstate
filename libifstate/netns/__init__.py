@@ -61,7 +61,7 @@ class NetNameSpace():
         return (peer_ipr, peer_nsid)
 
 def prepare_netns(do_apply, target_netns_list):
-    logger.info("configuring network namespaces...")
+    logger.info("configure network namespaces...")
 
     # get mapping of netns names to lists of pids
     ns_pids = pyroute2.netns.ns_pids()

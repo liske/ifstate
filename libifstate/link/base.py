@@ -271,8 +271,7 @@ class Link(ABC):
         if len(settings) == 0:
             return
 
-        logger.info(
-            'change (ethtool)', extra={'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
+        logger.log_change('ethtool')
 
         if not do_apply:
             return
@@ -362,8 +361,7 @@ class Link(ABC):
 
         # move interface into netns if required
         if item is not None and item.netns.netns != self.netns.netns:
-            logger.info(
-                'netns', extra={'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
+            logger.log_change('netns')
 
             if do_apply:
                 try:
@@ -416,8 +414,7 @@ class Link(ABC):
         return excpts
 
     def create(self, do_apply, sysctl, excpts, oper="add"):
-        logger.info(
-            oper, extra={'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
+        logger.log_add('link')
 
         logger.debug("ip link add: {}".format(
             " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
@@ -540,11 +537,8 @@ class Link(ABC):
             has_ifname_change = self.get_if_attr(
                 'ifname') != self.settings['ifname']
             if has_ifname_change:
-                logger.info('change (was {})'.format(self.get_if_attr('ifname')), extra={
-                            'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
-            else:
-                logger.info('change', extra={
-                            'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
+                logger.log_change('ifname')
+            logger.log_change('link')
 
             logger.debug("ip link set: {}".format(
                 " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
@@ -625,12 +619,9 @@ class Link(ABC):
                         if not isinstance(err, netlinkerror_classes):
                             raise
                         excpts.add('set', err, state=self.settings['state'])
-                logger.info('change', extra={
-                            'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
-
+                logger.log_change('link')
             else:
-                logger.info(
-                    'ok', extra={'iface': self.settings['ifname'], 'netns': self.netns, 'style': IfStateLogging.STYLE_OK})
+                logger.log_ok('link')
 
     def depends(self):
         deps = []

@@ -40,12 +40,12 @@ class TC():
         self.tc = tc
 
     def get_qdisc(self, netns_qdiscs, parent):
-        for qdisc in ipr_qdiscs:
+        for qdisc in netns_qdiscs:
             if qdisc['parent'] == parent:
                 return qdisc
 
     def get_qchild(self, netns_qdiscs, parent, slot):
-        for qdisc in ipr_qdiscs:
+        for qdisc in netns_qdiscs:
             if qdisc['parent'] == parent | slot:
                 return qdisc
 
@@ -284,12 +284,8 @@ class TC():
                 changes.append("filter")
 
         if len(changes) > 0:
-            logger.info(
-                'change ({})'.format(", ".join(changes)),
-                extra={'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
+            logger.log_change('tc', 'change ({})'.format(", ".join(changes)))
         else:
-            logger.info(
-                'ok',
-                extra={'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
+            logger.log_ok('tc')
 
         return excpts

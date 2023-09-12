@@ -30,15 +30,13 @@ class Neighbours():
 
         for ip, lladdr in self.neighbours.items():
             if ip in ipr_neigh and lladdr == ipr_neigh[ip]:
-                logger.info(' %s', ip, extra={
-                            'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
+                logger.log_ok('neighbours', '= {}'.format(ip))
                 del ipr_neigh[ip]
             else:
                 neigh_add[ip] = lladdr
 
         for ip, lladdr in ipr_neigh.items():
-            logger.info(
-                '-%s', str(ip), extra={'iface': self.iface, 'style': IfStateLogging.STYLE_DEL})
+            logger.log_del('neighbours', '- {}'.format(str(ip)))
             try:
                 if do_apply:
                     self.netns.ipr.neigh("del", ifindex=idx, dst=str(
@@ -50,8 +48,7 @@ class Neighbours():
                     str(ip), err.args[1]))
 
         for ip, lladdr in neigh_add.items():
-            logger.info('+%s', str(ip),
-                        extra={'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
+            logger.log_add('neighbours', '+ {}'.format(str(ip)))
             if do_apply:
                 try:
                     opts = {

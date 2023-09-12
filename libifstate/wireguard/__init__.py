@@ -1,5 +1,5 @@
 from libifstate.util import logger, IfStateLogging
-from libifstate.exception import netlinkerror_classes
+from libifstate.exception import netlinkerror_classes, FeatureMissingError
 from wgnlpy import WireGuard as WG
 from ipaddress import ip_network
 import collections
@@ -8,7 +8,8 @@ wg = WG()
 
 
 class WireGuard():
-    def __init__(self, iface, wireguard):
+    def __init__(self, netns, iface, wireguard):
+        self.netns = netns
         self.iface = iface
         self.wireguard = wireguard
 
@@ -21,6 +22,10 @@ class WireGuard():
                         [ip_network(x) for x in self.wireguard['peers'][i]['allowedips']])
 
     def apply(self, do_apply):
+        if self.netns.netns is not None:
+            logger.warning("WireGuard feature does not support namespaces, yet!")
+            return
+
         # get kernel's wireguard settings for the interface
         try:
             state = wg.get_interface(
@@ -38,8 +43,7 @@ class WireGuard():
             has_changes |= self.wireguard[setting] != getattr(state, setting)
 
         if has_changes:
-            logger.info('change [iface]', extra={
-                        'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
+            logger.log_change('wireguard')
             if do_apply:
                 try:
                     wg.set_interface(
@@ -50,8 +54,7 @@ class WireGuard():
                     logger.warning('updating iface {} failed: {}'.format(
                         self.iface, err.args[1]))
         else:
-            logger.info('ok [iface]', extra={
-                        'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
+            logger.log_ok('wireguard')
 
         # check peers list if provided
         if 'peers' in self.wireguard:
@@ -110,8 +113,6 @@ class WireGuard():
                             logger.warning('remove peer from {} failed: {}'.format(
                                 self.iface, err.args[1]))
             if has_pchanges:
-                logger.info('change [peers]', extra={
-                            'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
+                logger.log_change('wg.peers')
             else:
-                logger.info('ok [peers]', extra={
-                            'iface': self.iface, 'style': IfStateLogging.STYLE_OK})
+                logger.log_ok('wg.peers')
