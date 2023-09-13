@@ -285,11 +285,12 @@ class IfState():
     def free_registry_item(self, do_apply, item):
         ifname = item.attributes['ifname']
 
+        log_str = ifname
+        if item.netns.netns is not None:
+            log_str += "[netns={}]".format(item.netns.netns)
+
         if item.attributes['kind'] != 'physical':
             # remove virtual interface
-            log_str = ifname
-            if item.netns.netns is not None:
-                log_str += "[netns={}]".format(item.netns.netns)
             logger.log_del(log_str)
             if do_apply:
                 try:
@@ -309,8 +310,7 @@ class IfState():
             #     logger.warning('orphan', extra={
             #         'iface': ifname, 'netns': item.netns, 'style': IfStateLogging.STYLE_OK})
             # else:
-            logger.warning('orphan', extra={
-                'iface': ifname, 'netns': item.netns, 'style': IfStateLogging.STYLE_CHG})
+            logger.log_del(log_str, 'orphan')
             if do_apply:
                 try:
                     item.netns.ipr.link('set', index=item.attributes['index'], state='down')
