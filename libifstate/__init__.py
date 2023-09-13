@@ -387,58 +387,62 @@ class IfState():
         return stages
 
     def _apply(self, do_apply, vrrp_type=None, vrrp_name=None, vrrp_state=None):
-        # create and destroy namespaces to match config
-        if len(self.namespaces) > 0:
-            prepare_netns(do_apply, self.namespaces.keys())
-            logger.info("")
-
         # check if called from vrrp hook and ignore non-vrrp interfaces
         by_vrrp = not None in [
             vrrp_type, vrrp_name, vrrp_state]
         if by_vrrp:
-            logger.info("vrrp state change: {} {} => {}".format(vrrp_type, vrrp_name, vrrp_state))
+            logger.info("triggered by vrrp state change")
+            logger.log_change("{} {}".format(vrrp_type, vrrp_name), vrrp_state)
+            logger.info("")
 
             # ifstate schema requires lower case keywords
             vrrp_type = vrrp_type.lower()
             vrrp_state = vrrp_state.lower()
 
+        # create and destroy namespaces to match config
+        if not by_vrrp and len(self.namespaces) > 0:
+            prepare_netns(do_apply, self.namespaces.keys())
+            logger.info("")
+
         # get link dependency tree
         stages = self._stages()
 
         # remove any orphan (non-ignored) links
-        cleanup_items = []
-        for item in self.link_registry.registry:
-            ifname = item.attributes['ifname']
-            if item.link is None and not any(re.match(regex, ifname) for regex in self.ignore.get('ifname', [])):
-                if not cleanup_items:
-                    logger.info("cleanup orphan interfaces...")
-                if self.free_registry_item(do_apply, item):
-                    cleanup_items.append(item)
-                else:
-                    item.attributes['orphan'] = True
+        if not by_vrrp:
+            cleanup_items = []
+            for item in self.link_registry.registry:
+                ifname = item.attributes['ifname']
+                if item.link is None and not any(re.match(regex, ifname) for regex in self.ignore.get('ifname', [])):
+                    if not cleanup_items:
+                        logger.info("cleanup orphan interfaces...")
+                    if self.free_registry_item(do_apply, item):
+                        cleanup_items.append(item)
+                    else:
+                        item.attributes['orphan'] = True
 
-        if cleanup_items:
-            for item in cleanup_items:
-                self.link_registry.registry.remove(item)
-            logger.info("")
+            if cleanup_items:
+                for item in cleanup_items:
+                    self.link_registry.registry.remove(item)
+                logger.info("")
 
         # dump link registry in verbose mode
         if logger.getEffectiveLevel() <= logging.DEBUG:
             self.link_registry.debug_dump()
 
-        # apply bpf settings
-        had_bpf = self._apply_bpf(do_apply, self.root_netns)
-        for name, netns in self.namespaces.items():
-            had_bpf = self._apply_bpf(do_apply, netns, had_bpf)
-        if had_bpf:
-            logger.info("")
+        if not by_vrrp:
+            # apply bpf settings
+            had_bpf = self._apply_bpf(do_apply, self.root_netns)
+            for name, netns in self.namespaces.items():
+                had_bpf = self._apply_bpf(do_apply, netns, had_bpf)
+            if had_bpf:
+                logger.info("")
 
-        # apply sysctl settings
-        had_sysctl = self._apply_sysctl(do_apply, self.root_netns)
-        for name, netns in self.namespaces.items():
-            had_sysctl = self._apply_sysctl(do_apply, netns, had_sysctl)
-        if had_sysctl:
-            logger.info("")
+            # apply sysctl settings
+            had_sysctl = self._apply_sysctl(do_apply, self.root_netns)
+            for name, netns in self.namespaces.items():
+                had_sysctl = self._apply_sysctl(do_apply, netns, had_sysctl)
+            if had_sysctl:
+                logger.info("")
 
         # create/modify links in order of dependencies
         logger.info("configure interfaces...")
@@ -489,6 +493,7 @@ class IfState():
             else:
                 # skip if another vrrp type & name is addressed
                 if not link.match_vrrp_select(vrrp_type, vrrp_name):
+                    logger.log_ok("other vrrp")
                     return
                 # vrrp type & name does match, but the state does not => disable this interface
                 elif not vrrp_name in netns.vrrp[vrrp_type] or not vrrp_state in netns.vrrp[vrrp_type][vrrp_name] or not ifname in netns.vrrp[vrrp_type][vrrp_name][vrrp_state]:
@@ -498,6 +503,7 @@ class IfState():
                         link.settings['state'] = 'down'
         # ignore if this link is not vrrp aware at all
         elif by_vrrp:
+            logger.log_ok("no vrrp")
             return
 
         if ifname in netns.links:
