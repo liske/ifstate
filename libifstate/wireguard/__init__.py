@@ -3,15 +3,22 @@ from libifstate.exception import netlinkerror_classes, FeatureMissingError
 from wgnlpy import WireGuard as WG
 from ipaddress import ip_network
 import collections
-
-wg = WG()
-
+import pyroute2.netns
 
 class WireGuard():
     def __init__(self, netns, iface, wireguard):
         self.netns = netns
         self.iface = iface
         self.wireguard = wireguard
+
+        if self.netns.netns is not None:
+            pyroute2.netns.pushns(self.netns.netns)
+
+        try:
+            self.wg = WG()
+        finally:
+            if self.netns.netns is not None:
+                pyroute2.netns.popns()
 
         # convert allowedips peers settings into IPv[46]Network objects
         # and remove duplicates
@@ -22,13 +29,9 @@ class WireGuard():
                         [ip_network(x) for x in self.wireguard['peers'][i]['allowedips']])
 
     def apply(self, do_apply):
-        if self.netns.netns is not None:
-            logger.warning("WireGuard feature does not support namespaces, yet!")
-            return
-
         # get kernel's wireguard settings for the interface
         try:
-            state = wg.get_interface(
+            state = self.wg.get_interface(
                 self.iface, spill_private_key=True, spill_preshared_keys=True)
         except Exception as err:
             logger.warning('WireGuard on {} failed: {}'.format(
@@ -46,7 +49,7 @@ class WireGuard():
             logger.log_change('wireguard')
             if do_apply:
                 try:
-                    wg.set_interface(
+                    self.wg.set_interface(
                         self.iface, **{k: v for k, v in self.wireguard.items() if k != "peers"})
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
@@ -70,7 +73,7 @@ class WireGuard():
                     has_pchanges = True
                     if do_apply:
                         try:
-                            wg.set_peer(self.iface, **peer)
+                            self.wg.set_peer(self.iface, **peer)
                         except Exception as err:
                             if not isinstance(err, netlinkerror_classes):
                                 raise
@@ -94,7 +97,7 @@ class WireGuard():
                         has_pchanges = True
                         if do_apply:
                             try:
-                                wg.set_peer(self.iface, **peer)
+                                self.wg.set_peer(self.iface, **peer)
                             except Exception as err:
                                 if not isinstance(err, netlinkerror_classes):
                                     raise
@@ -106,7 +109,7 @@ class WireGuard():
                     has_pchanges = True
                     if do_apply:
                         try:
-                            wg.remove_peers(self.iface, peer)
+                            self.wg.remove_peers(self.iface, peer)
                         except Exception as err:
                             if not isinstance(err, netlinkerror_classes):
                                 raise
