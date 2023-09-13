@@ -332,7 +332,7 @@ class IfState():
 
         return deps
 
-    def _stages(self):
+    def _stages(self, continue_on_circualar):
         def dep(arg):
             '''
                 Dependency resolver
@@ -352,7 +352,15 @@ class IfState():
                     logger.error("Circualar link dependency detected: ")
                     for k, v in d.items():
                         logger.error('  {} => {}'.format(k, ", ".join(map(str, v))))
-                    raise LinkCircularLinked()
+                    logger.error("")
+
+                    if continue_on_circualar:
+                        # remaining link deps cannot be resolved, drop them
+                        # if we shall continue
+                        return r
+                    else:
+                        raise LinkCircularLinked()
+
                 # can be done right away
                 r.append(t)
                 # and cleaned up
@@ -398,7 +406,7 @@ class IfState():
             logger.info("")
 
         # get link dependency tree
-        stages = self._stages()
+        stages = self._stages(do_apply)
 
         # remove any orphan (non-ignored) links
         if not by_vrrp:
