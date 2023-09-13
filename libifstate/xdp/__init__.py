@@ -74,7 +74,7 @@ class XDP():
             if bpf_progs is not None:
                 (new_prog_fd, new_prog_tag) = bpf_progs.get_bpf(self.xdp["bpf"])
 
-            if new_prog_fd == -1:
+            if new_prog_fd == -1 or new_prog_fd is None:
                 logger.warning("BPF program '{}' not loaded for {}".format(
                     self.xdp["bpf"], self.iface))
             else:
@@ -84,7 +84,7 @@ class XDP():
             assert False, "unhandled XDP settings"
 
         # get new prog tag
-        if new_prog_fd != -1 and new_prog_tag == None:
+        if new_prog_fd != -1 and new_prog_fd != None and new_prog_tag == None:
             info = struct_bpf_prog_info()
             sz = ctypes.c_uint(ctypes.sizeof(info))
             rc = libbpf.bpf_obj_get_info_by_fd(new_prog_fd, ctypes.byref(info), ctypes.byref(sz))
