@@ -442,7 +442,7 @@ class IfState():
 
         # configure routing
         logger.info("")
-        logger.info("configure routing")
+        logger.info("configure routing...")
         self._apply_routing(do_apply, self.root_netns)
         for name, netns in self.namespaces.items():
             self._apply_routing(do_apply, netns)

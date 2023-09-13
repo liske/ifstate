@@ -66,8 +66,7 @@ class BRPort():
                            extra={'iface': self.iface})
             return
 
-        logger.info(
-            'change (brport)', extra={'iface': self.iface, 'style': IfStateLogging.STYLE_CHG})
+        logger.log_change('brport')
 
         logger.debug("bridge link set: {}".format(
             " ".join("{}={}".format(k, v) for k, v in self.brport.items())))
