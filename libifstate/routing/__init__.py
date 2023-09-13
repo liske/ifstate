@@ -272,9 +272,9 @@ class Tables(collections.abc.Mapping):
 
     def apply(self, ignores, do_apply):
         for table, croutes in self.tables.items():
-            pfx = RTLookups.tables.lookup_str(table)
-            logger.info('', extra={'netns': self.netns})
-            logger.info('configuring routing table {}...'.format(pfx), extra={'netns': self.netns})
+            log_str = RTLookups.tables.lookup_str(table)
+            if self.netns.netns != None:
+                log_str += "[netns={}]".format(self.netns.netns)
 
             kroutes = self.kernel_routes(table)
 
@@ -293,15 +293,12 @@ class Tables(collections.abc.Mapping):
                             break
 
                 if identical:
-                    logger.info(
-                        'ok', extra={'iface': route['dst'], 'netns': self.netns, 'style': IfStateLogging.STYLE_OK})
+                    logger.log_ok(log_str, "= {}".format(route['dst']))
                 else:
                     if found:
-                        logger.info('change', extra={
-                                    'iface': route['dst'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
+                        logger.log_change(log_str, "~ {}".format(route['dst']))
                     else:
-                        logger.info(
-                            'add', extra={'iface': route['dst'], 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
+                        logger.log_add(log_str, "+ {}".format(route['dst']))
 
                     logger.debug("ip route replace: {}".format(
                         " ".join("{}={}".format(k, v) for k, v in route.items())))
@@ -323,8 +320,7 @@ class Tables(collections.abc.Mapping):
                 if ignore:
                     continue
 
-                logger.info(
-                    'del', extra={'iface': route['dst'], 'netns': self.netns, 'style': IfStateLogging.STYLE_DEL})
+                logger.log_del(log_str, "- {}".format(route['dst']))
                 try:
                     if do_apply:
                         self.netns.ipr.route('del', **route)
@@ -459,10 +455,12 @@ class Rules():
         return rules
 
     def apply(self, ignores, do_apply):
-        logger.info('', extra={'netns': self.netns})
-        logger.info('configuring routing rules...', extra={'netns': self.netns})
         krules = self.kernel_rules()
         for rule in self.rules:
+            log_str = '#{}'.format(rule['priority'])
+            if self.netns.netns != None:
+                log_str += "[netns={}]".format(self.netns.netns)
+
             found = False
             for i, krule in enumerate(krules):
                 if rule_matches(rule, krule, rule.keys()):
@@ -471,11 +469,9 @@ class Rules():
                     break
 
             if found:
-                logger.info(
-                    'ok', extra={'iface': '#{}'.format(rule['priority']), 'netns': self.netns, 'style': IfStateLogging.STYLE_OK})
+                logger.log_ok(log_str)
             else:
-                logger.info(
-                    'add', extra={'iface': '#{}'.format(rule['priority']), 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
+                logger.log_add(log_str)
 
                 logger.debug("ip rule add: {}".format(
                     " ".join("{}={}".format(k, v) for k, v in rule.items())))
@@ -499,8 +495,7 @@ class Rules():
             if ignore:
                 continue
 
-            logger.info(
-                'del', extra={'iface': '#{}'.format(rule['priority']), 'netns': self.netns, 'style': IfStateLogging.STYLE_DEL})
+            logger.log_del(log_str)
             try:
                 if do_apply:
                     self.netns.ipr.rule('del', **rule)

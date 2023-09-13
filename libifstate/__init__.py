@@ -436,10 +436,12 @@ class IfState():
                 else:
                     self._apply_iface(do_apply, self.namespaces[link_dep.netns], link_dep.ifname, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
 
-            # self._apply_netns(do_apply, stage, self.root_netns, vrrp_type, vrrp_name, vrrp_state)
-            # for name, netns in self.namespaces.items():
-            #     logger.info('')
-            #     self._apply_netns(do_apply, stage, netns, vrrp_type, vrrp_name, vrrp_state)
+        # configure routing
+        logger.info("")
+        logger.info("configure routing")
+        self._apply_routing(do_apply, self.root_netns)
+        for name, netns in self.namespaces.items():
+            self._apply_routing(do_apply, netns)
 
     def _apply_netns_base(self, do_apply, netns):
         had_global_sysctl = False
@@ -496,6 +498,13 @@ class IfState():
 
         if ifname in netns.wireguard:
             netns.wireguard[ifname].apply(do_apply)
+
+    def _apply_routing(self, do_apply, netns):
+        if not netns.tables is None:
+            netns.tables.apply(self.ignore.get('routes', []), do_apply)
+
+        if not netns.rules is None:
+            netns.rules.apply(self.ignore.get('rules', []), do_apply)
 
     def _apply_netns(self, do_apply, stage, netns, vrrp_type, vrrp_name, vrrp_state):
         if not netns.netns is None:
