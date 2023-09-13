@@ -52,7 +52,6 @@ class IfState():
 
         self.namespaces = {}
         self.root_netns = NetNameSpace(None)
-        self.bpf_progs = None
         self.defaults = []
         self.ignore = {}
         self.features = {
@@ -98,16 +97,6 @@ class IfState():
             else:
                 raise ParserValidationError(detail)
 
-        # load BPF programs
-        if 'bpf' in ifstates:
-            if not self.features['bpf']:
-                raise FeatureMissingError("bpf")
-
-            if self.bpf_progs is None:
-                self.bpf_progs = BPF()
-            for name, config in ifstates['bpf'].items():
-                self.bpf_progs.add(name, config)
-
         # add interface defaults
         if 'defaults' in ifstates:
             self.defaults = ifstates['defaults']
@@ -142,6 +131,16 @@ class IfState():
                     if iface in ifstates['options']['sysctl']:
                         netns.sysctl.add(
                             iface, ifstates['options']['sysctl'][iface])
+
+        # load BPF programs
+        if 'bpf' in ifstates:
+            if not self.features['bpf']:
+                raise FeatureMissingError("bpf")
+
+            if netns.bpf_progs is None:
+                netns.bpf_progs = BPF(netns)
+            for name, config in ifstates['bpf'].items():
+                netns.bpf_progs.add(name, config)
 
         # add interfaces from config
         for ifstate in ifstates['interfaces']:
@@ -427,17 +426,18 @@ class IfState():
         if logger.getEffectiveLevel() <= logging.DEBUG:
             self.link_registry.debug_dump()
 
-        # apply basic netns settings (sysctl + bpf)
-        if not self.bpf_progs is None:
-            logger.info("loading BPF programs...")
-            self.bpf_progs.apply(do_apply)
+        # apply bpf settings
+        had_bpf = self._apply_bpf(do_apply, self.root_netns)
+        for name, netns in self.namespaces.items():
+            had_bpf = self._apply_bpf(do_apply, netns, had_bpf)
+        if had_bpf:
             logger.info("")
 
-        # apply basic netns settings (sysctl + bpf)
-        had_global_sysctl = self._apply_netns_sysctl(do_apply, self.root_netns)
+        # apply sysctl settings
+        had_sysctl = self._apply_sysctl(do_apply, self.root_netns)
         for name, netns in self.namespaces.items():
-            had_global_sysctl = self._apply_netns_sysctl(do_apply, netns, had_global_sysctl)
-        if had_global_sysctl:
+            had_sysctl = self._apply_sysctl(do_apply, netns, had_sysctl)
+        if had_sysctl:
             logger.info("")
 
         # create/modify links in order of dependencies
@@ -457,13 +457,23 @@ class IfState():
         for name, netns in self.namespaces.items():
             self._apply_routing(do_apply, netns)
 
-    def _apply_netns_sysctl(self, do_apply, netns, had_global_sysctl=False):
+    def _apply_bpf(self, do_apply, netns, had_bpf=False):
+        if not netns.bpf_progs is None:
+            if not had_bpf:
+                logger.info("load BPF programs...")
+                had_bpf = True
+            netns.bpf_progs.apply(do_apply)
+
+        return had_bpf
+
+    def _apply_sysctl(self, do_apply, netns, had_sysctl=False):
         for iface in ['all', 'default']:
             if netns.sysctl.has_settings(iface):
-                if not had_global_sysctl:
+                if not had_sysctl:
                     logger.info("configure sysctl settings...")
-                    had_global_sysctl = True
+                    had_sysctl = True
                 netns.sysctl.apply(iface, do_apply)
+        return had_sysctl
 
     def _apply_iface(self, do_apply, netns, ifname, by_vrrp, vrrp_type, vrrp_name, vrrp_state):
         if ifname in netns.links:
@@ -499,7 +509,7 @@ class IfState():
             netns.tc[ifname].apply(do_apply)
 
         if ifname in netns.xdp:
-            netns.xdp[ifname].apply(do_apply, self.bpf_progs)
+            netns.xdp[ifname].apply(do_apply, netns.bpf_progs)
 
         if ifname in netns.addresses and netns.addresses[ifname]:
             netns.addresses[ifname].apply(self.ipaddr_ignore, self.ignore.get(

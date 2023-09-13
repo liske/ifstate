@@ -3833,6 +3833,9 @@
                         "interfaces"
                     ],
                     "properties": {
+                        "bpf": {
+                            "$ref": "#/properties/bpf"
+                        },
                         "options": {
                             "$ref": "#/properties/options"
                         },
