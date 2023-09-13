@@ -402,12 +402,14 @@ class IfState():
 
         # remove any orphan (non-ignored) links
         if not by_vrrp:
+            had_cleanup = False
             cleanup_items = []
             for item in self.link_registry.registry:
                 ifname = item.attributes['ifname']
                 if item.link is None and not any(re.match(regex, ifname) for regex in self.ignore.get('ifname', [])):
-                    if not cleanup_items:
+                    if not had_cleanup:
                         logger.info("cleanup orphan interfaces...")
+                        had_cleanup = True
                     if self.free_registry_item(do_apply, item):
                         cleanup_items.append(item)
                     else:
@@ -416,6 +418,8 @@ class IfState():
             if cleanup_items:
                 for item in cleanup_items:
                     self.link_registry.registry.remove(item)
+
+            if had_cleanup:
                 logger.info("")
 
         # dump link registry in verbose mode
