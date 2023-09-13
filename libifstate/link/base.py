@@ -146,6 +146,13 @@ class Link(ABC):
             'netns': netns.netns,
         })
 
+        if self.settings['kind'] == 'physical':
+            self.link_registry_search_args.append({
+                'kind': 'physical',
+                'ifname': name,
+                'orphan': True,
+            })
+
         self.search_link_registry()
 
         for attr, mappings in self.attr_value_maps.items():

@@ -415,6 +415,8 @@ class IfState():
                     logger.info("cleanup orphan interfaces...")
                 if self.free_registry_item(do_apply, item):
                     cleanup_items.append(item)
+                else:
+                    item.attributes['orphan'] = True
 
         if cleanup_items:
             for item in cleanup_items:
