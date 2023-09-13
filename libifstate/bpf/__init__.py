@@ -2,6 +2,7 @@ from libifstate.util import logger, IfStateLogging
 from libifstate.bpf.map import BPF_Map
 from libifstate.bpf.ctypes import *
 import os
+import pyroute2.netns
 import shutil
 
 
