@@ -2,6 +2,8 @@ from libifstate.util import logger, IfStateLogging
 from libifstate.exception import netlinkerror_classes
 from libifstate.bpf import libbpf, struct_bpf_prog_info, bpfs_ifstate_dir
 
+from pyroute2 import IPRoute
+
 from pyroute2.netlink.rtnl.ifinfmsg import XDP_FLAGS_SKB_MODE
 from pyroute2.netlink.rtnl.ifinfmsg import XDP_FLAGS_DRV_MODE
 from pyroute2.netlink.rtnl.ifinfmsg import XDP_FLAGS_HW_MODE
@@ -127,9 +129,10 @@ class XDP():
             # set new XDP prog if tag or attach mode has changed
             if current_prog_tag != new_prog_tag or not current_attached in new_attached:
                 if do_apply:
+                    ipr = IPRoute()
                     attach_ok = False
                     try:
-                        self.netns.ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
+                        ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
                         attach_ok = True
                     except Exception as err:
                         if not isinstance(err, netlinkerror_classes):
@@ -137,9 +140,9 @@ class XDP():
 
                         # try again: detaching XDP first
                         try:
-                            self.netns.ipr.link('set', index=self.idx, xdp_fd=-1)
+                            ipr.link('set', index=self.idx, xdp_fd=-1)
 
-                            self.netns.ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
+                            ipr.link('set', index=self.idx, xdp_fd=new_prog_fd, xdp_flags=new_flags)
                             attach_ok = True
                         except Exception as err:
                             if not isinstance(err, netlinkerror_classes):
