@@ -301,6 +301,7 @@ class IfState():
                         raise
                     logger.warning('removing link {} failed: {}'.format(
                         ifname, err.args[1]), extra={'netns': item.netns})
+            return True
         else:
             # shutdown physical interfaces
             # if ifname in vrrp_ignore:
@@ -319,6 +320,7 @@ class IfState():
                         raise
                     logger.warning('updating link {} failed: {}'.format(
                         ifname, err.args[1]), extra={'netns': item.netns})
+            return False
 
     def _dependencies(self, netns):
         deps = {}
@@ -411,8 +413,8 @@ class IfState():
             if item.link is None and not any(re.match(regex, ifname) for regex in self.ignore.get('ifname', [])):
                 if not cleanup_items:
                     logger.info("cleanup orphan interfaces...")
-                self.free_registry_item(do_apply, item)
-                cleanup_items.append(item)
+                if self.free_registry_item(do_apply, item):
+                    cleanup_items.append(item)
 
         if cleanup_items:
             for item in cleanup_items:
