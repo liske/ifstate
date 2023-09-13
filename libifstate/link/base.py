@@ -105,7 +105,7 @@ class Link(ABC):
         self.ethtool = None
         self.vrrp = vrrp
         if brport:
-            self.brport = BRPort(name, brport)
+            self.brport = BRPort(netns, name, brport)
         else:
             self.brport = None
         self.attr_map = {
