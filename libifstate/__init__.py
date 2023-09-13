@@ -50,7 +50,7 @@ class IfState():
     def __init__(self):
         logger.debug('IfState {}'.format(__version__))
 
-        self.namespaces = {}
+        self.namespaces = None
         self.root_netns = NetNameSpace(None)
         self.defaults = []
         self.ignore = {}
@@ -118,6 +118,7 @@ class IfState():
 
         self._update(self.root_netns, ifstates)
         if 'namespaces' in ifstates:
+            self.namespaces = {}
             for netns_name, netns_ifstates in ifstates['namespaces'].items():
                 self.namespaces[netns_name] = NetNameSpace(netns_name)
                 self._update(self.namespaces[netns_name], netns_ifstates)
@@ -368,8 +369,9 @@ class IfState():
             return r
 
         dependencies = self._dependencies(self.root_netns)
-        for netns in self.namespaces.values():
-            dependencies.update(self._dependencies(netns))
+        if self.namespaces is not None:
+            for netns in self.namespaces.values():
+                dependencies.update(self._dependencies(netns))
 
         if logger.getEffectiveLevel() <= logging.DEBUG:
             logger.debug('dependencies dump:')
@@ -401,7 +403,7 @@ class IfState():
             vrrp_state = vrrp_state.lower()
 
         # create and destroy namespaces to match config
-        if not by_vrrp and len(self.namespaces) > 0:
+        if not by_vrrp and self.namespaces is not None:
             prepare_netns(do_apply, self.namespaces.keys())
             logger.info("")
 
@@ -437,15 +439,17 @@ class IfState():
         if not by_vrrp:
             # apply bpf settings
             had_bpf = self._apply_bpf(do_apply, self.root_netns)
-            for name, netns in self.namespaces.items():
-                had_bpf = self._apply_bpf(do_apply, netns, had_bpf)
+            if self.namespaces is not None:
+                for name, netns in self.namespaces.items():
+                    had_bpf = self._apply_bpf(do_apply, netns, had_bpf)
             if had_bpf:
                 logger.info("")
 
             # apply sysctl settings
             had_sysctl = self._apply_sysctl(do_apply, self.root_netns)
-            for name, netns in self.namespaces.items():
-                had_sysctl = self._apply_sysctl(do_apply, netns, had_sysctl)
+            if self.namespaces is not None:
+                for name, netns in self.namespaces.items():
+                    had_sysctl = self._apply_sysctl(do_apply, netns, had_sysctl)
             if had_sysctl:
                 logger.info("")
 
@@ -463,8 +467,9 @@ class IfState():
         logger.info("")
         logger.info("configure routing...")
         self._apply_routing(do_apply, self.root_netns)
-        for name, netns in self.namespaces.items():
-            self._apply_routing(do_apply, netns)
+        if self.namespaces is not None:
+            for name, netns in self.namespaces.items():
+                self._apply_routing(do_apply, netns)
 
     def _apply_bpf(self, do_apply, netns, had_bpf=False):
         if not netns.bpf_progs is None:
