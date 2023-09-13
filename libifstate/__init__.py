@@ -466,7 +466,8 @@ class IfState():
                 netns.sysctl.apply(iface, do_apply)
 
     def _apply_iface(self, do_apply, netns, ifname, by_vrrp, vrrp_type, vrrp_name, vrrp_state):
-        link = netns.links[ifname]
+        if ifname in netns.links:
+            link = netns.links[ifname]
 
         # check for vrrp mode:
         #   disable: vrrp type & name matches, but vrrp state not
@@ -481,16 +482,18 @@ class IfState():
                     return
                 # vrrp type & name does match, but the state does not => disable this interface
                 elif not vrrp_name in netns.vrrp[vrrp_type] or not vrrp_state in netns.vrrp[vrrp_type][vrrp_name] or not ifname in netns.vrrp[vrrp_type][vrrp_name][vrrp_state]:
-                    logger.debug('to be disabled due to vrrp constraint',
-                                extra={'iface': ifname})
-                    link.settings['state'] = 'down'
+                    if ifname in netns.links:
+                        logger.debug('to be disabled due to vrrp constraint',
+                                    extra={'iface': ifname})
+                        link.settings['state'] = 'down'
         # ignore if this link is not vrrp aware at all
         elif by_vrrp:
             return
 
-        excpts = link.apply(do_apply, netns.sysctl)
-        if excpts.has_errno(errno.EEXIST):
-            retry = True
+        if ifname in netns.links:
+            excpts = link.apply(do_apply, netns.sysctl)
+            if excpts.has_errno(errno.EEXIST):
+                retry = True
 
         if ifname in netns.tc:
             netns.tc[ifname].apply(do_apply)
