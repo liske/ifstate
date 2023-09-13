@@ -16,6 +16,10 @@ class Sysctl():
         if self.netns.netns is not None:
             pyroute2.netns.pushns(self.netns.netns)
 
+        log_str = "{}/{}".format(family, key)
+        if self.netns.netns is not None:
+            log_str += "[netns={}]".format(self.netns.netns)
+
         try:
             fn = '/proc/sys/net/{}/conf/{}/{}'.format(family, iface_current, key)
             try:
@@ -27,8 +31,7 @@ class Sysctl():
                 return
             if current == str(val):
                 logger.debug('  %s/%s: %s == %s', family, key, current, val, extra={'iface': iface_config, 'netns': self.netns})
-                logger.info(
-                    'ok (%s/%s)', family, key, extra={'iface': iface_config, 'netns': self.netns, 'style': IfStateLogging.STYLE_OK})
+                logger.log_ok(log_str)
                 return False
             else:
                 logger.debug('  %s/%s: %s => %s', family, key, current, val, extra={'iface': iface_config, 'netns': self.netns})
@@ -39,8 +42,7 @@ class Sysctl():
                     except OSError as err:
                         logger.warning('updating sysctl {}/{} failed: {}'.format(
                             family, key, err.args[1]))
-                logger.info(
-                    'change (%s/%s)', family, key, extra={'iface': iface_config, 'netns': self.netns, 'style': IfStateLogging.STYLE_CHG})
+                logger.log_change(log_str)
                 return True
         finally:
             if self.netns.netns is not None:

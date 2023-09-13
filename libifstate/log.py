@@ -22,12 +22,12 @@ class IfStateLogFilter(logging.Filter):
         record.levelshort = record.levelname[:1]
 
         if hasattr(record, 'iface'):
-            record.prefix = " {:25} ".format(record.iface)
+            record.prefix = " {:35} ".format(record.iface)
         else:
             record.prefix = ''
 
         if hasattr(record, 'option'):
-            record.prefix = "   {:23} ".format(record.option)
+            record.prefix = "   {:33} ".format(record.option)
 
         if self.is_terminal and record.levelno >= logging.WARNING:
             if record.levelno >= logging.ERROR:

@@ -77,18 +77,18 @@ def prepare_netns(do_apply, target_netns_list):
                 logger.warning(
                     'pids: {}'.format(', '.join((str(x) for x in ns_pids[name]))),
                     extra={'iface': name})
-            logger.info('del', extra={'iface': name, 'style': IfStateLogging.STYLE_DEL})
+            logger.log_del(name)
 
             if do_apply:
                 pyroute2.netns.remove(name)
 
         # create missing netns
         elif name not in current_netns_list:
-            logger.info('add', extra={'iface': name, 'style': IfStateLogging.STYLE_CHG})
+            logger.log_add(name)
 
         # log already existing namespaces
         else:
-            logger.info('ok', extra={'iface': name, 'style': IfStateLogging.STYLE_OK})
+            logger.log_ok(name)
 
 def get_netns_root():
     global netns_name_root
