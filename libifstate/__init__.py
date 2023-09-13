@@ -303,13 +303,6 @@ class IfState():
             return True
         else:
             # shutdown physical interfaces
-            # if ifname in vrrp_ignore:
-            #     logger.warning('vrrp', extra={
-            #         'iface': ifname, 'netns': item.netns, 'style': IfStateLogging.STYLE_OK})
-            # if link.get('state') == 'down':
-            #     logger.warning('orphan', extra={
-            #         'iface': ifname, 'netns': item.netns, 'style': IfStateLogging.STYLE_OK})
-            # else:
             logger.log_del(log_str, 'orphan')
             if do_apply:
                 try:

@@ -1,5 +1,19 @@
 # ChangeLog
 
+## 1.9.0 - TBD
+
+Changes:
+- defaults: add default interface settings (addresses, link, neighbours)
+- netns: add networking namespace support
+- link: add link registry and track link dependencies
+
+Fixes:
+- xdp: fix ctype exception if a bpf program refered from xpd is missing
+
+This release adds netns super powers. A link registry and dependency
+resolver has been added under the hood. The interface configuration has
+been refactored to be more efficient and netns aware.
+
 ## 1.8.5 - 2023-07-01
 
 Changes:
