@@ -428,13 +428,19 @@ class IfState():
             self.link_registry.debug_dump()
 
         # apply basic netns settings (sysctl + bpf)
-        logger.info("configure global settings...")
-        self._apply_netns_base(do_apply, self.root_netns)
+        if not self.bpf_progs is None:
+            logger.info("loading BPF programs...")
+            self.bpf_progs.apply(do_apply)
+            logger.info("")
+
+        # apply basic netns settings (sysctl + bpf)
+        had_global_sysctl = self._apply_netns_sysctl(do_apply, self.root_netns)
         for name, netns in self.namespaces.items():
-            self._apply_netns_base(do_apply, netns)
+            had_global_sysctl = self._apply_netns_sysctl(do_apply, netns, had_global_sysctl)
+        if had_global_sysctl:
+            logger.info("")
 
         # create/modify links in order of dependencies
-        logger.info("")
         logger.info("configure interfaces...")
         for stage in stages:
             for link_dep in sorted(stage):
@@ -451,16 +457,13 @@ class IfState():
         for name, netns in self.namespaces.items():
             self._apply_routing(do_apply, netns)
 
-    def _apply_netns_base(self, do_apply, netns):
-        had_global_sysctl = False
+    def _apply_netns_sysctl(self, do_apply, netns, had_global_sysctl=False):
         for iface in ['all', 'default']:
             if netns.sysctl.has_settings(iface):
                 if not had_global_sysctl:
+                    logger.info("configure sysctl settings...")
                     had_global_sysctl = True
                 netns.sysctl.apply(iface, do_apply)
-
-        if not self.bpf_progs is None:
-            self.bpf_progs.apply(do_apply)
 
     def _apply_iface(self, do_apply, netns, ifname, by_vrrp, vrrp_type, vrrp_name, vrrp_state):
         link = netns.links[ifname]

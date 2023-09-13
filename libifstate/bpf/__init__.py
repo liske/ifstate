@@ -20,8 +20,6 @@ class BPF():
         self.bpf_progs[name] = config
 
     def apply(self, do_apply):
-        logger.info('\nloading BPF programs...')
-
         # prepare pinning directories
         progs_pin_dir = "{}/progs".format(bpfs_ifstate_dir)
         maps_pin_dir = "{}/maps".format(bpfs_ifstate_dir)
@@ -152,13 +150,9 @@ class BPF():
                         new_obj,
                         os.fsencode(maps_path))
 
-                    logger.info(
-                        'change',
-                        extra={'iface': name, 'style': IfStateLogging.STYLE_CHG})
+                    logger.log_change(name)
                 else:
-                    logger.info(
-                        'ok',
-                        extra={'iface': name, 'style': IfStateLogging.STYLE_OK})
+                    logger.log_ok(name)
 
                 # update maps if appropriate
                 if config.get('maps'):
