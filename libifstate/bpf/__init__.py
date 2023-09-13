@@ -47,6 +47,10 @@ class BPF():
         try:
             # load (and pin) bpf programs
             for name, config in self.bpf_progs.items():
+                log_str = name
+                if self.netns.netns is not None:
+                    log_str += "[netns={}]".format(self.netns.netns)
+
                 current_prog_tag = None
                 current_prog_fd = -1
                 self.bpf_tags[name] = None
@@ -59,7 +63,7 @@ class BPF():
 
                     if current_prog_fd < 0:
                         logger.warning('could not get current BPF obj fd for {}: {}'.format(
-                            name, os.strerror(-current_prog_fd)))
+                            log_str, os.strerror(-current_prog_fd)))
                     else:
                         self.bpf_fds[name] = current_prog_fd
 
@@ -73,10 +77,10 @@ class BPF():
                             self.bpf_tags[name] = current_prog_tag
 
                             logger.debug('current prog tag: {}'.format(current_prog_tag), extra={
-                                'iface': name})
+                                'iface': log_str})
                         else:
                             logger.warning('could not get current BPF obj info for {}: {}'.format(
-                                name, os.strerror(-rc)))
+                                log_str, os.strerror(-rc)))
 
                 # load new BPF prog
                 new_prog_tag = None
@@ -88,16 +92,16 @@ class BPF():
                 )
                 if not new_obj:
                     logger.warning('BPF open on {} failed: {}'.format(
-                        name, os.strerror(ctypes.get_errno())))
+                        log_str, os.strerror(ctypes.get_errno())))
                     continue
 
                 logger.debug('loaded object: {}'.format(libbpf.bpf_object__name(new_obj).decode('ascii')), extra={
-                    'iface': name})
+                    'iface': log_str})
 
                 rc = libbpf.bpf_object__load(new_obj)
                 if rc < 0:
                     logger.warning('BPF load on {} failed: {}'.format(
-                        name, os.strerror(-rc)))
+                        log_str, os.strerror(-rc)))
                     continue
 
                 new_prog = libbpf.bpf_object__next_program(new_obj, None)
@@ -106,7 +110,7 @@ class BPF():
                         new_prog).decode('ascii')
 
                     logger.debug('  section: {}'.format(section), extra={
-                        'iface': name})
+                        'iface': log_str})
 
                     if section == config['section']:
                         break
@@ -114,14 +118,14 @@ class BPF():
 
                 if not new_prog:
                     logger.warning('BPF section {} on {} not found'.format(
-                        config['section'], name))
+                        config['section'], log_str))
                     continue
 
                 # get prog fd
                 new_prog_fd = libbpf.bpf_program__fd(new_prog)
                 if not new_prog_fd:
                     logger.warning('BPF failed to get prog fd on {}'.format(
-                        name))
+                        log_str))
                     continue
 
                 # get new prog tag
@@ -133,7 +137,7 @@ class BPF():
                     new_prog_tag = bytes(info.tag).hex()
 
                     logger.debug('new prog tag: {}'.format(new_prog_tag), extra={
-                        'iface': name})
+                        'iface': log_str})
 
                     if current_prog_tag != new_prog_tag:
                         self.bpf_fds[name] = new_prog_fd
@@ -156,14 +160,14 @@ class BPF():
 
                         # pin  maps
                         logger.debug('pin maps at: {}'.format(maps_path), extra={
-                            'iface': name})
+                            'iface': log_str})
                         libbpf.bpf_object__pin_maps(
                             new_obj,
                             os.fsencode(maps_path))
 
-                        logger.log_change(name)
+                        logger.log_change(log_str)
                     else:
-                        logger.log_ok(name)
+                        logger.log_ok(log_str)
 
                     # update maps if appropriate
                     if config.get('maps'):
@@ -180,7 +184,7 @@ class BPF():
                             # TODO: support to manage map entries
                 else:
                     logger.warning(
-                        'BPF failed to get prog info on {}'.format(name))
+                        'BPF failed to get prog info on {}'.format(log_str))
         finally:
             if self.netns.netns is not None:
                 pyroute2.netns.popns()
