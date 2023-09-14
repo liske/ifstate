@@ -22,6 +22,7 @@ The following features are already available:
 - configure routing rules [≥ 0.7.0]
 - configure interface `sysctl` options [≥ 0.7.1]
 - configure interface driver and hardware settings via `ethtool` [≥ 0.7.2]
+- full netns namespace support [≥ 1.9.0]
 - configure WireGuard settings [≥ 0.8.0]
 - load and attach XDP program [≥ 1.6.0]
 - configure traffic control (`tc`) qdisc and filters [≥ 1.1.0]

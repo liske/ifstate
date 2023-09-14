@@ -12,7 +12,7 @@ declarative manner. It is a frontend for the kernel netlink protocol using
 - sysctl for interface settings (`/proc/sys/net/ipv[46]/conf/$IFACE/`)
 - tc
 - wireguard
-- xdp (*experimental*)
+- xdp-tools
 
 It was written for interface configuration on lightweight software defined linux
 routers **without** using any additional network management daemon like
