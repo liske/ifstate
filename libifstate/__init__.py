@@ -416,14 +416,17 @@ class IfState():
             cleanup_items = []
             for item in self.link_registry.registry:
                 ifname = item.attributes['ifname']
+                # items without a link are orphan - keep them if they match the ignore regex list...
                 if item.link is None and not any(re.match(regex, ifname) for regex in self.ignore.get('ifname', [])):
-                    if not had_cleanup:
-                        logger.info("cleanup orphan interfaces...")
-                        had_cleanup = True
-                    if self.free_registry_item(do_apply, item):
-                        cleanup_items.append(item)
-                    else:
-                        item.attributes['orphan'] = True
+                    # ...or are in a netns namespace while the config has no `namespaces` setting
+                    if self.namespaces is not None or item.netns.netns is None:
+                        if not had_cleanup:
+                            logger.info("cleanup orphan interfaces...")
+                            had_cleanup = True
+                        if self.free_registry_item(do_apply, item):
+                            cleanup_items.append(item)
+                        else:
+                            item.attributes['orphan'] = True
 
             if cleanup_items:
                 for item in cleanup_items:
