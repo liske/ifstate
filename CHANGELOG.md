@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 1.9.0 - TBD
+## 1.9.0 - 2023-09-14
 
 Changes:
 - defaults: add default interface settings (addresses, link, neighbours)
@@ -8,11 +8,12 @@ Changes:
 - link: add link registry and track link dependencies
 
 Fixes:
-- xdp: fix ctype exception if a bpf program refered from xpd is missing
+- link: false positive warnings about settings that could not be changed (liske/ifstate#24)
+- xdp: ctype exception if a bpf program refered from xpd is missing
 
-This release adds netns super powers. A link registry and dependency
-resolver has been added under the hood. The interface configuration has
-been refactored to be more efficient and netns aware.
+This version adds netns super capabilities. A dependency resolver optimizes the
+order in which interfaces are configured, circular dependencies are now
+correctly detected.
 
 ## 1.8.5 - 2023-07-01
 
