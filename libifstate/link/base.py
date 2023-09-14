@@ -561,6 +561,7 @@ class Link(ABC):
 
                 try:
                     self.netns.ipr.link('set', index=self.idx, **(self.settings))
+                    self.iface = next(iter(self.netns.ipr.get_links(self.idx)), None)
 
                     for setting in self.settings.keys():
                         if not setting.endswith('_netns') or not setting[:-6] in self.attr_idx:
