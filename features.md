@@ -26,7 +26,7 @@ The following features are already available:
 - configure WireGuard settings [≥ 0.8.0]
 - load and attach XDP program [≥ 1.6.0]
 - configure traffic control (`tc`) qdisc and filters [≥ 1.1.0]
-- simple bandwidth shaping using [cake](https://man7.org/linux/man-pages/man8/tc-cake.8.html) (`cshaper`) [≥ 1.5.7]
+- simple bandwidth shaping wrapper using [cake](https://man7.org/linux/man-pages/man8/tc-cake.8.html) (`cshaper`) [≥ 1.5.7]
 - conditional interfaces for VRRP failover setups based on keepalived [≥ 1.5.0]
 - ignore interfaces by patterns
 - ignore ip addresses by prefix lists

@@ -6,10 +6,17 @@ title: About
 declarative manner. It is a frontend for the kernel netlink protocol using
 [pyroute2](https://pyroute2.org/) and aims to be as powerful as the following commands:
 
-- iproute2
 - bridge
 - ethtool
-- sysctl for interface settings (`/proc/sys/net/ipv[46]/conf/$IFACE/`)
+- iproute2
+  - address
+  - link
+  - neighbour
+  - netns
+  - route
+  - rule
+  - vrf
+- sysctl for network config (`/proc/sys/net/ipv[46]/conf/$IFACE/`)
 - tc
 - wireguard
 - xdp-tools
@@ -37,6 +44,16 @@ It is possible to skip different settings (addresses, routes, ...) in *IfState*
 completely if a routing daemon (*FRR*, *Quagga*) does handle it.
 
 
+# Presentations
+
+The following recordings of public talks about IfState are available online:
+
+- [Declarative network configuration with ifstate](https://youtu.be/n1ZTGrwXPkY)
+  at [AlpineConf 2021](https://alpinelinux.org/conf/) (in English)
+- [Deklarative Netzwerkkonfiguration mit IfState](https://media.ccc.de/v/clt23-225-deklarative-netzwerkkonfiguration-mit-ifstate)
+  at [Chemnitzer Linux-Tage 2023](https://chemnitzer.linux-tage.de/2023/de/programm/beitrag/225) (in German)
+
+
 # Installation
 
 *IfState* is available in the following linux distributions:
@@ -53,14 +70,6 @@ This will also install all python dependencies if not already statisfied.
 
 [More…](install.md)
 
-# Presentations
-
-The following recordings of public talks about IfState are available online:
-
-- [Declarative network configuration with ifstate](https://youtu.be/n1ZTGrwXPkY)
-  at [AlpineConf 2021](https://alpinelinux.org/conf/) (in English)
-- [Deklarative Netzwerkkonfiguration mit IfState](https://media.ccc.de/v/clt23-225-deklarative-netzwerkkonfiguration-mit-ifstate)
-  at [Chemnitzer Linux-Tage 2023](https://chemnitzer.linux-tage.de/2023/de/programm/beitrag/225) (in German)
 
 # Usage
 
