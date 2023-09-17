@@ -18,7 +18,7 @@ This is a collection of configuration examples for different interface link type
 
 ## VPN
 - [WireGuard tunnel](examples/wireguard.md)
-- [XFRM Interfaces for multitenant IPsec](examples/xfrm-vrf.md)
+- [XFRM interfaces with VRF-based multitenant IPsec](examples/xfrm-vrf.md)
 
 ## Routing
 - [Policy Based Routing (PBR)](examples/pbr.md)

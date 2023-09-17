@@ -1,4 +1,4 @@
-# Example: XFRM Interfaces for multitenant IPsec
+# Example: XFRM interfaces with VRF-based multitenant IPsec
 
 This example configures a multitenant IPsec setup:
 - use strongSwan for IPsec setup
