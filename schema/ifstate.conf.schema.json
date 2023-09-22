@@ -178,11 +178,11 @@
                 "integer",
                 "string"
             ],
-            "description": "specifies a parent device name or index"
+            "description": "specifies the base link name or index"
         },
         "iface-link_link-netns": {
             "type": ["string", "null"],
-            "description": "specifies the parent's netns name"
+            "description": "specifies the base link's netns name or null if the link isn't in a netns namespace"
         },
         "iface-link_master": {
             "type": [
@@ -193,7 +193,7 @@
         },
         "iface-link_master-netns": {
             "type": ["string", "null"],
-            "description": "specifies the master's netns name"
+            "description": "specifies the master's netns name or null if the master isn't in a netns namespace"
         },
         "iface-link_mtu": {
             "type": "integer",
