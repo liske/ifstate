@@ -645,12 +645,23 @@ class IfState():
                             ifs_link['link'][attr] = ref
 
                 mtu = ipr_link.get_attr('IFLA_MTU')
-                if not mtu is None and not mtu in [1500, 65536]:
-                    ifs_link['link']['mtu'] = mtu
+                if not mtu is None:
+                    if not mtu in [1500, 65536] or name == 'lo':
+                        ifs_link['link']['mtu'] = mtu
 
                 brport.BRPort.show(netns.ipr, showall, ipr_link['index'], ifs_link)
 
-                ifs_links.append(ifs_link)
+                if name == 'lo':
+                    if ifs_link['addresses'] == Parser._default_lo_link['addresses']:
+                        del(ifs_link['addresses'])
+
+                    if ifs_link['link'] == Parser._default_lo_link['link']:
+                        del(ifs_link['link'])
+
+                    if len(ifs_link) > 1:
+                        ifs_links.append(ifs_link)
+                else:
+                    ifs_links.append(ifs_link)
 
         routing = {
             'routes': Tables(netns).show_routes(Parser._default_ifstates['ignore']['routes_builtin']),

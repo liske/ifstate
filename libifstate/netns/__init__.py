@@ -136,12 +136,11 @@ class LinkRegistry():
 
     def _inventory_netns(self, target_netns):
         for link in target_netns.ipr.get_links():
-            if link['index'] > 1:
-                self.registry.append(LinkRegistryItem(
-                    self,
-                    target_netns,
-                    link,
-                ))
+            self.registry.append(LinkRegistryItem(
+                self,
+                target_netns,
+                link,
+            ))
 
     def get_random_name(self, prefix):
         hex_length = int((15-len(prefix))/2)

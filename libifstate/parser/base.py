@@ -5,6 +5,19 @@ from copy import deepcopy
 
 
 class Parser(ABC):
+    _default_lo_link = {
+        'name': 'lo',
+        'addresses': [
+            '127.0.0.1/8',
+            '::1/128',
+        ],
+        'link': {
+            'kind': 'physical',
+            'state': 'up',
+            'mtu': 65536,
+            'address': '00:00:00:00:00:00',
+        }
+    }
     _default_ifstates = {
         'ignore': {
             'ipaddr_builtin': [
@@ -14,7 +27,6 @@ class Parser(ABC):
             'ifname_builtin': [
                 r'^br-[\da-f]{12}',
                 r'^docker\d+',
-                r'^lo$',
                 r'^ppp\d+$',
                 r'^veth',
                 r'^virbr\d+',
@@ -97,6 +109,14 @@ class Parser(ABC):
                     a[key] = b[key]
         return a
 
+    def _update_lo(self, cfg):
+        if 'interfaces' in cfg:
+            lo = next((idx for idx, iface in enumerate(cfg['interfaces']) if iface['name'] == 'lo'), None)
+            if lo is not None:
+                cfg['interfaces'][lo] = self.merge(deepcopy(Parser._default_lo_link), cfg['interfaces'][lo])
+            else:
+                cfg['interfaces'].append(Parser._default_lo_link)
+
     def config(self):
         # merge builtin defaults with config
         cfg = (self.merge(deepcopy(Parser._default_ifstates), self.ifstates))
@@ -106,6 +126,11 @@ class Parser(ABC):
             iter(cfg["ignore"])
         except TypeError:
             raise ParserValidationError("$.ignore: is not of type 'object'")
+
+        # add loopback interface defaults
+        self._update_lo(cfg)
+        for namespace in cfg.get('namespaces', {}):
+            self._update_lo(cfg['namespaces'][namespace])
 
         # merge builtin defaults
         for k in list(cfg["ignore"]):
