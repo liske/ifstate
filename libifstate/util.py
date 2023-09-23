@@ -132,7 +132,7 @@ class IPRouteExt(IPRoute):
         return None
 
     def get_ifname_by_index(self, index):
-        link = next(iter(ipr.get_links(index)), None)
+        link = next(iter(self.get_links(index)), None)
 
         if link is None:
             return index
@@ -220,7 +220,7 @@ class NetNSExt(NetNS):
         return None
 
     def get_ifname_by_index(self, index):
-        link = next(iter(ipr.get_links(index)), None)
+        link = next(iter(self.get_links(index)), None)
 
         if link is None:
             return index
