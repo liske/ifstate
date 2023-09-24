@@ -139,7 +139,6 @@ class IPRouteExt(IPRoute):
 
         return link.get_attr('IFLA_IFNAME')
 
-
 class NetNSExt(NetNS):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

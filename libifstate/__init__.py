@@ -39,6 +39,7 @@ from copy import deepcopy
 import os
 import pkgutil
 import re
+import secrets
 import json
 import errno
 import logging
@@ -670,7 +671,6 @@ class IfState():
 
         return {**{'interfaces': ifs_links, 'routing': routing}}
 
-
     def get_defaults(self, **kwargs):
         for default in self.defaults:
             for match in default['match']:
@@ -686,3 +686,13 @@ class IfState():
                     return default
 
         return {}
+
+    def gen_unique_ifname(self):
+        '''
+        Get a random unique ifname over all namespaces and configured ifnames.
+        '''
+        while True:
+            ifname = "ifs.tmp.{}".format(secrets.token_hex(3))
+            item = self.link_registry.get_link(ifname=ifname)
+            if item is None:
+                return ifname

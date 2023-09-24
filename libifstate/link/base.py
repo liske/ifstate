@@ -80,6 +80,21 @@ class Link(ABC):
     attr_value_lookup = {
         'group': RTLookups.group,
     }
+    attr_bind_kinds = [
+        'ip6tnl',
+        'tun',
+        'vti',
+        'vti6',
+        'vxlan',
+        'ipip',
+        'gre',
+        'gretap',
+        'ip6gre',
+        'ip6gretap',
+        'geneve',
+        'wireguard',
+        'xfrm',
+    ]
 
     def __new__(cls, *args, **kwargs):
         cname = cls.__name__
@@ -169,6 +184,20 @@ class Link(ABC):
                     logger.warning('ignoring unknown group "%s"', self.settings[attr],
                                    extra={'iface': self.settings['ifname'], 'netns': self.netns})
                     del(self.settings[attr])
+
+        if self.settings['kind'] in self.attr_bind_kinds:
+            if not 'bind_netns' in self.settings:
+                logger.debug('set bind_netns to current netns',
+                             extra={'iface': self.settings['ifname'], 'netns': self.netns})
+                self.bind_netns = self.netns.netns
+            else:
+                self.bind_netns = self.settings['bind_netns']
+        elif 'bind_netns' in self.settings:
+            logger.warning('Ignoring not supported link attribute "bind_netns" for %s link.',
+                           self.settings['kind'],
+                           extra={'iface': self.settings['ifname'], 'netns': self.netns})
+        if 'bind_netns' in self.settings:
+            del(self.settings['bind_netns'])
 
     def search_link_registry(self):
         for args in self.link_registry_search_args:
@@ -317,8 +346,60 @@ class Link(ABC):
             try:
                 with open(fn, 'w') as fh:
                     yaml.dump(self.ethtool[setting], fh)
-            except Exception as err:
+            except IOError as err:
                 logger.warning('failed write `{}`: {}'.format(fn, err.args[1]))
+
+    def get_bind_fn(self, netns_name, idx):
+        if netns_name is None:
+            dirname = "/run/ifstate/bind"
+        else:
+            dirname = "/run/ifstate/netns/{}/bind".format(netns_name)
+
+        try:
+            os.makedirs(dirname, exist_ok=True)
+        except:
+            pass
+
+        return "{}/{}.mount".format(dirname, idx)
+
+    def set_bind_state(self, state):
+        fn = self.get_bind_fn(self.netns.netns, self.idx)
+        try:
+            with open(fn, 'wb') as fh:
+                fh.write(state)
+        except IOError as err:
+            logger.warning('failed write `{}`: {}'.format(fn, err.args[1]))
+
+    def get_bind_netns(self):
+        if not hasattr(self, 'bind_netns'):
+            return None
+
+        if self.bind_netns is None:
+            return self.ifstate.root_netns
+
+        return self.ifstate.namespaces.get(self.bind_netns)
+
+    def bind_needs_recreate(self, item):
+        if not item.attributes['kind'] in self.attr_bind_kinds:
+            return False
+
+        bind_netns = self.get_bind_netns()
+        if bind_netns is None:
+            logger.warning('bind_netns "%s" is unknown',
+                        self.bind_netns,
+                        extra={
+                            'iface': self.settings['ifname'],
+                            'netns': self.netns})
+            return False
+
+        fn = self.get_bind_fn(item.netns.netns, item.index)
+        try:
+            with open(fn, 'rb') as fh:
+                state = fh.read()
+        except IOError:
+            return True
+
+        return state != bind_netns.mount
 
     def has_vrrp(self):
         return not self.vrrp is None
@@ -366,6 +447,14 @@ class Link(ABC):
         # get interface from registry
         item = self.search_link_registry()
 
+        # check if bind_netns option requires a recreate
+        if item is not None and self.bind_needs_recreate(item):
+            self.idx = item.index
+            self.recreate(do_apply, sysctl, excpts)
+
+            self.settings = osettings
+            return excpts
+
         # move interface into netns if required
         if item is not None and item.netns.netns != self.netns.netns:
             logger.log_change('netns')
@@ -382,7 +471,7 @@ class Link(ABC):
                     return excpts
 
         if item is not None:
-            self.idx = item.attributes['index']
+            self.idx = item.index
 
         if self.idx is not None:
             self.iface = next(iter(item.netns.ipr.get_links(self.idx)), None)
@@ -421,24 +510,50 @@ class Link(ABC):
         return excpts
 
     def create(self, do_apply, sysctl, excpts, oper="add"):
-        logger.log_add('link')
+        logger.log_add('link', oper)
+
+        settings = copy.deepcopy(self.settings)
+        bind_netns = self.get_bind_netns()
+        if bind_netns is not None and bind_netns.netns != self.netns.netns:
+            logger.debug("handle link binding", extra={
+                'iface': self.settings['ifname'],
+                'netns': self.netns})
+            settings['ifname'] = self.ifstate.gen_unique_ifname()
 
         logger.debug("ip link add: {}".format(
-            " ".join("{}={}".format(k, v) for k, v in self.settings.items())))
+            " ".join("{}={}".format(k, v) for k, v in settings.items())))
         if do_apply:
             try:
                 # set state later
-                state = self.settings.pop('state', None)
+                state = settings.pop('state', None)
 
                 # prevent altname conflict
                 self.prevent_altname_conflict()
 
                 # add link
-                self.netns.ipr.link('add', **(self.settings))
+                if bind_netns is None or bind_netns.netns == self.netns.netns:
+                    self.netns.ipr.link('add', **(settings))
+                    link = next(iter(self.netns.ipr.get_links(
+                                ifname=settings['ifname'])), None)
+                    if link is not None:
+                        item = self.ifstate.link_registry.add_link(self.netns, link)
+                # add and move link
+                else:
+                    bind_netns.ipr.link('add', **(settings))
+                    link = next(iter(bind_netns.ipr.get_links(
+                                ifname=settings['ifname'])), None)
+                    if link is not None:
+                        item = self.ifstate.link_registry.add_link(bind_netns, link)
+                        item.update_netns(self.netns)
+                        item.update_ifname(self.settings['ifname'])
+
                 self.idx = next(iter(self.netns.ipr.link_lookup(
                     ifname=self.settings['ifname'])), None)
 
                 if self.idx is not None:
+                    if bind_netns is not None:
+                        self.set_bind_state(bind_netns.mount)
+
                     # set sysctl settings if required
                     sysctl.apply(self.settings['ifname'], do_apply)
 
@@ -466,7 +581,7 @@ class Link(ABC):
                 self.settings['ifname'], self.ethtool.keys(), do_apply)
 
     def recreate(self, do_apply, sysctl, excpts):
-        logger.debug('has wrong link kind %s, removing', self.settings['kind'], extra={
+        logger.debug('needs to be recreated', extra={
                      'iface': self.settings['ifname'], 'netns': self.netns})
         if do_apply:
             try:

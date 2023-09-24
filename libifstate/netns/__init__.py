@@ -6,10 +6,16 @@ import logging
 import pyroute2
 import re
 import secrets
+import shutil
+import subprocess
 
 netns_name_map = {}
 netns_name_root = None
 netns_nsid_map = {}
+findmnt_cmd = shutil.which('findmnt')
+
+if findmnt_cmd is None:
+    logger.debug("findmnt binary is not available, netns binding of links might not be correct")
 
 @atexit.register
 def close_netns():
@@ -40,9 +46,14 @@ class NetNameSpace():
 
         if name is None:
             self.ipr = root_ipr
+            self.mount = b''
         else:
             self.ipr = NetNSExt(name)
             netns_name_map[name] = self.ipr
+            if findmnt_cmd is None:
+                self.mount = name
+            else:
+                self.mount = subprocess.check_output([findmnt_cmd, '-f', '-J', "/run/netns/{}".format(name)])
 
     def get_netnsid(self, peer_netns_name):
         if peer_netns_name is None:
@@ -128,6 +139,15 @@ class LinkRegistry():
         if logger.getEffectiveLevel() <= logging.DEBUG:
             self.debug_dump()
 
+    def add_link(self, netns, link):
+        item = LinkRegistryItem(
+            self,
+            netns,
+            link,
+        )
+        self.registry.append(item)
+        return item
+
     def get_link(self, **attributes):
         for link in self.registry:
             if link.match(**attributes):
@@ -208,7 +228,8 @@ class LinkRegistryItem():
 
         idx = next(iter(netns.ipr.link_lookup(ifname=self.attributes['ifname'])), None)
         if idx is not None:
-            self.update_name( self.link_registry.get_random_name('__netns__') )
+            # ToDo
+            self.update_ifname( self.link_registry.get_random_name('__netns__') )
 
         self.__ipr_link('set', index=self.attributes['index'], net_ns_fd=netns_name)
         self.netns = netns

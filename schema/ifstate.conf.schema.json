@@ -166,6 +166,10 @@
             "description": "link mac address (xx:xx:xx:xx:xx:xx)",
             "pattern": "^([a-f0-9]{2}:){5}[a-f0-9]{2}$"
         },
+        "iface-link_bind-netns": {
+            "type": ["string", "null"],
+            "description": "specifies the netns name or null where the tunnel or underlay should be bind, if not set the binding will happen in the netns namespace of the link"
+        },
         "iface-link_group": {
             "type": [
                 "integer",
@@ -1369,6 +1373,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
                                     },
@@ -1587,6 +1594,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
                                     },
@@ -1735,6 +1745,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
                                     },
@@ -1770,6 +1783,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
                                     },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
@@ -2290,6 +2306,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
                                     },
@@ -2339,6 +2358,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
                                     },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
@@ -2434,6 +2456,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
                                     },
@@ -2486,6 +2511,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
                                     },
@@ -2533,6 +2561,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
                                     },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
@@ -2584,6 +2615,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
                                     },
@@ -2632,6 +2666,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
                                     },
@@ -2669,6 +2706,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
                                     },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
