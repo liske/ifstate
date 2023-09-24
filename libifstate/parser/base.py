@@ -15,7 +15,6 @@ class Parser(ABC):
             'kind': 'physical',
             'state': 'up',
             'mtu': 65536,
-            'address': '00:00:00:00:00:00',
         }
     }
     _default_ifstates = {
