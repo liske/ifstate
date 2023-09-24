@@ -51,7 +51,7 @@ class NetNameSpace():
             self.ipr = NetNSExt(name)
             netns_name_map[name] = self.ipr
             if findmnt_cmd is None:
-                self.mount = name
+                self.mount = name.encode("utf-8")
             else:
                 self.mount = subprocess.check_output([findmnt_cmd, '-f', '-J', "/run/netns/{}".format(name)])
 
