@@ -7,10 +7,14 @@ import os
 class Sysctl():
     def __init__(self, netns):
         self.sysctls = {}
+        self.globals = {}
         self.netns = netns
 
     def add(self, iface, sysctl):
         self.sysctls[iface] = sysctl
+
+    def add_global(self, proto, sysctl):
+        self.globals[proto] = sysctl
 
     def set_sysctl(self, iface_current, iface_config, family, key, val, do_apply):
         if self.netns.netns is not None:
@@ -66,3 +70,14 @@ class Sysctl():
 
     def has_settings(self, iface):
         return iface in self.sysctls
+
+    def apply_globals(self, do_apply):
+        changes = []
+        for proto, sysctl in self.globals.items():
+            for key, val in sysctl.items():
+                if self.set_sysctl('..', '..', proto, key, val, do_apply):
+                    changes.append(proto)
+        return changes
+
+    def has_globals(self):
+        return len(self.globals) > 0

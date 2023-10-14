@@ -129,10 +129,13 @@ class IfState():
         if 'options' in ifstates:
             # parse global sysctl settings
             if 'sysctl' in ifstates['options']:
-                for iface in ['all', 'default']:
-                    if iface in ifstates['options']['sysctl']:
+                for proto in  ifstates['options']['sysctl'].keys():
+                    if proto in ['all', 'default']:
                         netns.sysctl.add(
-                            iface, ifstates['options']['sysctl'][iface])
+                            proto, ifstates['options']['sysctl'][proto])
+                    else:
+                        netns.sysctl.add_global(
+                            proto, ifstates['options']['sysctl'][proto])
 
         # load BPF programs
         if 'bpf' in ifstates:
@@ -491,6 +494,13 @@ class IfState():
                     logger.info("configure sysctl settings...")
                     had_sysctl = True
                 netns.sysctl.apply(iface, do_apply)
+
+        if netns.sysctl.has_globals():
+            if not had_sysctl:
+                logger.info("configure sysctl settings...")
+                had_sysctl = True
+            netns.sysctl.apply_globals(do_apply)
+
         return had_sysctl
 
     def _apply_iface(self, do_apply, netns, ifname, by_vrrp, vrrp_type, vrrp_name, vrrp_state):
