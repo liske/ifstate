@@ -239,13 +239,22 @@ class LinkDependency:
 
     def __lt__(self, obj):
         if self.netns is None:
-            return True
-
-        if obj.netns is None:
+            if obj.netns is not None:
+                return True
+        elif obj.netns is None:
             return False
 
         if self.netns != obj.netns:
             return self.netns < obj.netns
+
+        if self.ifname == obj.ifname:
+            return False
+
+        if self.ifname == 'lo':
+            return True
+
+        if obj.ifname == 'lo':
+            return False
 
         return self.ifname < obj.ifname
 

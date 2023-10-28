@@ -6,6 +6,7 @@ from libifstate.routing import Tables, Rules, RTLookups
 from libifstate.parser import Parser
 from libifstate.tc import TC
 from libifstate.exception import netlinkerror_classes
+import bisect
 
 from pyroute2.netlink.rtnl.ifaddrmsg import IFA_F_PERMANENT
 try:
@@ -367,7 +368,7 @@ class IfState():
                         raise LinkCircularLinked()
 
                 # can be done right away
-                r.append(t)
+                r.append( sorted(t) )
                 # and cleaned up
                 d=dict(((k, v-t) for k, v in d.items() if v))
             return r
@@ -463,7 +464,7 @@ class IfState():
         # create/modify links in order of dependencies
         logger.info("configure interfaces...")
         for stage in stages:
-            for link_dep in sorted(stage):
+            for link_dep in stage:
                 logger.info(" {}".format(link_dep))
                 if link_dep.netns is None:
                     self._apply_iface(do_apply, self.root_netns, link_dep.ifname, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
