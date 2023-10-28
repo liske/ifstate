@@ -8,6 +8,18 @@
         "interfaces"
     ],
     "$defs": {
+        "ignore-fdb": {
+            "description": "fdb entries matching this list of regex will be ignored",
+            "type": "array",
+            "items": {
+                "description": "regex to match link-local addresses",
+                "examples": [
+                    "^33:33:",
+                    "^01:00:5e:"
+                ],
+                "type": "string"
+            }
+        },
         "ignore-ipaddr": {
             "description": "list of ip address prefixes to be ignored",
             "type": "array",
@@ -1036,6 +1048,11 @@
                         "type": "boolean",
                         "default": false
                     },
+                    "clear_fdb": {
+                        "description": "implicit remove all permanent fdb entries",
+                        "type": "boolean",
+                        "default": false
+                    },
                     "clear_neighbours": {
                         "description": "implicit remove all permanent ip neighbours",
                         "type": "boolean",
@@ -1142,6 +1159,12 @@
                 },
                 "ifname": {
                     "$ref": "#/$defs/ignore-ifname"
+                },
+                "fdb_builtin": {
+                    "$ref": "#/$defs/ignore-fdb"
+                },
+                "fdb": {
+                    "$ref": "#/$defs/ignore-fdb"
                 },
                 "routes_builtin": {
                     "$ref": "#/$defs/ignore-routes"
@@ -1340,6 +1363,70 @@
                             "isolated": {
                                 "description": "isolated port, can communicate only with non-isolated ports",
                                 "type": "boolean"
+                            }
+                        }
+                    },
+                    "fdb": {
+                        "description": "forwarding database for bridge interfaces, the entries are distinct by the `lladdr` property",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["lladdr"],
+                            "properties": {
+                                "lladdr": {
+                                    "description": "destination link layer address",
+                                    "$ref": "#/$defs/iface-link_address",
+                                    "default": null
+                                },
+                                "dst": {
+                                    "description": "ip address of the destination VXLAN tunnel endpoint",
+                                    "type": "string",
+                                    "oneOf": [
+                                        {
+                                            "format": "ipv4"
+                                        },
+                                        {
+                                            "format": "ipv6"
+                                        }
+                                    ]
+                                },
+                                "nhid": {
+                                    "description": "ecmp nexthop group for the VXLAN device driver",
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                "port": {
+                                    "description": "destination port number to use to connect to the remote VXLAN tunnel endpoint",
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 65535
+                                },
+                                "via": {
+                                    "description": "device name of the outgoing interface for the VXLAN device driver",
+                                    "type": "string"
+                                },
+                                "vni": {
+                                    "description": "virtual network identifier this entry belongs to",
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 16777215
+                                },
+                                "flags": {
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "type": "string",
+                                            "enum": [
+                                                "self",
+                                                "master",
+                                                "router",
+                                                "use",
+                                                "sticky"
+                                            ]
+                                        }
+                                    ]
+                                }
                             }
                         }
                     },

@@ -1,6 +1,7 @@
 from libifstate.exception import LinkDuplicate
 from libifstate.link.base import ethtool_path, Link
 from libifstate.address import Addresses
+from libifstate.fdb import FDB
 from libifstate.neighbour import Neighbours
 from libifstate.routing import Tables, Rules, RTLookups
 from libifstate.parser import Parser
@@ -172,6 +173,11 @@ class IfState():
                 netns.addresses[name] = Addresses(netns, name, ifstate['addresses'])
             elif defaults.get('clear_addresses', False):
                 netns.addresses[name] = Addresses(netns, name, [])
+
+            if 'fdb' in ifstate:
+                netns.fdb[name] = FDB(netns, name, ifstate['fdb'])
+            elif defaults.get('clear_fdb', False):
+                netns.fdb[name] = FDB(netns, name, [])
 
             if 'neighbours' in ifstate:
                 netns.neighbours[name] = Neighbours(netns, name, ifstate['neighbours'])
@@ -545,6 +551,9 @@ class IfState():
         if ifname in netns.addresses and netns.addresses[ifname]:
             netns.addresses[ifname].apply(self.ipaddr_ignore, self.ignore.get(
                 'ipaddr_dynamic', True), do_apply)
+
+        if ifname in netns.fdb:
+            netns.fdb[ifname].apply(do_apply)
 
         if ifname in netns.neighbours:
             netns.neighbours[ifname].apply(do_apply)

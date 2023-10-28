@@ -31,6 +31,10 @@ class Parser(ABC):
                 r'^virbr\d+',
                 r'^vrrp\d*\.\d+$'
             ],
+            'fdb_builtin': [
+                r'^33:33:',
+                r'^01:00:5e:'
+            ],
             'routes_builtin': [
                 {'proto': 1},
                 {'proto': 2},

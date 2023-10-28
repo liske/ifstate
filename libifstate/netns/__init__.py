@@ -31,6 +31,7 @@ class NetNameSpace():
         self.links = {}
         self.addresses = {}
         self.bpf_progs = None
+        self.fdb = {}
         self.neighbours = {}
         self.vrrp = {
             'links': [],
