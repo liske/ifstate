@@ -77,8 +77,9 @@ class FDB():
                 _entry['port'] = attr
 
             for opt in ['nhid', 'src_vni', 'vni']:
-                if opt in entry:
-                    _entry[opt] = entry[opt]
+                attr = entry.get_attr(f"NDA_{opt.upper()}")
+                if attr is not None:
+                    _entry[opt] = attr
 
             if not lladdr in fdb:
                 fdb[lladdr] = [_entry]
