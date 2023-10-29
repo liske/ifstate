@@ -1,5 +1,22 @@
 # ChangeLog
 
+## 1.10.0 - 
+
+Changes:
+- fdb: allow to configure bridge fdb permanent and noarp (static) entries
+- link: allow binding of virtual tunnel interfaces into another netns (liske/ifstate#28)
+- link: configure `lo` interface by default in all namespaces (liske/ifstate#24)
+- link: sort links in stage by netns and name but handle `lo` always first
+- sysctl: add mpls settings support
+
+Fixes:
+- cli: fix NameError exception for show action
+- vxlan: the vxlan_link attribute is not required
+
+This version adds support to manage bridge fdb entries. This allows, among
+other things, to build distributed bridges using vxlan tunneling with
+unicast underlays and static flooding.
+
 ## 1.9.0 - 2023-09-14
 
 Changes:
