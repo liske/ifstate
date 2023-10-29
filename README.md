@@ -2,7 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/ifstate.svg)](https://badge.fury.io/py/ifstate)
 
-A python library to configure (linux) host interfaces in a declarative manner.
+A python tool to configure (linux) host interfaces in a declarative manner.
 It is a frontend for the kernel netlink protocol using
 [pyroute2](https://pyroute2.org/) and aims to be as powerful as the
 iproute2/bridge/ethtool/tc/wireguard commands.
