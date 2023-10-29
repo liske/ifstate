@@ -2444,8 +2444,7 @@
                                 "description": "VXLAN interface",
                                 "required": [
                                     "kind",
-                                    "vxlan_id",
-                                    "vxlan_link"
+                                    "vxlan_id"
                                 ],
                                 "additionalProperties": false,
                                 "properties": {
