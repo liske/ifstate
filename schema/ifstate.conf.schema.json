@@ -1402,10 +1402,6 @@
                                     "minimum": 0,
                                     "maximum": 65535
                                 },
-                                "via": {
-                                    "description": "device name of the outgoing interface for the VXLAN device driver",
-                                    "type": "string"
-                                },
                                 "vni": {
                                     "description": "virtual network identifier this entry belongs to",
                                     "type": "integer",
@@ -1423,6 +1419,18 @@
                                                 "router",
                                                 "use",
                                                 "sticky"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "state": {
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "type": "string",
+                                            "enum": [
+                                                "permanent",
+                                                "noarp"
                                             ]
                                         }
                                     ]

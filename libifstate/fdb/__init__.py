@@ -3,6 +3,7 @@ from libifstate.exception import netlinkerror_classes
 from ipaddress import ip_address
 from pyroute2.netlink.rtnl.ndmsg import NUD_NOARP, NUD_PERMANENT, NTF_SELF
 from pyroute2.config import AF_BRIDGE
+import pyroute2.netlink.rtnl.ndmsg
 
 class FDB():
     def __init__(self, netns, iface, fdb):
@@ -10,6 +11,7 @@ class FDB():
         self.iface = iface
         self.fdb = {}
         self.state_mask = NUD_NOARP|NUD_PERMANENT
+
         for entry in fdb:
             lladdr = entry['lladdr'].lower()
             _entry = {
@@ -29,8 +31,6 @@ class FDB():
                 for name, value in pyroute2.netlink.rtnl.ndmsg.states.items():
                     if name in entry['state']:
                         _entry['state'] |= value
-            else:
-                _entry['state'] = NUD_NOARP|NUD_PERMANENT
 
             if 'flags' in entry:
                 _entry['flags'] = 0
@@ -40,24 +40,19 @@ class FDB():
             else:
                 _entry['flags'] = NTF_SELF
 
+            for opt in ['nhid', 'src_vni', 'vni']:
+                if opt in entry:
+                    _entry[opt] = entry[opt]
+
             if not lladdr in self.fdb:
                 self.fdb[lladdr] = [_entry]
             else:
                 self.fdb[lladdr].append(_entry)
 
-    def apply(self, do_apply):
-        logger.debug('getting fdb', extra={'iface': self.iface})
-
-        # get ifindex
-        idx = next(iter(self.netns.ipr.link_lookup(ifname=self.iface)), None)
-
-        if idx == None:
-            logger.warning('link missing', extra={'iface': self.iface})
-            return
-
+    def get_kernel_fdb(self):
         # get fdb entries (NUD_NOARP|NUD_PERMANENT)
-        ipr_entries = {}
-        for entry in self.netns.ipr.get_neighbours(ifindex=idx, family=AF_BRIDGE):
+        fdb = {}
+        for entry in self.netns.ipr.get_neighbours(ifindex=self.idx, family=AF_BRIDGE):
             state = entry.get('state')
 
             # look for permanent (local) or noarp (static) entries, only
@@ -81,14 +76,45 @@ class FDB():
             else:
                 _entry['port'] = attr
 
-            if not lladdr in ipr_entries:
-                ipr_entries[lladdr] = [_entry]
-            else:
-                ipr_entries[lladdr].append(_entry)
+            for opt in ['nhid', 'src_vni', 'vni']:
+                if opt in entry:
+                    _entry[opt] = entry[opt]
 
-        # configure fdb entries unconditionally
+            if not lladdr in fdb:
+                fdb[lladdr] = [_entry]
+            else:
+                fdb[lladdr].append(_entry)
+
+        return fdb
+
+    def apply(self, do_apply):
+        logger.debug('getting fdb', extra={'iface': self.iface})
+
+        # get ifindex and lladdr
+        link = next(iter(self.netns.ipr.get_links(ifname=self.iface)), None)
+
+        if link == None:
+            logger.warning('link missing', extra={'iface': self.iface})
+            return
+
+        self.idx = link['index']
+        self.lladdr = link.get_attr('IFLA_ADDRESS')
+
+        # prepare default state for entries w/o state specified (depends on link type)
+        default_state = NUD_PERMANENT
+
+        linkinfo = link.get_attr('IFLA_LINKINFO')
+        if linkinfo and linkinfo.get_attr('IFLA_INFO_KIND') in ['vxlan']:
+            default_state |= NUD_NOARP
+
+        # configure fdb entries
+        ipr_entries = self.get_kernel_fdb()
         for lladdr, entries in self.fdb.items():
             for entry in entries:
+                # set default_state if missing
+                if not 'state' in entry:
+                    entry['state'] = default_state
+
                 # check if fdb entry is already present
                 if lladdr in ipr_entries:
                     if entry in ipr_entries[lladdr]:
@@ -100,7 +126,7 @@ class FDB():
 
                 # prepare arguments
                 args = {
-                    'ifindex': idx,
+                    'ifindex': self.idx,
                     'family': AF_BRIDGE
                 }
                 args.update(entry)
@@ -116,32 +142,32 @@ class FDB():
                         logger.warning('add {} to fdb failed: {}'.format(
                             entry['lladdr'], err.args[1]))
 
-        # for ip, lladdr in ipr_neigh.items():
-        #     logger.log_del('neighbours', '- {}'.format(str(ip)))
-        #     try:
-        #         if do_apply:
-        #             self.netns.ipr.neigh("del", ifindex=idx, dst=str(
-        #                 ip))
-        #     except Exception as err:
-        #         if not isinstance(err, netlinkerror_classes):
-        #             raise
-        #         logger.warning('removing neighbour {} failed: {}'.format(
-        #             str(ip), err.args[1]))
+        # cleanup orphan fdb entries
+        ipr_entries = self.get_kernel_fdb()
+        for lladdr, entries in ipr_entries.items():
+            # ignore lladdr of the link
+            if lladdr == self.lladdr:
+                continue
 
-        # for ip, lladdr in neigh_add.items():
-        #     logger.log_add('neighbours', '+ {}'.format(str(ip)))
-        #     if do_apply:
-        #         try:
-        #             opts = {
-        #                 'ifindex': idx,
-        #                 'dst': str(ip),
-        #                 'lladdr': lladdr,
-        #                 'state': 128
-        #             }
+            for entry in entries:
+                # check if fdb entry is already present
+                if lladdr not in self.fdb or entry not in self.fdb[lladdr]:
+                    logger.log_del('fdb', '- {}'.format(lladdr))
 
-        #             self.netns.ipr.neigh('replace', **opts)
-        #         except Exception as err:
-        #             if not isinstance(err, netlinkerror_classes):
-        #                 raise
-        #             logger.warning('adding neighbour {} failed: {}'.format(
-        #                 str(ip), err.args[1]))
+                    # prepare arguments
+                    args = {
+                        'ifindex': self.idx,
+                        'family': AF_BRIDGE
+                    }
+                    args.update(entry)
+                    logger.debug("bridge fdb del: {}".format(
+                        " ".join("{}={}".format(k, v) for k, v in args.items())))
+
+                    if do_apply:
+                        try:
+                            self.netns.ipr.fdb("del", **args)
+                        except Exception as err:
+                            if not isinstance(err, netlinkerror_classes):
+                                raise
+                            logger.warning('remove {} from fdb failed: {}'.format(
+                                entry['lladdr'], err.args[1]))
