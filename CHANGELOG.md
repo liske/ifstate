@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 1.10.0 - 
+## 1.10.0 - 2023-11-01
 
 Changes:
 - fdb: allow to configure bridge fdb permanent and noarp (static) entries
