@@ -2853,7 +2853,7 @@
                                 "description": "XFRM interface",
                                 "required": [
                                     "kind",
-                                    "xfrm_link"
+                                    "xfrm_if_id"
                                 ],
                                 "additionalProperties": false,
                                 "properties": {
