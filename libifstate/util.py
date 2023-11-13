@@ -2,7 +2,8 @@ from libifstate.log import logger, IfStateLogging
 from pyroute2 import IPRoute, NetNS, netns
 
 from pyroute2.netlink.rtnl.tcmsg import tcmsg
-from pyroute2.netlink.rtnl import RTM_DELTFILTER
+from pyroute2.netlink.rtnl import RTM_DELTFILTER, RTM_NEWNSID
+from pyroute2.netlink.rtnl.nsidmsg import nsidmsg
 from pyroute2.netlink import NLM_F_REQUEST
 from pyroute2.netlink import NLM_F_ACK
 from pyroute2.netlink import NLM_F_CREATE
@@ -139,6 +140,30 @@ class IPRouteExt(IPRoute):
 
         return link.get_attr('IFLA_IFNAME')
 
+    def set_netnsid(self, nsid=None, pid=None, fd=None):
+        '''
+        call pyroute2's set_netnsid if available or use
+        fallback implementation for pyroute2 <=0.79
+        '''
+        if hasattr(super(), 'set_netnsid'):
+            return super().set_netnsid(nsid, pid, fd)
+        else:
+            msg = nsidmsg()
+
+            if nsid is None or nsid < 0:
+                # kernel auto select
+                msg['attrs'].append(('NETNSA_NSID', 4294967295))
+            else:
+                msg['attrs'].append(('NETNSA_NSID', nsid))
+
+            if pid is not None:
+                msg['attrs'].append(('NETNSA_PID', pid))
+
+            if fd is not None:
+                msg['attrs'].append(('NETNSA_FD', fd))
+
+            return self.nlm_request(msg, RTM_NEWNSID, NLM_F_REQUEST | NLM_F_ACK)
+
 class NetNSExt(NetNS):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -225,6 +250,30 @@ class NetNSExt(NetNS):
             return index
 
         return link.get_attr('IFLA_IFNAME')
+
+    def set_netnsid(self, nsid=None, pid=None, fd=None):
+        '''
+        call pyroute2's set_netnsid if available or use
+        fallback implementation for pyroute2 <=0.79
+        '''
+        if hasattr(super(), 'set_netnsid'):
+            return super().set_netnsid(nsid, pid, fd)
+        else:
+            msg = nsidmsg()
+
+            if nsid is None or nsid < 0:
+                # kernel auto select
+                msg['attrs'].append(('NETNSA_NSID', 4294967295))
+            else:
+                msg['attrs'].append(('NETNSA_NSID', nsid))
+
+            if pid is not None:
+                msg['attrs'].append(('NETNSA_PID', pid))
+
+            if fd is not None:
+                msg['attrs'].append(('NETNSA_FD', fd))
+
+            return self.nlm_request(msg, RTM_NEWNSID, NLM_F_REQUEST | NLM_F_ACK)
 
 class LinkDependency:
     def __init__(self, ifname, netns):

@@ -63,12 +63,12 @@ class NetNameSpace():
         else:
             peer_ipr = netns_name_map[peer_netns_name]
             peer_pid = peer_ipr.child
-    
+
         result = self.ipr.get_netnsid(pid=peer_pid)
         if result['nsid'] == 4294967295:
             self.ipr.set_netnsid(pid=peer_pid)
             result = self.ipr.get_netnsid(pid=peer_pid)
-    
+
         peer_nsid = result['nsid']
 
         return (peer_ipr, peer_nsid)
