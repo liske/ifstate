@@ -1,5 +1,15 @@
 # ChangeLog
 
+## 1.10.1 - 2023-11-13
+
+Changes:
+- netns: port set_netnsid from pyroute2 to make netns handling work on pyroute <=0.79
+
+Fixes:
+- netns: fix showing new netns namespaces as unchanged
+- netns: fix "missing lo" errors due to missing inventory of new created netns namespaces
+- schema: xfrm interfaces requires the xfrm_if_id attribute, xfrm_link is optional
+
 ## 1.10.0 - 2023-11-01
 
 Changes:
