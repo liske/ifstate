@@ -2,7 +2,7 @@
     "$id": "https://ifstate.net/schema/ifstate.conf.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ifstate.conf",
-    "description": "IfState 1.10.0 Configuration Schema",
+    "description": "IfState 1.10.1 Configuration Schema",
     "type": "object",
     "required": [
         "interfaces"
@@ -2853,7 +2853,7 @@
                                 "description": "XFRM interface",
                                 "required": [
                                     "kind",
-                                    "xfrm_link"
+                                    "xfrm_if_id"
                                 ],
                                 "additionalProperties": false,
                                 "properties": {
