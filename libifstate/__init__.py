@@ -8,6 +8,7 @@ from libifstate.parser import Parser
 from libifstate.tc import TC
 from libifstate.exception import netlinkerror_classes
 import bisect
+import pyroute2
 
 from pyroute2.netlink.rtnl.ifaddrmsg import IFA_F_PERMANENT
 try:
@@ -122,7 +123,10 @@ class IfState():
         self._update(self.root_netns, ifstates)
         if 'namespaces' in ifstates:
             self.namespaces = {}
+            self.new_namespaces = []
             for netns_name, netns_ifstates in ifstates['namespaces'].items():
+                if netns_name not in pyroute2.netns.listnetns():
+                    self.new_namespaces.append(netns_name)
                 self.namespaces[netns_name] = NetNameSpace(netns_name)
                 self._update(self.namespaces[netns_name], netns_ifstates)
 
@@ -415,7 +419,7 @@ class IfState():
 
         # create and destroy namespaces to match config
         if not by_vrrp and self.namespaces is not None:
-            prepare_netns(do_apply, self.namespaces.keys())
+            prepare_netns(do_apply, self.namespaces.keys(), self.new_namespaces)
             logger.info("")
 
         # get link dependency tree

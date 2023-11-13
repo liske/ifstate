@@ -73,7 +73,7 @@ class NetNameSpace():
 
         return (peer_ipr, peer_nsid)
 
-def prepare_netns(do_apply, target_netns_list):
+def prepare_netns(do_apply, target_netns_list, new_netns_list):
     logger.info("configure network namespaces...")
 
     # get mapping of netns names to lists of pids
@@ -96,7 +96,7 @@ def prepare_netns(do_apply, target_netns_list):
                 pyroute2.netns.remove(name)
 
         # create missing netns
-        elif name not in current_netns_list:
+        elif name not in current_netns_list or name in new_netns_list:
             logger.log_add(name)
 
         # log already existing namespaces
