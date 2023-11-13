@@ -135,7 +135,7 @@ class LinkRegistry():
         self.ignores = ignores
 
         for namespace in namespaces:
-            self._inventory_netns(namespace)
+            self.inventory_netns(namespace)
 
         if logger.getEffectiveLevel() <= logging.DEBUG:
             self.debug_dump()
@@ -155,7 +155,7 @@ class LinkRegistry():
                 return link
         return None
 
-    def _inventory_netns(self, target_netns):
+    def inventory_netns(self, target_netns):
         for link in target_netns.ipr.get_links():
             self.registry.append(LinkRegistryItem(
                 self,

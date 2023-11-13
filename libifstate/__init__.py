@@ -125,9 +125,11 @@ class IfState():
             self.namespaces = {}
             self.new_namespaces = []
             for netns_name, netns_ifstates in ifstates['namespaces'].items():
-                if netns_name not in pyroute2.netns.listnetns():
-                    self.new_namespaces.append(netns_name)
+                is_new = netns_name not in pyroute2.netns.listnetns()
                 self.namespaces[netns_name] = NetNameSpace(netns_name)
+                if is_new:
+                    self.new_namespaces.append(netns_name)
+                    self.link_registry.inventory_netns(self.namespaces[netns_name])
                 self._update(self.namespaces[netns_name], netns_ifstates)
 
     def _update(self, netns, ifstates):
