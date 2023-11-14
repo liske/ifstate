@@ -416,7 +416,7 @@ class Link(ABC):
 
         # lookup for attributes requiring a interface index
         for attr in self.attr_idx:
-            if attr in self.settings:
+            if self.settings.get(attr) is not None:
                 netns_attr = "{}_netns".format(attr)
                 netnsid_attr = "{}_netnsid".format(attr)
                 if netns_attr in self.settings:
@@ -443,6 +443,10 @@ class Link(ABC):
                     if netnsid_attr in self.settings:
                         del(self.settings[netnsid_attr])
                     del(self.settings[attr])
+            elif attr in self.settings:
+                # unset index references have a None state,
+                # but configuration requires the invalid ifindex 0
+                self.settings[attr] = 0
 
         # get interface from registry
         item = self.search_link_registry()
@@ -600,15 +604,28 @@ class Link(ABC):
         has_link_changes = False
         has_state_changes = False
         for setting in self.settings.keys():
-            logger.debug('  %s: %s => %s', setting, self.get_if_attr(
-                setting), self.settings[setting], extra={'iface': self.settings['ifname'], 'netns': self.netns})
+            differs = False
+
             if setting == "state":
-                has_state_changes = self.get_if_attr(
+                differs = self.get_if_attr(
                     setting) != self.settings[setting]
+                has_state_changes = differs
+            elif setting in self.attr_idx:
+                # unset index references have a None state,
+                # but configuration requires the invalid ifindex 0
+                differs = (self.get_if_attr(setting) or 0) != self.settings[setting]
+                has_link_changes |= differs
             else:
                 if setting != 'kind' or self.cap_create:
-                    has_link_changes |= self.get_if_attr(
-                        setting) != self.settings[setting]
+                    differs = self.get_if_attr(setting) != self.settings[setting]
+                    has_link_changes |= differs
+
+            logger.debug('  %s: %s %s %s',
+                setting,
+                self.get_if_attr(setting),
+                ('!=' if differs else '=='),
+                self.settings[setting],
+                extra={'iface': self.settings['ifname'], 'netns': self.netns})
 
         has_ethtool_changes = set()
         if not self.ethtool is None:
@@ -680,7 +697,13 @@ class Link(ABC):
 
                     for setting in self.settings.keys():
                         if not setting.endswith('_netns') or not setting[:-6] in self.attr_idx:
-                            if self.get_if_attr(setting) != self.settings[setting]:
+                            value = self.get_if_attr(setting)
+
+                            if setting in self.attr_idx and value is None:
+                                # None index references are configuration via the invalid ifindex 0
+                                value = 0
+
+                            if value != self.settings[setting]:
                                 if self.cap_create:
                                     logger.debug('  %s: setting could not be changed', setting, extra={'iface': self.settings['ifname']})
                                     excpts.add('set', Exception('ip link set'), **{setting: self.settings[setting]})
@@ -750,7 +773,7 @@ class Link(ABC):
         deps = []
 
         for attr in self.attr_idx:
-            if attr in self.settings:
+            if self.settings.get(attr) is not None:
                 ns = self.settings.get("{}_netns".format(attr), self.netns.netns)
                 deps.append(LinkDependency(self.settings[attr], ns))
 

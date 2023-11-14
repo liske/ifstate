@@ -209,9 +209,10 @@
         "iface-link_master": {
             "type": [
                 "integer",
-                "string"
+                "string",
+                "null"
             ],
-            "description": "specifies a master device name or index"
+            "description": "specifies a master device name or index, use *null* to remove the master"
         },
         "iface-link_master-netns": {
             "type": [
