@@ -157,13 +157,30 @@ class IfState():
 
         # add interfaces from config
         for ifstate in ifstates['interfaces']:
-            defaults = self.get_defaults(
-                ifname=ifstate['name'],
-                kind=ifstate['link']['kind'])
-
             name = ifstate['name']
+            kind = ifstate['link']['kind']
+            defaults = self.get_defaults(
+                ifname=name,
+                kind=kind)
+
             if name in netns.links:
                 raise LinkDuplicate()
+
+            # prepare ethtool settings
+            if name != 'lo':
+                ethtool = {}
+                if 'ethtool' in defaults:
+                    ethtool.update(defaults['ethtool'])
+                for k, v in ifstate.get('ethtool', {}).items():
+                    if k in ethtool:
+                        ethtool[k].update(v)
+                    else:
+                        ethtool[k] = v
+                if not ethtool:
+                    ethtool = None
+            else:
+                ethtool = None
+
             link = {}
             if 'link' in defaults:
                 link.update(defaults['link'])
@@ -171,7 +188,7 @@ class IfState():
                 link.update(ifstate['link'])
             if link:
                 netns.links[name] = Link(self,
-                    netns, name, link, ifstate.get('ethtool'), ifstate.get('vrrp'), ifstate.get('brport'))
+                    netns, name, link, ethtool, ifstate.get('vrrp'), ifstate.get('brport'))
             else:
                 netns.links[name] = None
 
