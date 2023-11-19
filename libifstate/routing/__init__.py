@@ -19,7 +19,6 @@ def route_matches(r1, r2, fields=('dst', 'priority', 'proto'), indent=None):
 def rule_matches(r1, r2, fields=('priority', 'iif', 'oif', 'dst', 'metric', 'protocol'), indent=None):
     return _matches(r1, r2, fields, indent)
 
-
 def _matches(r1, r2, fields, indent):
     for fld in fields:
         if not indent is None:
@@ -30,6 +29,30 @@ def _matches(r1, r2, fields, indent):
         elif fld in r1 or fld in r2:
             return False
     return True
+
+VRRP_MATCH_IGNORE = 0
+VRRP_MATCH_DISABLE = 1
+VRRP_MATCH_ENABLE =  2
+
+def vrrp_match(obj, by_vrrp, vrrp_type, vrrp_name, vrrp_state):
+    if by_vrrp:
+        # test if object has a vrrp condition at all
+        if not '_vrrp' in obj:
+            return VRRP_MATCH_IGNORE
+
+        # test if vrrp type and name matches
+        if vrrp_type != obj['_vrrp']['type'] or vrrp_name != obj['_vrrp']['name']:
+            return VRRP_MATCH_IGNORE
+
+        # test if state is matching
+        if vrrp_state in obj['_vrrp']['states']:
+            return VRRP_MATCH_ENABLE
+        else:
+            return VRRP_MATCH_DISABLE
+    else:
+        # ignore vrrp object when not in vrrp action
+        if '_vrrp' in obj:
+            return VRRP_MATCH_IGNORE
 
 
 class RTLookup():
@@ -94,7 +117,6 @@ class Tables(collections.abc.Mapping):
         self.tables = {
             254: [],
         }
-
     def __getitem__(self, key):
         if not key in self.tables:
             raise KeyError()
@@ -142,6 +164,9 @@ class Tables(collections.abc.Mapping):
             rt['priority'] = 1024
         else:
             rt['priority'] = 0
+
+        if 'vrrp' in route:
+            rt['_vrrp'] = route['vrrp']
 
         if not rt['table'] in self.tables:
             self.tables[rt['table']] = []
@@ -270,7 +295,7 @@ class Tables(collections.abc.Mapping):
             routes.append(rt)
         return routes
 
-    def apply(self, ignores, do_apply):
+    def apply(self, ignores, do_apply, by_vrrp, vrrp_type, vrrp_name, vrrp_state):
         for table, croutes in self.tables.items():
             log_str = RTLookups.tables.lookup_str(table)
             if self.netns.netns != None:
@@ -284,32 +309,48 @@ class Tables(collections.abc.Mapping):
                         iter(self.netns.ipr.link_lookup(ifname=route['oif'])), None)
                 found = False
                 identical = False
+                matched = vrrp_match(route, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
                 for i, kroute in enumerate(kroutes):
                     if route_matches(route, kroute):
+                        # ignore kernel routes due to vrrp_match
+                        if matched == VRRP_MATCH_IGNORE:
+                            del kroutes[i]
+                            break
+
+                        # remove kernel routes due to vrrp_match
+                        if matched == VRRP_MATCH_DISABLE:
+                            break
+
                         del kroutes[i]
                         found = True
-                        if route_matches(route, kroute, route.keys(), indent=route['dst']):
+                        if route_matches(
+                            route,
+                            kroute,
+                            [key for key in route.keys() if key[0] != '_'],
+                            indent=route['dst']
+                        ):
                             identical = True
                             break
 
-                if identical:
-                    logger.log_ok(log_str, "= {}".format(route['dst']))
-                else:
-                    if found:
-                        logger.log_change(log_str, "~ {}".format(route['dst']))
+                if matched not in [VRRP_MATCH_IGNORE, VRRP_MATCH_DISABLE]:
+                    if identical:
+                        logger.log_ok(log_str, "= {}".format(route['dst']))
                     else:
-                        logger.log_add(log_str, "+ {}".format(route['dst']))
+                        if found:
+                            logger.log_change(log_str, "~ {}".format(route['dst']))
+                        else:
+                            logger.log_add(log_str, "+ {}".format(route['dst']))
 
-                    logger.debug("ip route replace: {}".format(
-                        " ".join("{}={}".format(k, v) for k, v in route.items())))
-                    try:
-                        if do_apply:
-                            self.netns.ipr.route('replace', **route)
-                    except Exception as err:
-                        if not isinstance(err, netlinkerror_classes):
-                            raise
-                        logger.warning('route setup {} failed: {}'.format(
-                            route['dst'], err.args[1]))
+                        logger.debug("ip route replace: {}".format(
+                            " ".join("{}={}".format(k, v) for k, v in route.items())))
+                        try:
+                            if do_apply:
+                                self.netns.ipr.route('replace', **route)
+                        except Exception as err:
+                            if not isinstance(err, netlinkerror_classes):
+                                raise
+                            logger.warning('route setup {} failed: {}'.format(
+                                route['dst'], err.args[1]))
 
             for route in kroutes:
                 ignore = False
@@ -380,6 +421,9 @@ class Rules():
 
         if 'priority' in rule:
             ru['priority'] = rule['priority']
+
+        if 'vrrp' in rule:
+            ru['_vrrp'] = rule['vrrp']
 
         self.rules.append(ru)
 
@@ -454,7 +498,7 @@ class Rules():
 
         return rules
 
-    def apply(self, ignores, do_apply):
+    def apply(self, ignores, do_apply, by_vrrp, vrrp_type, vrrp_name, vrrp_state):
         krules = self.kernel_rules()
         for rule in self.rules:
             log_str = '#{}'.format(rule['priority'])
@@ -462,26 +506,37 @@ class Rules():
                 log_str += "[netns={}]".format(self.netns.netns)
 
             found = False
+            matched = vrrp_match(rule, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
             for i, krule in enumerate(krules):
-                if rule_matches(rule, krule, rule.keys()):
-                    del krules[i]
+                if rule_matches(
+                    rule,
+                    krule,
+                    # skip helper attrs like _vrrp
+                    [key for key in rule.keys() if key[0] != '_']
+                ):
                     found = True
+
+                    # remove kernel routes due to vrrp_match
+                    if matched != VRRP_MATCH_DISABLE:
+                        del krules[i]
+
                     break
 
-            if found:
-                logger.log_ok(log_str)
-            else:
-                logger.log_add(log_str)
+            if matched not in [VRRP_MATCH_IGNORE, VRRP_MATCH_DISABLE]:
+                if found:
+                    logger.log_ok(log_str)
+                else:
+                    logger.log_add(log_str)
 
-                logger.debug("ip rule add: {}".format(
-                    " ".join("{}={}".format(k, v) for k, v in rule.items())))
-                try:
-                    if do_apply:
-                        self.netns.ipr.rule('add', **rule)
-                except Exception as err:
-                    if not isinstance(err, netlinkerror_classes):
-                        raise
-                    logger.warning('rule setup failed: {}'.format(err.args[1]))
+                    logger.debug("ip rule add: {}".format(
+                        " ".join("{}={}".format(k, v) for k, v in rule.items())))
+                    try:
+                        if do_apply:
+                            self.netns.ipr.rule('add', **rule)
+                    except Exception as err:
+                        if not isinstance(err, netlinkerror_classes):
+                            raise
+                        logger.warning('rule setup failed: {}'.format(err.args[1]))
 
         for rule in krules:
             ignore = False

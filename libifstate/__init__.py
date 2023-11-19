@@ -503,7 +503,7 @@ class IfState():
         # configure routing
         logger.info("")
         logger.info("configure routing...")
-        self._apply_routing(do_apply, self.root_netns)
+        self._apply_routing(do_apply, self.root_netns, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
         if self.namespaces is not None:
             for name, netns in self.namespaces.items():
                 self._apply_routing(do_apply, netns)
@@ -584,12 +584,12 @@ class IfState():
         if ifname in netns.wireguard:
             netns.wireguard[ifname].apply(do_apply)
 
-    def _apply_routing(self, do_apply, netns):
+    def _apply_routing(self, do_apply, netns, by_vrrp, vrrp_type, vrrp_name, vrrp_state):
         if not netns.tables is None:
-            netns.tables.apply(self.ignore.get('routes', []), do_apply)
+            netns.tables.apply(self.ignore.get('routes', []), do_apply, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
 
         if not netns.rules is None:
-            netns.rules.apply(self.ignore.get('rules', []), do_apply)
+            netns.rules.apply(self.ignore.get('rules', []), do_apply, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
 
     def show(self, showall=False):
         if showall:

@@ -8,6 +8,45 @@
         "interfaces"
     ],
     "$defs": {
+        "condition-vrrp": {
+            "description": "configure depending on vrrp status",
+            "type": "object",
+            "required": [
+                "name",
+                "type",
+                "states"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "description": "related vrrp INSTANCE or GROUP name",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "failover type",
+                    "type": "string",
+                    "enum": [
+                        "instance",
+                        "group"
+                    ]
+                },
+                "states": {
+                    "description": "states at which the interface should be configured",
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "string",
+                            "enum": [
+                                "unknown",
+                                "fault",
+                                "backup",
+                                "master"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
         "ignore-fdb": {
             "description": "fdb entries matching this list of regex will be ignored",
             "type": "array",
@@ -1913,43 +1952,7 @@
                         }
                     },
                     "vrrp": {
-                        "description": "interface depending on vrrp status",
-                        "type": "object",
-                        "required": [
-                            "name",
-                            "type",
-                            "states"
-                        ],
-                        "additionalProperties": false,
-                        "properties": {
-                            "name": {
-                                "description": "related vrrp INSTANCE or GROUP name",
-                                "type": "string"
-                            },
-                            "type": {
-                                "description": "failover type",
-                                "type": "string",
-                                "enum": [
-                                    "instance",
-                                    "group"
-                                ]
-                            },
-                            "states": {
-                                "description": "states at which the interface should be configured",
-                                "type": "array",
-                                "items": [
-                                    {
-                                        "type": "string",
-                                        "enum": [
-                                            "unknown",
-                                            "fault",
-                                            "backup",
-                                            "master"
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
+                        "$ref": "#/$defs/condition-vrrp"
                     },
                     "link": {
                         "description": "link settings of the interface",
@@ -3924,6 +3927,9 @@
                                     }
                                 ]
                             },
+                            "vrrp": {
+                                "$ref": "#/$defs/condition-vrrp"
+                            },
                             "src": {
                                 "description": "the source address to prefer",
                                 "type": "string",
@@ -4032,6 +4038,9 @@
                                     "string"
                                 ],
                                 "description": "select the ip protocol to match"
+                            },
+                            "vrrp": {
+                                "$ref": "#/$defs/condition-vrrp"
                             }
                         }
                     }
