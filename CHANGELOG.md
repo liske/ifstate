@@ -6,7 +6,12 @@ Changes:
 - ethtool: allow default settings for ethtool
 - link: allow unsetting the master attribute
 - link: improve attr state debug logging
-- routing: add vrrp conditions for routing
+- routing: add vrrp conditions for routing item
+
+Fixes:
+- ethtool: fix broken speed and duplex advertise
+- ethtool: fix 'change' settings not working at all
+- link: fix logging a change for orphan physical links which are already down
 
 ## 1.10.1 - 2023-11-13
 
