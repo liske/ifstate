@@ -291,15 +291,19 @@ class Link(ABC):
 
         return ethtool
 
-    def fmt_ethtool_opt(self, value):
+    def fmt_ethtool_opt(self, setting, option, value):
         if type(value) == bool:
             return {True: ["on"], False: ["off"]}[value]
 
         if type(value) == list:
             r = []
             for v in value:
-                r += self.fmt_ethtool_opt(v)
+                r += self.fmt_ethtool_opt(setting, option, v)
             return r
+
+        # quirk for ethtool --set-change advertise: it requires hex
+        if type(value) == int and setting == 'change' and option == 'advertise':
+            return[hex(value)]
 
         return [str(value)]
 
@@ -322,7 +326,7 @@ class Link(ABC):
                 cmd.append("--set-{}".format(setting))
             cmd.append(ifname)
             for option, value in self.ethtool[setting].items():
-                cmd.extend([option] + self.fmt_ethtool_opt(value))
+                cmd.extend([option] + self.fmt_ethtool_opt(setting, option, value))
             logger.debug("{}".format(" ".join(cmd)))
 
             if self.netns.netns is not None:
