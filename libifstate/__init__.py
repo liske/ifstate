@@ -338,15 +338,18 @@ class IfState():
             return True
         else:
             # shutdown physical interfaces
-            logger.log_del(log_str, 'orphan')
-            if do_apply:
-                try:
-                    item.netns.ipr.link('set', index=item.attributes['index'], state='down')
-                except Exception as err:
-                    if not isinstance(err, netlinkerror_classes):
-                        raise
-                    logger.warning('updating link {} failed: {}'.format(
-                        ifname, err.args[1]), extra={'netns': item.netns})
+            if item.state == 'down':
+                logger.log_ok(log_str, 'orphan')
+            else:
+                logger.log_del(log_str, 'orphan')
+                if do_apply:
+                    try:
+                        item.netns.ipr.link('set', index=item.attributes['index'], state='down')
+                    except Exception as err:
+                        if not isinstance(err, netlinkerror_classes):
+                            raise
+                        logger.warning('updating link {} failed: {}'.format(
+                            ifname, err.args[1]), extra={'netns': item.netns})
             return False
 
     def _dependencies(self, netns):

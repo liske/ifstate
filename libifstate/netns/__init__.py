@@ -186,6 +186,7 @@ class LinkRegistryItem():
             'ifname': link.get_attr('IFLA_IFNAME'),
             'address': link.get_attr('IFLA_ADDRESS'),
         }
+        self.state = link['state']
 
         linkinfo = link.get_attr('IFLA_LINKINFO')
         if linkinfo and linkinfo.get_attr('IFLA_INFO_KIND') != None:
