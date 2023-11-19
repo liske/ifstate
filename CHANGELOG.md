@@ -1,5 +1,13 @@
 # ChangeLog
 
+## 1.11.0 - 2023-11-19
+
+Changes:
+- ethtool: allow default settings for ethtool
+- link: allow unsetting the master attribute
+- link: improve attr state debug logging
+- routing: add vrrp conditions for routing
+
 ## 1.10.1 - 2023-11-13
 
 Changes:
