@@ -2,5 +2,6 @@
 
 examples_as_yaml: true
 expand_buttons: true
+footer_show_time: false
 link_to_reused_ref: false
 template_name: js_offline
