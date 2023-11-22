@@ -32,6 +32,8 @@ The following features are already available:
 - ignore ip addresses by prefix lists
 - ignore routing table entries by protocol
 - ignore routing rules by protocol
+- configurable default settings
+- full netns support for all features
 
 
 # Planned features
