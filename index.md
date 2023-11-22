@@ -2,8 +2,8 @@
 title: About
 ---
 
-*IfState* is a python3 library to configure (linux) host interfaces in a
-declarative manner. It is a frontend for the kernel netlink protocol using
+*IfState* is a python3 utility to configure the Linux network stack in a
+declarative manner. It is a frontend for the kernel's netlink protocol based on
 [pyroute2](https://pyroute2.org/) and aims to be as powerful as the following commands:
 
 - bridge
@@ -30,7 +30,7 @@ Can be used with deployment and automation tools like
 operates idempotent.
 
 When *IfState* was born there where already other projects for declarative
-interface configuration. Sadly they require network management daemon and lack
+interface configuration. Sadly they require network management daemons and lack
 support for many virtual link types:
 - [NMState](https://nmstate.io) - A Declarative API for Host Network Management
 - [Netplan](https://netplan.io) - The network configuration abstraction renderer
@@ -43,6 +43,10 @@ support for many virtual link types:
 It is possible to skip different settings (addresses, routes, ...) in *IfState*
 completely if a routing daemon (*FRR*, *Quagga*) does handle it.
 
+*IfState* has full support for Linux netns namespaces. This allows to build
+firewalls and routers with hard multi-client capability without much effort.
+[Alpine Linux](https://wiki.alpinelinux.org/wiki/Netns) is one of the few
+(the only?) Linux distributions with native netns support for daemons.
 
 # Presentations
 
@@ -80,6 +84,7 @@ Example configuration:
 ```yaml
 interfaces:
 - name: eth0
+  addresses: []
   link:
     kind: physical
 - name: eth0.10
@@ -106,19 +111,26 @@ Run the `ifstatecli` command:
 
 ```bash
 # ifstatecli -c test.yml apply
-configuring interface links
- eth0            ok
- eth0.10         add
- LOOP            ok
- eth1            orphan
+cleanup orphan interfaces...
+   eth1                              orphan
 
-configuring ip addresses...
- eth0.10         198.51.100.3/27
- LOOP            192.0.2.3/32
- LOOP            2001:db8::3/128
+configure interfaces...
+ lo
+   link                              ok
+   addresses                         = 127.0.0.1/8
+   addresses                         = ::1/128
+ eth0
+   link                              ok
+ eth0.10
+   link                              add
+   addresses                         + 198.51.100.3/27
+ LOOP
+   link                              ok
+   addresses                         = 192.0.2.3/32
+   addresses                         = 2001:db8::3/128
 
-configuring routing table main...
- 198.51.100.128/25 add
+configure routing...
+   main                              + 198.51.100.128/25
 ```
 
 It is possible to create a configuration template from the currently available interfaces using the `ifstatecli show` command.
