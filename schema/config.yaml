@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/coveooss/json-schema-for-humans/main/config_schema.json
+
+examples_as_yaml: true
+expand_buttons: true
+link_to_reused_ref: false
+template_name: js_offline
