@@ -2,6 +2,7 @@ from libifstate.util import logger, IfStateLogging, IPRouteExt, NetNSExt, root_i
 from libifstate.sysctl import Sysctl
 
 import atexit
+from copy import deepcopy
 import logging
 import pyroute2
 import re
@@ -55,6 +56,21 @@ class NetNameSpace():
                 self.mount = name.encode("utf-8")
             else:
                 self.mount = subprocess.check_output([findmnt_cmd, '-f', '-J', "/run/netns/{}".format(name)])
+
+    def __deepcopy__(self, memo):
+        '''
+        Add custom deepcopy implementation to keep single IPRoute and NetNS instances.
+        '''
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            print(k)
+            if k == 'ipr':
+                setattr(result, k, v)
+            else:
+                setattr(result, k, deepcopy(v, memo))
+        return result
 
     def get_netnsid(self, peer_netns_name):
         if peer_netns_name is None:
