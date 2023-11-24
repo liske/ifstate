@@ -1,5 +1,17 @@
 # ChangeLog
 
+## 1.11.1 - 2023-11-24
+
+Changes:
+- logging: add logging.exception to some exception handlers
+
+Fixes:
+- vrrp-fifo: fix TypeError exceptions on state changes breaking vrrp
+- routing: fix vrrp routing setup for netns (regression by 6feb5ba)
+
+This release fixes a regression (ifstate 1.9.0+) breaking the vrrp-fifo implementation due to an
+internal exception.
+
 ## 1.11.0 - 2023-11-19
 
 Changes:
