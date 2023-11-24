@@ -33,7 +33,7 @@ except ModuleNotFoundError:
     # ignore missing plugin
     pass
 
-from libifstate.netns import NetNameSpace, prepare_netns, get_netns_instances, LinkRegistry
+from libifstate.netns import NetNameSpace, prepare_netns, LinkRegistry
 from libifstate.util import logger, IfStateLogging, LinkDependency
 from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, ParserValidationError
 from ipaddress import ip_network, ip_interface
@@ -115,10 +115,7 @@ class IfState():
         self.cshaper_profiles = ifstates['cshaper']
 
         # build link registry over all named netns
-        self.link_registry = LinkRegistry(
-            self.ignore.get('ifname', []),
-            self.root_netns,
-            *get_netns_instances())
+        self.link_registry = LinkRegistry(self.ignore.get('ifname', []), self.root_netns)
 
         self._update(self.root_netns, ifstates)
         if 'namespaces' in ifstates:

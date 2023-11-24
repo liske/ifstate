@@ -65,7 +65,6 @@ class NetNameSpace():
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
-            print(k)
             if k == 'ipr':
                 setattr(result, k, v)
             else:
@@ -146,11 +145,30 @@ def get_netns_instances():
     return netns_instances
 
 class LinkRegistry():
-    def __init__(self, ignores, *namespaces):
-        self.registry = []
+    def __init__(self, ignores, root_netns):
         self.ignores = ignores
+        self.root_netns = root_netns
 
-        for namespace in namespaces:
+        self.rebuild_registry()
+
+    def __deepcopy__(self, memo):
+        '''
+        Add custom deepcopy implementation to refresh LinkRegistry on copy.
+        '''
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k != 'registry':
+                setattr(result, k, deepcopy(v, memo))
+        result.rebuild_registry()
+        return result
+
+    def rebuild_registry(self):
+        self.registry = []
+
+        self.inventory_netns(self.root_netns)
+        for namespace in get_netns_instances():
             self.inventory_netns(namespace)
 
         if logger.getEffectiveLevel() <= logging.DEBUG:
