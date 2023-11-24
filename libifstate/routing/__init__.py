@@ -70,7 +70,7 @@ class RTLookup():
                 with open(fn, 'r') as fp:
                     self._parse(fp)
         except:
-            logger.info('could not open {}'.format(fn))
+            logger.exception('could not open {}'.format(fn))
 
     def _parse(self, fp):
         for line in fp:

@@ -106,7 +106,7 @@ class TC():
                 try:
                     self.netns.ipr.tc("del", index=self.idx, parent=qdisc["parent"])
                 except:
-                    pass
+                    logger.exception("cannot remove tc")
 
         opts = {
             "index": self.idx,

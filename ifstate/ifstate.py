@@ -46,8 +46,8 @@ class IfsConfigHandler():
         logger.info("SIGHUP: reloading configuration")
         try:
             self.ifs = self.load_config()
-        except Exception:
-            pass
+        except:
+            logger.exception("failed to reload configuration")
 
     def load_config(self):
         try:
@@ -184,7 +184,7 @@ def main():
                             ifs_tmp = deepcopy(ifs_config.ifs)
                             ifs_tmp.apply(m.group(1), m.group(2), m.group(3))
                         except:
-                            pass
+                            logger.exception("failed to apply state change")
         else:
             # ignore some well-known signals to prevent interruptions (i.e. due to ssh connection loss)
             signal.signal(signal.SIGHUP, signal.SIG_IGN)
