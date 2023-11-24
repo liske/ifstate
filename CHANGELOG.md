@@ -1,5 +1,17 @@
 # ChangeLog
 
+## 1.11.2 - 2023-11-25
+
+Changes:
+- vrrp-fifo: track pids and send SIGHUP for reloading vrrp-fifo runners during apply
+
+Fixes:
+- do not use /run/ifstate as a state directory since it may collide with the state file of ifupdown*
+- vrrp-fifo: fix using outdated LinkRegistry breaking most vrrp setups
+
+This release fixes yet another regression (ifstate 1.9.0+) breaking the vrrp-fifo implementation for
+interfaces not existing on start-up of the vrrp-fifo action.
+
 ## 1.11.1 - 2023-11-24
 
 Changes:
