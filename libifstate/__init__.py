@@ -509,7 +509,7 @@ class IfState():
         self._apply_routing(do_apply, self.root_netns, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
         if self.namespaces is not None:
             for name, netns in self.namespaces.items():
-                self._apply_routing(do_apply, netns)
+                self._apply_routing(do_apply, netns, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
 
     def _apply_bpf(self, do_apply, netns, had_bpf=False):
         if not netns.bpf_progs is None:
