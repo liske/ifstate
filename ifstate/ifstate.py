@@ -9,7 +9,10 @@ from copy import deepcopy
 from setproctitle import setproctitle
 
 import argparse
+import glob
 import logging
+import os
+from pathlib import Path
 import re
 import signal
 import sys
@@ -86,6 +89,29 @@ def shell():
     shell = IfStateConsole()
     shell.interact(banner=f"ifstate {__version__}; pyroute2 {pyroute2.__version__}")
 
+
+def sighup_vrrp_fifo():
+    prefix = 'ifstate-vrrp-fifo@'
+    pids = {}
+
+    for pid_file in glob.glob('/run/libifstate/vrrp/[1-9]*.pid'):
+        pid = Path(pid_file).stem
+        if pid.isnumeric():
+            try:
+                with open(f'/proc/{pid}/cmdline', encoding='utf-8') as fh:
+                    if prefix == fh.read(len(prefix)):
+                        # send SIGHUP to reload config
+                        os.kill(int(pid), signal.SIGHUP)
+
+                        pids[pid] = fh.read(32)
+            except OSError:
+                pass
+
+    if len(pids):
+        logger.info("")
+        logger.info("notified vrrp-fifo handlers...")
+        for pid, fifo in sorted(pids.items()):
+            logger.info(fifo, extra={'option': pid, 'style': IfStateLogging.STYLE_CHG})
 
 def main():
     parser = argparse.ArgumentParser()
@@ -173,18 +199,33 @@ def main():
             signal.signal(signal.SIGPIPE, signal.SIG_IGN)
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
 
-            status_pattern = re.compile(
-                r'(group|instance) "([^"]+)" (unknown|fault|backup|master)( \d+)?$', re.IGNORECASE)
+            pid_file = f"/run/libifstate/vrrp/{os.getpid()}.pid"
+            try:
+                os.makedirs("/run/libifstate/vrrp", exist_ok=True)
 
-            with open(args.fifo) as fifo:
-                for line in fifo:
-                    m = status_pattern.match(line.strip())
-                    if m:
-                        try:
-                            ifs_tmp = deepcopy(ifs_config.ifs)
-                            ifs_tmp.apply(m.group(1), m.group(2), m.group(3))
-                        except:
-                            logger.exception("failed to apply state change")
+                with open(pid_file, "w", encoding="utf-8") as fh:
+                    fh.write(args.fifo)
+            except:
+                logger.exception("failed to write pid file f{pid_file}")
+
+            try:
+                status_pattern = re.compile(
+                    r'(group|instance) "([^"]+)" (unknown|fault|backup|master)( \d+)?$', re.IGNORECASE)
+
+                with open(args.fifo) as fifo:
+                    for line in fifo:
+                        m = status_pattern.match(line.strip())
+                        if m:
+                            try:
+                                ifs_tmp = deepcopy(ifs_config.ifs)
+                                ifs_tmp.apply(m.group(1), m.group(2), m.group(3))
+                            except:
+                                logger.exception("failed to apply state change")
+            finally:
+                try:
+                    os.remove(pid_file)
+                except:
+                    pass
         else:
             # ignore some well-known signals to prevent interruptions (i.e. due to ssh connection loss)
             signal.signal(signal.SIGHUP, signal.SIG_IGN)
@@ -193,6 +234,7 @@ def main():
             try:
                 if args.action == Actions.APPLY:
                     ifs_config.ifs.apply()
+                    sighup_vrrp_fifo()
                 elif args.action == Actions.VRRP:
                     ifs_config.ifs.apply(
                         args.type, args.name, args.state)
