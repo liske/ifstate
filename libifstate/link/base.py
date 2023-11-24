@@ -254,7 +254,7 @@ class Link(ABC):
 
     def get_ethtool_fn(self, setting):
         try:
-            os.makedirs("/run/ifstate/ethtool", exist_ok=True)
+            os.makedirs("/run/libifstate/ethtool", exist_ok=True)
         except:
             pass
 
@@ -266,7 +266,7 @@ class Link(ABC):
             name = ('id', str(self.idx))
         name = "__".join(name)
 
-        return "/run/ifstate/ethtool/{}__{}.state".format(name, setting)
+        return "/run/libifstate/ethtool/{}__{}.state".format(name, setting)
 
     def get_ethtool_state(self, settings):
         ethtool = {}
@@ -355,9 +355,9 @@ class Link(ABC):
 
     def get_bind_fn(self, netns_name, idx):
         if netns_name is None:
-            dirname = "/run/ifstate/bind"
+            dirname = "/run/libifstate/bind"
         else:
-            dirname = "/run/ifstate/netns/{}/bind".format(netns_name)
+            dirname = "/run/libifstate/netns/{}/bind".format(netns_name)
 
         try:
             os.makedirs(dirname, exist_ok=True)
