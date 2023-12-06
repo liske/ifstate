@@ -33,7 +33,7 @@ except ModuleNotFoundError:
     # ignore missing plugin
     pass
 
-from libifstate.netns import NetNameSpace, prepare_netns, LinkRegistry
+from libifstate.netns import NetNameSpace, prepare_netns, LinkRegistry, get_netns_instances
 from libifstate.util import logger, IfStateLogging, LinkDependency
 from libifstate.exception import FeatureMissingError, LinkCircularLinked, LinkNoConfigFound, ParserValidationError
 from ipaddress import ip_network, ip_interface
