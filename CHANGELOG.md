@@ -1,5 +1,13 @@
 # ChangeLog
 
+## 1.11.3 - 2023-12-06
+
+Changes:
+- routing: add support for new iproute2 6.5+ rt_* files directory (/usr/lib/iproute2)
+
+Fixes:
+- cli: fix broken show commands
+
 ## 1.11.2 - 2023-11-25
 
 Changes:
