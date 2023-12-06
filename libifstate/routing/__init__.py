@@ -61,16 +61,20 @@ class RTLookup():
         self.str2id = {}
         self.id2str = {}
 
-        try:
-            fn = os.path.join('/etc/iproute2', name)
-            with open(fn, 'r') as fp:
-                self._parse(fp)
-
-            for fn in glob(os.path.join('/etc/iproute2', "{}.d".format(name), "*.conf")):
+        for basedir in ['/usr/lib/iproute2', '/etc/iproute2']:
+            fn = os.path.join(basedir, name)
+            try:
                 with open(fn, 'r') as fp:
                     self._parse(fp)
-        except:
-            logger.exception('could not open {}'.format(fn))
+            except IOError as err:
+                pass
+
+        for fn in glob(os.path.join('/etc/iproute2', "{}.d".format(name), "*.conf")):
+            try:
+                with open(fn, 'r') as fp:
+                    self._parse(fp)
+            except IOError as err:
+                pass
 
     def _parse(self, fp):
         for line in fp:
