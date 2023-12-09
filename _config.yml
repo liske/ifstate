@@ -14,8 +14,13 @@ plugins:
 
 github_username: liske
 github:
-  repository_url: https://github.com/liske/ifstate
+  repository_url: https://codeberg.org/liske/ifstate
 
+exclude:
+  - build.sh
+  - update-schema.sh
+  - dist
+  - test
 header_pages:
   - index.md
   - features.md
