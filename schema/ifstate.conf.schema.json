@@ -1,0 +1,4078 @@
+{
+    "$id": "https://ifstate.net/schema/ifstate.conf.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ifstate.conf",
+    "description": "IfState 1.11.0 Configuration Schema",
+    "type": "object",
+    "required": [
+        "interfaces"
+    ],
+    "$defs": {
+        "condition-vrrp": {
+            "description": "configure depending on vrrp status",
+            "type": "object",
+            "required": [
+                "name",
+                "type",
+                "states"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "description": "related vrrp INSTANCE or GROUP name",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "failover type",
+                    "type": "string",
+                    "enum": [
+                        "instance",
+                        "group"
+                    ]
+                },
+                "states": {
+                    "description": "states at which the interface should be configured",
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "string",
+                            "enum": [
+                                "unknown",
+                                "fault",
+                                "backup",
+                                "master"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "ignore-fdb": {
+            "description": "fdb entries matching this list of regex will be ignored",
+            "type": "array",
+            "items": {
+                "description": "regex to match link-local addresses",
+                "examples": [
+                    "^33:33:",
+                    "^01:00:5e:"
+                ],
+                "type": "string"
+            }
+        },
+        "ignore-ipaddr": {
+            "description": "list of ip address prefixes to be ignored",
+            "type": "array",
+            "items": {
+                "description": "ip address with prefix length",
+                "type": "string",
+                "examples": [
+                    "fe80::/10"
+                ]
+            }
+        },
+        "ignore-ifname": {
+            "description": "interface names matching this list of regex will be ignored",
+            "type": "array",
+            "items": {
+                "description": "regex to match interface name",
+                "examples": [
+                    "^br-[\\da-f]{12}",
+                    "^docker\\d+",
+                    "^lo$",
+                    "^ppp\\d+$",
+                    "^veth",
+                    "^virbr\\d+",
+                    "^vrrp\\d*\\.\\d+$"
+                ],
+                "type": "string"
+            }
+        },
+        "ignore-routes": {
+            "description": "filter routes by options",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "dev": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ]
+                    },
+                    "proto": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "default": "boot"
+                    },
+                    "realm": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ]
+                    },
+                    "scope": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ]
+                    },
+                    "table": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "default": "main"
+                    },
+                    "to": {
+                        "type": "string"
+                    },
+                    "via": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "ignore-rules": {
+            "description": "filter rules by options",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "action": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "description": "the type of this rule",
+                        "enum": [
+                            "to_tbl",
+                            "blackhole",
+                            "unreachable",
+                            "prohibit"
+                        ],
+                        "default": "to_tbl"
+                    },
+                    "table": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "priority": {
+                        "type": "integer",
+                        "description": "the priority of this rule",
+                        "minimum": 0,
+                        "maximum": 4294967295
+                    },
+                    "from": {
+                        "type": "string",
+                        "description": "select the source prefix to match"
+                    },
+                    "to": {
+                        "type": "string",
+                        "description": "select the destination prefix to match"
+                    },
+                    "iif": {
+                        "type": "string",
+                        "description": "select the incoming device to match"
+                    },
+                    "oif": {
+                        "type": "string",
+                        "description": "select the outgoing device to match"
+                    },
+                    "proto": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "default": "unspec",
+                        "description": "routing protocol number (`/etc/iproute2/rt_protos`)"
+                    },
+                    "fwmark": {
+                        "type": "integer",
+                        "description": "select the *fwmark* value to match"
+                    },
+                    "ipproto": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "description": "select the ip protocol to match"
+                    }
+                }
+            }
+        },
+        "iface-name": {
+            "type": "string",
+            "pattern": "^[^/ ]{1,15}$"
+        },
+        "iface-ethtool": {
+            "description": "network driver and hardware settings via [ethtool(8)](https://man7.org/linux/man-pages/man8/ethtool.8.html)",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "pause": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "pause parameters",
+                    "properties": {
+                        "autoneg": {
+                            "description": "enable pause autonegotiation",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "rx": {
+                            "description": "enable Rx pause",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "tx": {
+                            "description": "enable Tx pause",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        }
+                    }
+                },
+                "coalesce": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "interrupt coalescing",
+                    "properties": {
+                        "adaptive-rx": {
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "adaptive-tx": {
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "rx-usecs": {
+                            "type": "integer"
+                        },
+                        "rx-frames": {
+                            "type": "integer"
+                        },
+                        "rx-usecs-irq": {
+                            "type": "integer"
+                        },
+                        "rx-frames-irq": {
+                            "type": "integer"
+                        },
+                        "tx-usecs": {
+                            "type": "integer"
+                        },
+                        "tx-frames": {
+                            "type": "integer"
+                        },
+                        "tx-usecs-irq": {
+                            "type": "integer"
+                        },
+                        "tx-frames-irq": {
+                            "type": "integer"
+                        },
+                        "stats-block-usecs": {
+                            "type": "integer"
+                        },
+                        "pkt-rate-low": {
+                            "type": "integer"
+                        },
+                        "rx-usecs-low": {
+                            "type": "integer"
+                        },
+                        "rx-frames-low": {
+                            "type": "integer"
+                        },
+                        "tx-usecs-low": {
+                            "type": "integer"
+                        },
+                        "tx-frames-low": {
+                            "type": "integer"
+                        },
+                        "pkt-rate-high": {
+                            "type": "integer"
+                        },
+                        "rx-usecs-high": {
+                            "type": "integer"
+                        },
+                        "rx-frames-high": {
+                            "type": "integer"
+                        },
+                        "tx-usecs-high": {
+                            "type": "integer"
+                        },
+                        "tx-frames-high": {
+                            "type": "integer"
+                        },
+                        "sample-interval": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "ring": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "rx/tx ring parameters",
+                    "properties": {
+                        "rx": {
+                            "description": "number of ring entries for the Rx ring",
+                            "type": "integer"
+                        },
+                        "rx-mmini": {
+                            "description": "number of ring entries for the Rx Mini ring",
+                            "type": "integer"
+                        },
+                        "rx-jumbo": {
+                            "description": "number of ring entries for the Rx Jumbo ring",
+                            "type": "integer"
+                        },
+                        "tx": {
+                            "description": "number of ring entries for the Tx ring",
+                            "type": "integer"
+                        }
+                    }
+                },
+                "features": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "offload parameters and other features",
+                    "properties": {
+                        "rx": {
+                            "description": "enable RX checksumming",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "tx": {
+                            "description": "enable TX checksumming",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "sg": {
+                            "description": "enable scatter-gather",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "tso": {
+                            "description": "enable TCP segmentation offload",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "ufo": {
+                            "description": "enable UDP fragmentation offload",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "gso": {
+                            "description": "enable generic segmentation offload",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "gro": {
+                            "description": "enable generic receive offload",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "lro": {
+                            "description": "enable large receive offload",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "rxvlan": {
+                            "description": "enable RX VLAN acceleration",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "txvlan": {
+                            "description": "enable TX VLAN acceleration",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "ntuple": {
+                            "description": "enable Rx ntuple filters and actions",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "rxhash": {
+                            "description": "enable receive hashing offload",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        }
+                    }
+                },
+                "change": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "device settings",
+                    "properties": {
+                        "speed": {
+                            "description": "speed in Mbps",
+                            "type": "integer"
+                        },
+                        "duplex": {
+                            "description": "full or half duplex mode",
+                            "type": "string",
+                            "enum": [
+                                "half",
+                                "full"
+                            ]
+                        },
+                        "port": {
+                            "description": "device port selection",
+                            "type": "string",
+                            "enum": [
+                                "tp",
+                                "aui",
+                                "bnc",
+                                "mii"
+                            ]
+                        },
+                        "mdix": {
+                            "description": "MDI-X mode for port",
+                            "type": [
+                                "boolean",
+                                "string"
+                            ],
+                            "enum": [
+                                "auto",
+                                "on",
+                                "off",
+                                true,
+                                false
+                            ]
+                        },
+                        "autoneg": {
+                            "description": "enable autonegotation",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "advertise": {
+                            "description": "speed and duplex advertised by autonegotation",
+                            "type": "integer"
+                        },
+                        "phyad": {
+                            "description": "PHY address",
+                            "type": "integer"
+                        },
+                        "xcvr": {
+                            "description": "transceiver type",
+                            "type": "string",
+                            "enum": [
+                                "internal",
+                                "external"
+                            ]
+                        },
+                        "wol": {
+                            "description": "Wake-on-LAN options",
+                            "type": "string",
+                            "pattern": "^[pumbagsfd]+$"
+                        },
+                        "sopass": {
+                            "description": "SecureOn™ password",
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}$"
+                        },
+                        "msglvl": {
+                            "description": "driver message flags",
+                            "oneOf": [
+                                {
+                                    "description": "driver message flags by number",
+                                    "type": "integer"
+                                },
+                                {
+                                    "description": "driver message flags by name",
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "description": "flag name",
+                                            "type": "string",
+                                            "enum": [
+                                                "drv",
+                                                "probe",
+                                                "link",
+                                                "timer",
+                                                "ifdown",
+                                                "ifup",
+                                                "rx_err",
+                                                "tx_err",
+                                                "tx_queued",
+                                                "intr",
+                                                "tx_done",
+                                                "rx_status",
+                                                "pktdata",
+                                                "hw",
+                                                "wol"
+                                            ]
+                                        },
+                                        {
+                                            "description": "enable flag",
+                                            "$ref": "#/$defs/iface-ethtool_onoff"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "channels": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "number of channels",
+                    "properties": {
+                        "rx": {
+                            "description": "number of channels with only receive queues",
+                            "type": "integer"
+                        },
+                        "tx": {
+                            "description": "number of channels with only transmit queues",
+                            "type": "integer"
+                        },
+                        "other": {
+                            "description": "number of channels used only for other purposes",
+                            "type": "integer"
+                        },
+                        "combined": {
+                            "description": "number of multi-purpose channels",
+                            "type": "integer"
+                        }
+                    }
+                },
+                "eee": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Energy-Efficient Ethernet (according to the IEEE 802.3az specifications)",
+                    "properties": {
+                        "eee": {
+                            "description": "enable EEE support",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "tx-lpi": {
+                            "description": "assert Tx LPI",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "advertise": {
+                            "description": "sets the speed for which EEE should be enabled (see also `change.advertise`)",
+                            "type": "integer"
+                        },
+                        "tx-timer": {
+                            "description": "amount of idle time prior asserting Tx LPI (in microseconds)",
+                            "type": "integer"
+                        }
+                    }
+                },
+                "phy-tunable": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "PHY tunable parameters",
+                    "properties": {
+                        "downshift": {
+                            "description": "enable downshift",
+                            "oneOf": [
+                                {
+                                    "description": "enable downshift",
+                                    "$ref": "#/$defs/iface-ethtool_onoff"
+                                },
+                                {
+                                    "type": "array",
+                                    "minItems": 3,
+                                    "maxItems": 3,
+                                    "items": [
+                                        {
+                                            "description": "enable downshift",
+                                            "$ref": "#/$defs/iface-ethtool_onoff"
+                                        },
+                                        {
+                                            "description": "*REQUIRED*",
+                                            "type": "string",
+                                            "enum": [
+                                                "count"
+                                            ]
+                                        },
+                                        {
+                                            "description": "PHY downshift re-tries count",
+                                            "type": "integer"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "fast-link-down": {
+                            "description": "enable Fast Link Down",
+                            "oneOf": [
+                                {
+                                    "description": "enable Fast Link Down",
+                                    "$ref": "#/$defs/iface-ethtool_onoff"
+                                },
+                                {
+                                    "type": "array",
+                                    "minItems": 3,
+                                    "maxItems": 3,
+                                    "items": [
+                                        {
+                                            "description": "enable Fast Link Down",
+                                            "$ref": "#/$defs/iface-ethtool_onoff"
+                                        },
+                                        {
+                                            "description": "*REQUIRED*",
+                                            "type": "string",
+                                            "enum": [
+                                                "msec"
+                                            ]
+                                        },
+                                        {
+                                            "description": "period after which the link is reported as down",
+                                            "type": "integer"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "energy-detect-power-down": {
+                            "description": "enable Energy Detect Power Down (EDPD)",
+                            "oneOf": [
+                                {
+                                    "description": "enable EDPD",
+                                    "$ref": "#/$defs/iface-ethtool_onoff"
+                                },
+                                {
+                                    "type": "array",
+                                    "minItems": 3,
+                                    "maxItems": 3,
+                                    "items": [
+                                        {
+                                            "description": "enable EDPD",
+                                            "$ref": "#/$defs/iface-ethtool_onoff"
+                                        },
+                                        {
+                                            "description": "*REQUIRED*",
+                                            "type": "string",
+                                            "enum": [
+                                                "msec"
+                                            ]
+                                        },
+                                        {
+                                            "description": "wake-up interval for Tx pulses",
+                                            "type": "integer"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "priv-flags": {
+                    "type": "object",
+                    "description": "private flags"
+                },
+                "fec": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Forward Error Correction",
+                    "properties": {
+                        "encoding": {
+                            "description": "FEC encoding",
+                            "type": [
+                                "string",
+                                "array"
+                            ],
+                            "enum": [
+                                "auto",
+                                "off",
+                                "RS",
+                                "BaseR",
+                                "LLRS"
+                            ],
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "auto",
+                                    "RS",
+                                    "BaseR",
+                                    "LLRS"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "iface-link_address": {
+            "type": "string",
+            "description": "link mac address (xx:xx:xx:xx:xx:xx)",
+            "pattern": "^([a-f0-9]{2}:){5}[a-f0-9]{2}$"
+        },
+        "iface-link_bind-netns": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "description": "specifies the netns name or null where the tunnel or underlay should be bind, if not set the binding will happen in the netns namespace of the link"
+        },
+        "iface-link_group": {
+            "type": [
+                "integer",
+                "string"
+            ],
+            "description": "specifies a device group name or index"
+        },
+        "iface-link_link": {
+            "type": [
+                "integer",
+                "string"
+            ],
+            "description": "specifies the base link name or index"
+        },
+        "iface-link_link-netns": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "description": "specifies the base link's netns name or null if the link isn't in a netns namespace"
+        },
+        "iface-link_master": {
+            "type": [
+                "integer",
+                "string",
+                "null"
+            ],
+            "description": "specifies a master device name or index, use *null* to remove the master"
+        },
+        "iface-link_master-netns": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "description": "specifies the master's netns name or null if the master isn't in a netns namespace"
+        },
+        "iface-link_mtu": {
+            "type": "integer",
+            "description": "change the mtu of the device",
+            "minimum": 68,
+            "maximum": 65536
+        },
+        "iface-link_state": {
+            "type": "string",
+            "description": "set device state",
+            "enum": [
+                "up",
+                "down"
+            ]
+        },
+        "iface-link_txqlen": {
+            "type": "integer",
+            "description": "the transmit queue length of the device"
+        },
+        "iface-link_ifalias": {
+            "type": "string",
+            "description": "symbolic name for easy reference"
+        },
+        "iface-link_tun-remote4": {
+            "type": "string",
+            "description": "remote IPv4 address of the tunnel",
+            "format": "ipv4"
+        },
+        "iface-link_tun-local4": {
+            "type": "string",
+            "description": "local IPv4 address of the tunnel",
+            "format": "ipv4"
+        },
+        "iface-link_tun-remote6": {
+            "type": "string",
+            "description": "remote IPv4 address of the tunnel",
+            "format": "ipv6"
+        },
+        "iface-link_tun-local6": {
+            "type": "string",
+            "description": "local IPv4 address of the tunnel",
+            "format": "ipv6"
+        },
+        "iface-link_tun-dev": {
+            "$ref": "#/$defs/iface-link_link",
+            "description": "interface to use for tunnel endpoint communication"
+        },
+        "iface-sysctl-ipv4": {
+            "type": "object",
+            "description": "settings in `/proc/sys/net/ipv4/<interface>/conf/`",
+            "properties": {
+                "accept_local": {
+                    "type": "integer"
+                },
+                "accept_redirects": {
+                    "type": "integer"
+                },
+                "accept_source_route": {
+                    "type": "integer"
+                },
+                "arp_accept": {
+                    "type": "integer"
+                },
+                "arp_announce": {
+                    "type": "integer"
+                },
+                "arp_filter": {
+                    "type": "integer"
+                },
+                "arp_ignore": {
+                    "type": "integer"
+                },
+                "arp_notify": {
+                    "type": "integer"
+                },
+                "bc_forwarding": {
+                    "type": "integer"
+                },
+                "bootp_relay": {
+                    "type": "integer"
+                },
+                "disable_policy": {
+                    "type": "integer"
+                },
+                "disable_xfrm": {
+                    "type": "integer"
+                },
+                "drop_gratuitous_arp": {
+                    "type": "integer"
+                },
+                "drop_unicast_in_l2_multicast": {
+                    "type": "integer"
+                },
+                "force_igmp_version": {
+                    "type": "integer"
+                },
+                "forwarding": {
+                    "type": "integer"
+                },
+                "igmpv2_unsolicited_report_interval": {
+                    "type": "integer"
+                },
+                "igmpv3_unsolicited_report_interval": {
+                    "type": "integer"
+                },
+                "ignore_routes_with_linkdown": {
+                    "type": "integer"
+                },
+                "log_martians": {
+                    "type": "integer"
+                },
+                "mc_forwarding": {
+                    "type": "integer"
+                },
+                "medium_id": {
+                    "type": "integer"
+                },
+                "promote_secondaries": {
+                    "type": "integer"
+                },
+                "proxy_arp": {
+                    "type": "integer"
+                },
+                "proxy_arp_pvlan": {
+                    "type": "integer"
+                },
+                "route_localnet": {
+                    "type": "integer"
+                },
+                "rp_filter": {
+                    "type": "integer"
+                },
+                "secure_redirects": {
+                    "type": "integer"
+                },
+                "send_redirects": {
+                    "type": "integer"
+                },
+                "shared_media": {
+                    "type": "integer"
+                },
+                "src_valid_mark": {
+                    "type": "integer"
+                },
+                "tag": {
+                    "type": "integer"
+                }
+            }
+        },
+        "iface-sysctl-ipv6": {
+            "type": "object",
+            "description": "settings in `/proc/sys/net/ipv6/<interface>/conf/`",
+            "additionalProperties": false,
+            "properties": {
+                "accept_dad": {
+                    "type": "integer"
+                },
+                "accept_ra": {
+                    "type": "integer"
+                },
+                "accept_ra_defrtr": {
+                    "type": "integer"
+                },
+                "accept_ra_from_local": {
+                    "type": "integer"
+                },
+                "accept_ra_min_hop_limit": {
+                    "type": "integer"
+                },
+                "accept_ra_mtu": {
+                    "type": "integer"
+                },
+                "accept_ra_pinfo": {
+                    "type": "integer"
+                },
+                "accept_ra_rt_info_max_plen": {
+                    "type": "integer"
+                },
+                "accept_ra_rt_info_min_plen": {
+                    "type": "integer"
+                },
+                "accept_ra_rtr_pref": {
+                    "type": "integer"
+                },
+                "accept_redirects": {
+                    "type": "integer"
+                },
+                "accept_source_route": {
+                    "type": "integer"
+                },
+                "addr_gen_mode": {
+                    "type": "integer"
+                },
+                "autoconf": {
+                    "type": "integer"
+                },
+                "dad_transmits": {
+                    "type": "integer"
+                },
+                "disable_ipv6": {
+                    "type": "integer"
+                },
+                "disable_policy": {
+                    "type": "integer"
+                },
+                "drop_unicast_in_l2_multicast": {
+                    "type": "integer"
+                },
+                "drop_unsolicited_na": {
+                    "type": "integer"
+                },
+                "enhanced_dad": {
+                    "type": "integer"
+                },
+                "force_mld_version": {
+                    "type": "integer"
+                },
+                "force_tllao": {
+                    "type": "integer"
+                },
+                "forwarding": {
+                    "type": "integer"
+                },
+                "hop_limit": {
+                    "type": "integer"
+                },
+                "ignore_routes_with_linkdown": {
+                    "type": "integer"
+                },
+                "keep_addr_on_down": {
+                    "type": "integer"
+                },
+                "max_addresses": {
+                    "type": "integer"
+                },
+                "max_desync_factor": {
+                    "type": "integer"
+                },
+                "mc_forwarding": {
+                    "type": "integer"
+                },
+                "mldv1_unsolicited_report_interval": {
+                    "type": "integer"
+                },
+                "mldv2_unsolicited_report_interval": {
+                    "type": "integer"
+                },
+                "mtu": {
+                    "type": "integer"
+                },
+                "ndisc_notify": {
+                    "type": "integer"
+                },
+                "ndisc_tclass": {
+                    "type": "integer"
+                },
+                "optimistic_dad": {
+                    "type": "integer"
+                },
+                "proxy_ndp": {
+                    "type": "integer"
+                },
+                "regen_max_retry": {
+                    "type": "integer"
+                },
+                "router_probe_interval": {
+                    "type": "integer"
+                },
+                "router_solicitation_delay": {
+                    "type": "integer"
+                },
+                "router_solicitation_interval": {
+                    "type": "integer"
+                },
+                "router_solicitation_max_interval": {
+                    "type": "integer"
+                },
+                "router_solicitations": {
+                    "type": "integer"
+                },
+                "seg6_enabled": {
+                    "type": "integer"
+                },
+                "seg6_require_hmac": {
+                    "type": "integer"
+                },
+                "stable_secret": {
+                    "type": "string",
+                    "format": "ipv6"
+                },
+                "suppress_frag_ndisc": {
+                    "type": "integer"
+                },
+                "temp_prefered_lft": {
+                    "type": "integer"
+                },
+                "temp_valid_lft": {
+                    "type": "integer"
+                },
+                "use_oif_addrs_only": {
+                    "type": "integer"
+                },
+                "use_optimistic": {
+                    "type": "integer"
+                },
+                "use_tempaddr": {
+                    "type": "integer"
+                }
+            }
+        },
+        "iface-sysctl-mpls": {
+            "description": "MPLS [sysctl settings](https://www.kernel.org/doc/Documentation/networking/mpls-sysctl.txt) in `/proc/sys/net/mpls/`",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "platform_labels": {
+                    "type": "integer",
+                    "description": "number of entries in the platform label table",
+                    "minimum": 0,
+                    "maximum": 1048575
+                },
+                "ip_ttl_propagate": {
+                    "type": "integer",
+                    "description": "control whether TTL is propagated",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "default_ttl": {
+                    "type": "integer",
+                    "description": "default TTL value to use for MPLS packets",
+                    "minimum": 1,
+                    "maximum": 255
+                }
+            }
+        },
+        "iface-sysctl-mpls-link": {
+            "description": "MPLS [interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/mpls-sysctl.txt) in `/proc/sys/net/mpls/<interface>/`",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "input": {
+                    "type": "integer",
+                    "description": "control whether packets can be input on this interface",
+                    "minimum": 0,
+                    "maximum": 1
+                }
+            }
+        },
+        "iface-ethtool_onoff": {
+            "type": [
+                "boolean",
+                "string"
+            ],
+            "enum": [
+                "on",
+                "off",
+                true,
+                false
+            ]
+        },
+        "iface-tc_qid": {
+            "type": "string",
+            "description": "qdisc id",
+            "format": "^(root|[0-9a-f]+:[0-9a-f]*)$"
+        },
+        "iface-tc_protocol": {
+            "type": [
+                "string",
+                "integer"
+            ],
+            "description": "protocol selector",
+            "minLength": 2,
+            "minimum": 0,
+            "maximum": 255,
+            "default": 3
+        },
+        "iface-tc_prio": {
+            "type": "integer",
+            "description": "priority",
+            "minimum": 0,
+            "maximum": 65535
+        },
+        "iface-tc_qdisc": {
+            "description": "traffic control queueing discipline",
+            "type": "object",
+            "required": [
+                "handle"
+            ],
+            "properties": {
+                "handle": {
+                    "description": "unique id",
+                    "$ref": "#/$defs/iface-tc_qid"
+                }
+            },
+            "oneOf": [
+                {
+                    "description": "generic classless qdisc",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "gred",
+                                "hhf",
+                                "mqprio",
+                                "multiq",
+                                "netem",
+                                "pfifo_fast",
+                                "pie",
+                                "red",
+                                "sfb",
+                                "sfq",
+                                "tbf"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/tc-cake"
+                },
+                {
+                    "description": "[choke](https://man7.org/linux/man-pages/man8/tc-choke.8.html) - choose and keep scheduler",
+                    "required": [
+                        "kind",
+                        "limit",
+                        "min",
+                        "max",
+                        "avpkt",
+                        "burst",
+                        "probability"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "const": "choke",
+                            "description": "qdisk type"
+                        }
+                    }
+                },
+                {
+                    "description": "[CoDel](https://man7.org/linux/man-pages/man8/tc-codel.8.html) - Controlled-Delay Active Queue Management algorithm",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "const": "codel",
+                            "description": "qdisk type"
+                        }
+                    }
+                },
+                {
+                    "description": "[bfifo](https://man7.org/linux/man-pages/man8/tc-bfifo.8.html) - Byte limited First In, First Out queue; [pfifo](https://man7.org/linux/man-pages/man8/tc-pfifo.8.html) - Packet limited First In, First Out queue",
+                    "required": [
+                        "kind"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "bfifo",
+                                "pfifo"
+                            ]
+                        },
+                        "limit": {
+                            "type": "number",
+                            "description": "queue size in bytes or packets"
+                        }
+                    }
+                },
+                {
+                    "description": "[fq](https://man7.org/linux/man-pages/man8/tc-fq.8.html) - Fair Queue traffic policing",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "const": "fq",
+                            "description": "qdisk type"
+                        },
+                        "limit": {
+                            "type": "number",
+                            "description": "hard limit on the real queue size (number of packets)"
+                        },
+                        "flow_limit": {
+                            "type": "number",
+                            "description": "hard limit on the max number of packets per flow"
+                        }
+                    }
+                },
+                {
+                    "description": "[fq_codel](https://man7.org/linux/man-pages/man8/tc-fq_codel.8.html) - Fair Queuing (FQ) with Controlled Delay (CoDel)",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "const": "fq_codel",
+                            "description": "qdisk type"
+                        },
+                        "limit": {
+                            "type": "number",
+                            "description": "hard limit on the real queue size (number of packets)"
+                        },
+                        "flows": {
+                            "type": "number",
+                            "description": "number of flows"
+                        }
+                    }
+                },
+                {
+                    "description": "generic classful qdisc",
+                    "required": [
+                        "kind"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "description": "qdisk type",
+                            "enum": [
+                                "atm",
+                                "cbq",
+                                "drr",
+                                "dsmark",
+                                "hfsc",
+                                "htb",
+                                "prio",
+                                "qfq"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "description": "classful multiqueue dummy scheduler",
+                    "required": [
+                        "kind",
+                        "children"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "const": "mq",
+                            "description": "qdisk type"
+                        },
+                        "children": {
+                            "description": "list child qdiscs for each device TX queue",
+                            "type": "array",
+                            "items": {
+                                "description": "child qdiscs for the nth device TX queue",
+                                "$ref": "#/$defs/iface-tc_qdisc"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "tc-cake": {
+            "description": "[cake](https://man7.org/linux/man-pages/man8/tc-cake.8.html) - common applications kept enhanced (CAKE)",
+            "required": [
+                "kind"
+            ],
+            "properties": {
+                "kind": {
+                    "const": "cake",
+                    "description": "qdisk type"
+                },
+                "handle": {
+                    "description": "unique id",
+                    "$ref": "#/$defs/iface-tc_qid"
+                },
+                "ack_filter": {
+                    "description": "ACKnowledge filter",
+                    "type": [
+                        "boolean",
+                        "string"
+                    ],
+                    "enum": [
+                        "aggressive",
+                        true,
+                        false
+                    ]
+                },
+                "atm_mode": {
+                    "description": "ATM mode",
+                    "type": [
+                        "boolean",
+                        "string"
+                    ],
+                    "enum": [
+                        "ptm",
+                        true,
+                        false
+                    ]
+                },
+                "autorate": {
+                    "type": "boolean",
+                    "description": "autorate-ingress"
+                },
+                "diffserv_mode": {
+                    "type": "string",
+                    "description": "diffserv mode",
+                    "enum": [
+                        "diffserv3",
+                        "diffserv4",
+                        "diffserv8",
+                        "besteffort",
+                        "precedence"
+                    ]
+                },
+                "ingress": {
+                    "description": "ingress",
+                    "type": "boolean"
+                },
+                "overhead": {
+                    "description": "overhead",
+                    "type": "integer",
+                    "minimum": -64,
+                    "maximum": 256
+                },
+                "flow_mode": {
+                    "description": "flow mode",
+                    "type": "string",
+                    "enum": [
+                        "flowblind",
+                        "srchost",
+                        "dsthost",
+                        "hosts",
+                        "flows",
+                        "dual-srchost",
+                        "dual-dsthost",
+                        "triple-isolated"
+                    ]
+                },
+                "fwmark": {
+                    "description": "fwmark",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "memlimit": {
+                    "description": "memlimit",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "mpu": {
+                    "description": "MPU",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 256
+                },
+                "nat": {
+                    "description": "NAT",
+                    "type": "boolean"
+                },
+                "raw": {
+                    "description": "RAW",
+                    "type": "boolean"
+                },
+                "rtt": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "well-known RTT",
+                            "enum": [
+                                "datacentre",
+                                "lan",
+                                "metro",
+                                "regional",
+                                "internet",
+                                "oceanic",
+                                "satellite",
+                                "interplanetary"
+                            ]
+                        },
+                        {
+                            "type": "integer",
+                            "description": "manually specify an RTT (us)",
+                            "minimum": 1
+                        }
+                    ]
+                },
+                "split_gso": {
+                    "description": "split GSO",
+                    "type": "boolean"
+                },
+                "target": {
+                    "type": "integer",
+                    "description": "target",
+                    "minimum": 1
+                },
+                "wash": {
+                    "description": "wash",
+                    "type": "boolean"
+                }
+            }
+        },
+        "iface-tc_action": {
+            "description": "traffic control filter action",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "kind"
+                ],
+                "properties": {
+                    "kind": {
+                        "const": "mirred"
+                    }
+                },
+                "oneOf": [
+                    {
+                        "description": "[mirred](https://man7.org/linux/man-pages/man8/tc-mirred.8.html) - mirror/redirect action",
+                        "additionalProperties": false,
+                        "required": [
+                            "direction",
+                            "action",
+                            "dev"
+                        ],
+                        "properties": {
+                            "kind": {
+                                "const": "mirred"
+                            },
+                            "direction": {
+                                "description": "packet direction",
+                                "type": "string",
+                                "enum": [
+                                    "ingress",
+                                    "egress"
+                                ]
+                            },
+                            "action": {
+                                "description": "copy (`mirror`) or move (`redirect`) packets to the destination interface",
+                                "type": "string",
+                                "enum": [
+                                    "mirror",
+                                    "redirect"
+                                ]
+                            },
+                            "dev": {
+                                "description": "destination interface where packets are redirected or mirrored to",
+                                "$ref": "#/$defs/iface-link_link"
+                            },
+                            "index": {
+                                "description": "unique action ID",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "xdp_mode": {
+            "mode": {
+                "oneOf": [
+                    {
+                        "description": "force attach mode of the XDP program (`auto`: let the kernel choose, `xdp`: run inside driver, `xdpgeneric`: driver-independent before SKB allocation, `xdpoffload`: offload to SmartNIC co-processor)",
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "xdp",
+                            "xdpgeneric",
+                            "xdpoffload"
+                        ],
+                        "default": "auto"
+                    },
+                    {
+                        "description": "allowed attach modes of the XDP program (`xdp`: run inside driver, `xdpgeneric`: driver-independent before SKB allocation, `xdpoffload`: offload to SmartNIC co-processor)",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "xdp",
+                                "xdpgeneric",
+                                "xdpoffload"
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "properties": {
+        "defaults": {
+            "description": "default settings for configured interfaces",
+            "type": "array",
+            "items": {
+                "description": "first matching entry will be used, settings will be overriden by explicit configured interface settings",
+                "type": "object",
+                "required": [
+                    "match"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "match": {
+                        "description": "apply default settings for interfaces  matching any list item (OR)",
+                        "type": "array",
+                        "items": {
+                            "description": "all conditions that must match (AND)",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "ifname": {
+                                    "description": "regex to match interface name",
+                                    "examples": [
+                                        "^eth\\d+$"
+                                    ],
+                                    "type": "string"
+                                },
+                                "kind": {
+                                    "description": "regex to match link type",
+                                    "examples": [
+                                        "^physical$",
+                                        "^(physical|vlan)$"
+                                    ],
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "clear_addresses": {
+                        "description": "implicit remove all ip addresses",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "clear_fdb": {
+                        "description": "implicit remove all permanent fdb entries",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "clear_neighbours": {
+                        "description": "implicit remove all permanent ip neighbours",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "ethtool": {
+                        "$ref": "#/$defs/iface-ethtool"
+                    },
+                    "link": {
+                        "description": "implicit link settings for matching interfaces",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "group": {
+                                "$ref": "#/$defs/iface-link_group"
+                            },
+                            "state": {
+                                "$ref": "#/$defs/iface-link_state"
+                            },
+                            "master": {
+                                "$ref": "#/$defs/iface-link_master"
+                            },
+                            "master_netns": {
+                                "$ref": "#/$defs/iface-link_master-netns"
+                            },
+                            "mtu": {
+                                "$ref": "#/$defs/iface-link_mtu"
+                            },
+                            "txqlen": {
+                                "$ref": "#/$defs/iface-link_txqlen"
+                            },
+                            "ifalias": {
+                                "$ref": "#/$defs/iface-link_ifalias"
+                            },
+                            "link": {
+                                "$ref": "#/$defs/iface-link_link"
+                            },
+                            "link_netns": {
+                                "$ref": "#/$defs/iface-link_link-netns"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "options": {
+            "description": "global configuration settings",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "sysctl": {
+                    "description": "global sysctl settings",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "all": {
+                            "description": "overrides [per interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/all/`",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "ipv4": {
+                                    "$ref": "#/$defs/iface-sysctl-ipv4"
+                                },
+                                "ipv6": {
+                                    "$ref": "#/$defs/iface-sysctl-ipv6"
+                                }
+                            }
+                        },
+                        "default": {
+                            "description": "default [per interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/default/`",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "ipv4": {
+                                    "$ref": "#/$defs/iface-sysctl-ipv4"
+                                },
+                                "ipv6": {
+                                    "$ref": "#/$defs/iface-sysctl-ipv6"
+                                }
+                            }
+                        },
+                        "mpls": {
+                            "$ref": "#/$defs/iface-sysctl-mpls"
+                        }
+                    }
+                }
+            }
+        },
+        "ignore": {
+            "description": "ignore patterns to skip interface, ip address or routing objects",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "ipaddr_builtin": {
+                    "$ref": "#/$defs/ignore-ipaddr"
+                },
+                "ipaddr": {
+                    "$ref": "#/$defs/ignore-ipaddr"
+                },
+                "ipaddr_dynamic": {
+                    "description": "ignore dynamic assigned ip addresses",
+                    "type": "boolean",
+                    "default": true
+                },
+                "ifname_builtin": {
+                    "$ref": "#/$defs/ignore-ifname"
+                },
+                "ifname": {
+                    "$ref": "#/$defs/ignore-ifname"
+                },
+                "fdb_builtin": {
+                    "$ref": "#/$defs/ignore-fdb"
+                },
+                "fdb": {
+                    "$ref": "#/$defs/ignore-fdb"
+                },
+                "routes_builtin": {
+                    "$ref": "#/$defs/ignore-routes"
+                },
+                "routes": {
+                    "$ref": "#/$defs/ignore-routes"
+                },
+                "rules_builtin": {
+                    "$ref": "#/$defs/ignore-rules"
+                },
+                "rules": {
+                    "$ref": "#/$defs/ignore-rules"
+                },
+                "netns": {
+                    "description": "netns namespaces matching this list of regex will be ignored",
+                    "type": "array",
+                    "items": {
+                        "description": "regex to match interface name",
+                        "examples": [
+                            "^tenant-\\d+"
+                        ],
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "bpf": {
+            "description": "load and pin eBPF programs (i.e. for XDP)",
+            "type": "object",
+            "patternProperties": {
+                "": {
+                    "description": "BPF program",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "object",
+                        "section"
+                    ],
+                    "properties": {
+                        "object": {
+                            "description": "BPF ELF file to load",
+                            "type": "string"
+                        },
+                        "section": {
+                            "description": "BPF program's section name",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "cshaper": {
+            "description": "cshaper templates",
+            "type": "object",
+            "patternProperties": {
+                "": {
+                    "description": "cshaper profile",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "egress_qdisc",
+                        "ingress_qdisc",
+                        "ingress_ifname"
+                    ],
+                    "properties": {
+                        "egress_qdisc": {
+                            "$ref": "#/$defs/tc-cake"
+                        },
+                        "ingress_qdisc": {
+                            "$ref": "#/$defs/tc-cake"
+                        },
+                        "ingress_ifname": {
+                            "description": "build a ifb ifname using a regex on the ifname",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                                "search",
+                                "replace"
+                            ],
+                            "properties": {
+                                "search": {
+                                    "description": "pattern to search",
+                                    "type": "string"
+                                },
+                                "replace": {
+                                    "description": "replace pattern by string",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "required": [
+                "default"
+            ]
+        },
+        "interfaces": {
+            "description": "list of interface settings (link settings and ip addresses)",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "$ref": "#/$defs/iface-name",
+                        "description": "name of the interface"
+                    },
+                    "addresses": {
+                        "description": "ip addresses of the interface",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "examples": [
+                                "192.0.2.1",
+                                "192.168.0.1/24",
+                                "2001:db8::1/64"
+                            ]
+                        }
+                    },
+                    "brport": {
+                        "description": "settings for bridge ports",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "priority": {
+                                "description": "set port priority",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 63
+                            },
+                            "cost": {
+                                "description": "set port cost",
+                                "minimum": 1,
+                                "maximum": 65535
+                            },
+                            "guard": {
+                                "description": "filter BPDU packets",
+                                "type": "boolean"
+                            },
+                            "mode": {
+                                "description": "enable hairpin mode",
+                                "type": "boolean"
+                            },
+                            "fast_leave": {
+                                "description": "enable multicast fast leave",
+                                "type": "boolean"
+                            },
+                            "protect": {
+                                "description": "prevent to become a root port",
+                                "type": "boolean"
+                            },
+                            "learning": {
+                                "description": "allow MAC address learning",
+                                "type": "boolean"
+                            },
+                            "unicast_flood": {
+                                "description": "flood unknown unicasts",
+                                "type": "boolean"
+                            },
+                            "bcast_flood": {
+                                "description": "flood broadcasts",
+                                "type": "boolean"
+                            },
+                            "mcast_flood": {
+                                "description": "flood multicasts",
+                                "type": "boolean"
+                            },
+                            "mcast_to_ucast": {
+                                "description": "clone multicast packets into unicasts",
+                                "type": "boolean"
+                            },
+                            "proxyarp": {
+                                "description": "enable proxy ARP",
+                                "type": "boolean"
+                            },
+                            "proxyarp_wifi": {
+                                "description": "enable proxy ARP (IEEE 802.11 and Hotspot 2.0)",
+                                "type": "boolean"
+                            },
+                            "neigh_suppress": {
+                                "description": "ARP and ND suppression",
+                                "type": "boolean"
+                            },
+                            "vlan_tunnel": {
+                                "description": "VLAN to tunnel mapping",
+                                "type": "boolean"
+                            },
+                            "backup_port": {
+                                "description": "backup bridge port on loss carrier",
+                                "$ref": "#/$defs/iface-link_link"
+                            },
+                            "isolated": {
+                                "description": "isolated port, can communicate only with non-isolated ports",
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "fdb": {
+                        "description": "forwarding database for bridge interfaces, the entries are distinct by the `lladdr` property",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["lladdr"],
+                            "properties": {
+                                "lladdr": {
+                                    "description": "destination link layer address",
+                                    "$ref": "#/$defs/iface-link_address",
+                                    "default": null
+                                },
+                                "dst": {
+                                    "description": "ip address of the destination VXLAN tunnel endpoint",
+                                    "type": "string",
+                                    "oneOf": [
+                                        {
+                                            "format": "ipv4"
+                                        },
+                                        {
+                                            "format": "ipv6"
+                                        }
+                                    ]
+                                },
+                                "nhid": {
+                                    "description": "ecmp nexthop group for the VXLAN device driver",
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                "port": {
+                                    "description": "destination port number to use to connect to the remote VXLAN tunnel endpoint",
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 65535
+                                },
+                                "vni": {
+                                    "description": "virtual network identifier this entry belongs to",
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 16777215
+                                },
+                                "flags": {
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "type": "string",
+                                            "enum": [
+                                                "self",
+                                                "master",
+                                                "router",
+                                                "use",
+                                                "sticky"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "state": {
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "type": "string",
+                                            "enum": [
+                                                "permanent",
+                                                "noarp"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "vrrp": {
+                        "$ref": "#/$defs/condition-vrrp"
+                    },
+                    "link": {
+                        "description": "link settings of the interface",
+                        "type": "object",
+                        "oneOf": [
+                            {
+                                "description": "Intermediate Functional Block device",
+                                "required": [
+                                    "kind"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "const": "ifb",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Virtual tunnel interface IPv4|IPv6 over IPv6",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "ip6tnl",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "IP over Infiniband device",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "ipoib",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Interface for L3 (IPv6/IPv4) based VLANs",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "ipvlan",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Virtual interface base on link layer address (MAC)",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "macvlan",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Virtual interface based on link layer address (MAC) and TAP",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "macvtap",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Team network device",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "team",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Virtual software device (TUN/TAP)",
+                                "required": [
+                                    "kind",
+                                    "tun_type"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "const": "tun",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "tun_type": {
+                                        "description": "device mode (Ethernet headers)",
+                                        "default": "tap",
+                                        "enum": [
+                                            1,
+                                            "tun",
+                                            2,
+                                            "tap"
+                                        ]
+                                    },
+                                    "tun_pi": {
+                                        "description": "provide packet information",
+                                        "type": [
+                                            "boolean",
+                                            "integer"
+                                        ],
+                                        "default": false,
+                                        "enum": [
+                                            0,
+                                            false,
+                                            1,
+                                            true
+                                        ]
+                                    },
+                                    "tun_persist": {
+                                        "description": "persistent device; non-persistent devices cannot be created",
+                                        "type": [
+                                            "boolean",
+                                            "integer"
+                                        ],
+                                        "default": false,
+                                        "enum": [
+                                            0,
+                                            false,
+                                            1,
+                                            true
+                                        ]
+                                    },
+                                    "tun_vnet_hdr": {
+                                        "description": "prepend frames with struct virtio_net_hdr",
+                                        "default": false,
+                                        "enum": [
+                                            0,
+                                            false,
+                                            1,
+                                            true
+                                        ]
+                                    },
+                                    "tun_multi_queue": {
+                                        "description": "enable multiqueue tuntap",
+                                        "type": [
+                                            "boolean",
+                                            "integer"
+                                        ],
+                                        "default": false,
+                                        "enum": [
+                                            0,
+                                            false,
+                                            1,
+                                            true
+                                        ]
+                                    },
+                                    "tun_owner": {
+                                        "description": "device owner",
+                                        "type": [
+                                            "integer",
+                                            "string"
+                                        ]
+                                    },
+                                    "tun_group": {
+                                        "description": "device group",
+                                        "type": [
+                                            "integer",
+                                            "string"
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Virtual Routing and Forwarding device",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "vrf",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Virtual tunnel interface over IPv4",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "vti",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Virtual tunnel interface over IPv6",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "vti6",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Bonding network interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "const": "bond",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "bond_mode": {
+                                        "enum": [
+                                            0,
+                                            "balance-rr",
+                                            1,
+                                            "active-backup",
+                                            2,
+                                            "balance-xor",
+                                            3,
+                                            "broadcast",
+                                            4,
+                                            "802.3ad",
+                                            5,
+                                            "balance-tlb",
+                                            6,
+                                            "balance-alb"
+                                        ],
+                                        "default": "balance-rr",
+                                        "description": "the bonding policy"
+                                    },
+                                    "bond_miimon": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 0,
+                                        "description": "MII link monitoring frequency in milliseconds"
+                                    },
+                                    "bond_updelay": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 0,
+                                        "description": "time, in milliseconds, to wait before enabling a slave after a link recovery has been detected"
+                                    },
+                                    "bond_downdelay": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 0,
+                                        "description": "time, in milliseconds, to wait before disabling a slave after a link failure has been detected"
+                                    },
+                                    "bond_use_carrier": {
+                                        "enum": [
+                                            0,
+                                            1
+                                        ],
+                                        "default": 1,
+                                        "description": "use MII or ETHTOOL ioctls vs. netif_carrier_ok() to determine the link status"
+                                    },
+                                    "bond_arp_interval": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 0,
+                                        "description": "ARP link monitoring frequency in milliseconds"
+                                    },
+                                    "bond_arp_validate": {
+                                        "enum": [
+                                            0,
+                                            "none",
+                                            1,
+                                            "active",
+                                            2,
+                                            "backup",
+                                            3,
+                                            "all",
+                                            4,
+                                            "filter",
+                                            5,
+                                            "filter_active",
+                                            6,
+                                            "filter_backup"
+                                        ],
+                                        "default": "none",
+                                        "description": "arp validation for arp monitoring"
+                                    },
+                                    "bond_arp_all_targets": {
+                                        "enum": [
+                                            0,
+                                            "any",
+                                            1,
+                                            "all"
+                                        ],
+                                        "default": "any",
+                                        "description": "quantity of arp_ip_targets that must be reachable"
+                                    },
+                                    "bond_primary_reselect": {
+                                        "enum": [
+                                            0,
+                                            "always",
+                                            1,
+                                            "better",
+                                            2,
+                                            "failure"
+                                        ],
+                                        "default": "always",
+                                        "description": "reselection policy for the primary slave"
+                                    },
+                                    "bond_fail_over_mac": {
+                                        "enum": [
+                                            0,
+                                            "none",
+                                            1,
+                                            "active",
+                                            2,
+                                            "follow"
+                                        ],
+                                        "default": "none",
+                                        "description": "slave mac address selection"
+                                    },
+                                    "bond_xmit_hash_policy": {
+                                        "enum": [
+                                            0,
+                                            "layer2",
+                                            1,
+                                            "layer3+4",
+                                            2,
+                                            "layer2+3",
+                                            3,
+                                            "encap2+3",
+                                            4,
+                                            "encap3+4",
+                                            5,
+                                            "vlan+srcmac"
+                                        ],
+                                        "default": "layer2",
+                                        "description": "transmit hash policy to use for slave selection"
+                                    },
+                                    "bond_resend_igmp": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 255,
+                                        "default": 1,
+                                        "description": "number of IGMP membership reports to be issued after a failover event"
+                                    },
+                                    "bond_num_peer_notif": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 1
+                                    },
+                                    "bond_all_slaves_active": {
+                                        "enum": [
+                                            0,
+                                            1
+                                        ],
+                                        "default": 1,
+                                        "description": "dropped (0) or delivered (1) duplicate frames"
+                                    },
+                                    "bond_min_links": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 0,
+                                        "description": "number of links that must be active before asserting carrier"
+                                    },
+                                    "bond_lp_interval": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 2147483647,
+                                        "default": 1,
+                                        "description": "number of seconds between instances where the bonding driver sends learning packets to each slaves peer switch"
+                                    },
+                                    "bond_packets_per_slave": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 65535,
+                                        "default": 1,
+                                        "description": "number of packets to transmit through a slave before moving to the next one"
+                                    },
+                                    "bond_ad_lacp_rate": {
+                                        "enum": [
+                                            0,
+                                            "slow",
+                                            1,
+                                            "fast"
+                                        ],
+                                        "default": "slow",
+                                        "description": "requested LACPDU packet rate in 802.3ad mode"
+                                    },
+                                    "bond_ad_select": {
+                                        "enum": [
+                                            0,
+                                            "stable",
+                                            1,
+                                            "bandwidth",
+                                            2,
+                                            "count"
+                                        ],
+                                        "default": "stable",
+                                        "description": "802.3ad aggregation selection logic to use"
+                                    },
+                                    "bond_tlb_dynamic_lb": {
+                                        "enum": [
+                                            0,
+                                            1
+                                        ],
+                                        "default": 1,
+                                        "description": "dynamic shuffling of flows in tlb mode"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Bridge network interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "bridge",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "br_ageing_time": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "default": 30000,
+                                        "description": "FDB entry ageing time in milliseconds"
+                                    },
+                                    "br_vlan_protocol": {
+                                        "enum": [
+                                            33024,
+                                            "802.1q",
+                                            34984,
+                                            "802.1ad"
+                                        ],
+                                        "default": "802.1q",
+                                        "description": "802.1q or 802.1ad (Q-in-Q)"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Physical network interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "physical"
+                                        ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "permaddr": {
+                                        "description": "select interface by permanent address [ethtool -P]",
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "businfo": {
+                                        "description": "select interface by bus info [ethtool -i]",
+                                        "type": "string",
+                                        "maxLength": 32
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "Dummy network interface",
+                                "required": [
+                                    "kind"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "dummy"
+                                        ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "VETH/VXCAN interface",
+                                "required": [
+                                    "kind",
+                                    "peer"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "veth",
+                                            "vxcan"
+                                        ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "peer": {
+                                        "$ref": "#/$defs/iface-link_link"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "VLAN interface",
+                                "required": [
+                                    "kind",
+                                    "link",
+                                    "vlan_id"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "const": "vlan",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "link": {
+                                        "$ref": "#/$defs/iface-link_link"
+                                    },
+                                    "link_netns": {
+                                        "$ref": "#/$defs/iface-link_link-netns"
+                                    },
+                                    "vlan_id": {
+                                        "type": [
+                                            "integer"
+                                        ],
+                                        "minimum": 0,
+                                        "maximum": 4094,
+                                        "description": "specifies the VLAN identifier to use"
+                                    },
+                                    "vlan_protocol": {
+                                        "enum": [
+                                            33024,
+                                            "802.1q",
+                                            34984,
+                                            "802.1ad"
+                                        ],
+                                        "default": "802.1q",
+                                        "description": "802.1q or 802.1ad (Q-in-Q)"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "VXLAN interface",
+                                "required": [
+                                    "kind",
+                                    "vxlan_id"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "const": "vxlan",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "vxlan_id": {
+                                        "type": [
+                                            "integer"
+                                        ],
+                                        "minimum": 0,
+                                        "maximum": 16777215,
+                                        "description": "specifies the VNI"
+                                    },
+                                    "vxlan_link": {
+                                        "$ref": "#/$defs/iface-link_tun-dev"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "IPIP interface",
+                                "required": [
+                                    "kind",
+                                    "ipip_remote",
+                                    "ipip_local"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "const": "ipip",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "ipip_remote": {
+                                        "$ref": "#/$defs/iface-link_tun-remote4"
+                                    },
+                                    "ipip_local": {
+                                        "$ref": "#/$defs/iface-link_tun-local4"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "SIT interface",
+                                "required": [
+                                    "kind",
+                                    "sit_remote",
+                                    "sit_local"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "const": "sit",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "sit_remote": {
+                                        "$ref": "#/$defs/iface-link_tun-remote4"
+                                    },
+                                    "sit_local": {
+                                        "$ref": "#/$defs/iface-link_tun-local4"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "GRE, GRETAP interface",
+                                "required": [
+                                    "kind",
+                                    "gre_remote",
+                                    "gre_local"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "gre",
+                                            "gretap"
+                                        ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "gre_remote": {
+                                        "$ref": "#/$defs/iface-link_tun-remote4"
+                                    },
+                                    "gre_local": {
+                                        "$ref": "#/$defs/iface-link_tun-local4"
+                                    },
+                                    "gre_link": {
+                                        "$ref": "#/$defs/iface-link_tun-dev"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "IP6GRE, IP6GRETAP interface",
+                                "required": [
+                                    "kind",
+                                    "ip6gre_remote",
+                                    "ip6gre_local"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "type": "string",
+                                        "description": "link type",
+                                        "enum": [
+                                            "ip6gre",
+                                            "ip6gretap"
+                                        ]
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "ip6gre_remote": {
+                                        "$ref": "#/$defs/iface-link_tun-remote4"
+                                    },
+                                    "ip6gre_local": {
+                                        "$ref": "#/$defs/iface-link_tun-local4"
+                                    },
+                                    "ip6gre_link": {
+                                        "$ref": "#/$defs/iface-link_tun-dev"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "GENEVE interface over IPv4",
+                                "additionalProperties": false,
+                                "required": [
+                                    "kind",
+                                    "geneve_id",
+                                    "geneve_remote"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "geneve",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "geneve_id": {
+                                        "type": [
+                                            "integer"
+                                        ],
+                                        "minimum": 0,
+                                        "maximum": 16777215,
+                                        "description": "specifies the VNI to use"
+                                    },
+                                    "geneve_remote": {
+                                        "$ref": "#/$defs/iface-link_tun-remote4"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "GENEVE interface over IPv6",
+                                "additionalProperties": false,
+                                "required": [
+                                    "kind",
+                                    "geneve_id",
+                                    "geneve_remote6"
+                                ],
+                                "properties": {
+                                    "kind": {
+                                        "const": "geneve",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "geneve_id": {
+                                        "type": [
+                                            "integer"
+                                        ],
+                                        "minimum": 0,
+                                        "maximum": 16777215,
+                                        "description": "specifies the VNI to use"
+                                    },
+                                    "geneve_remote6": {
+                                        "$ref": "#/$defs/iface-link_tun-remote6"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "WireGuard interface; WireGuard settings can be configured using a `wireguard` block",
+                                "required": [
+                                    "kind"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "const": "wireguard",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    }
+                                }
+                            },
+                            {
+                                "description": "XFRM interface",
+                                "required": [
+                                    "kind",
+                                    "xfrm_if_id"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "const": "xfrm",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "master_netns": {
+                                        "$ref": "#/$defs/iface-link_master-netns"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "xfrm_link": {
+                                        "$ref": "#/$defs/iface-link_tun-dev",
+                                        "description": "underlying interface used to send and receive the transformed traffic"
+                                    },
+                                    "xfrm_if_id": {
+                                        "type": [
+                                            "integer"
+                                        ],
+                                        "minimum": 0,
+                                        "maximum": 4294967295,
+                                        "default": 0,
+                                        "description": "lookup key to match xfrm policies"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "neighbours": {
+                        "description": "static ARP or NDISC cache entries",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "dst"
+                            ],
+                            "additionalProperties": false,
+                            "properties": {
+                                "dst": {
+                                    "description": "protocol address of the neighbour",
+                                    "type": "string",
+                                    "format": "ipv4"
+                                },
+                                "lladdr": {
+                                    "description": "link layer address of the neighbour",
+                                    "$ref": "#/$defs/iface-link_address",
+                                    "default": null
+                                }
+                            }
+                        }
+                    },
+                    "sysctl": {
+                        "description": "interface sysctl settings",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "ipv4": {
+                                "$ref": "#/$defs/iface-sysctl-ipv4"
+                            },
+                            "ipv6": {
+                                "$ref": "#/$defs/iface-sysctl-ipv6"
+                            },
+                            "mpls": {
+                                "$ref": "#/$defs/iface-sysctl-mpls-link"
+                            }
+                        }
+                    },
+                    "ethtool": {
+                        "$ref": "#/$defs/iface-ethtool"
+                    },
+                    "cshaper": {
+                        "description": "simple shaper setup based on the [cake](https://man7.org/linux/man-pages/man8/tc-cake.8.html) queue discipline; replaces any tc settings",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "ingress": {
+                                "description": "target ingress bandwidth",
+                                "type": "string",
+                                "default": "unlimited"
+                            },
+                            "egress": {
+                                "description": "target egress bandwidth",
+                                "type": "string",
+                                "default": "unlimited"
+                            },
+                            "profile": {
+                                "description": "cshaper profile",
+                                "type": "string",
+                                "default": "default"
+                            }
+                        }
+                    },
+                    "tc": {
+                        "description": "settings for traffic control",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "ingress": {
+                                "description": "enable the ingress qdisc for policing and shaping in ingress",
+                                "type": "boolean"
+                            },
+                            "qdisc": {
+                                "description": "root queueing disciplines",
+                                "$ref": "#/$defs/iface-tc_qdisc"
+                            },
+                            "filter": {
+                                "description": "filter used by qdiscs",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "kind"
+                                    ],
+                                    "properties": {
+                                        "kind": {
+                                            "type": "string",
+                                            "description": "filter type",
+                                            "enum": [
+                                                "basic",
+                                                "flow",
+                                                "fw",
+                                                "matchall"
+                                            ]
+                                        }
+                                    },
+                                    "oneOf": [
+                                        {
+                                            "description": "[basic](https://man7.org/linux/man-pages/man8/tc-basic.8.html) - basic traffic control filter",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "basic"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/$defs/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/$defs/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/$defs/iface-tc_action"
+                                                },
+                                                "match": {
+                                                    "description": "match packets using the [extended match infrastructure](https://man7.org/linux/man-pages/man8/tc-ematch.8.html)",
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "[flow](https://man7.org/linux/man-pages/man8/tc-flow.8.html) - flow based traffic control filter",
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "flow"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/$defs/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/$defs/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/$defs/iface-tc_action"
+                                                },
+                                                "baseclass": {
+                                                    "description": "offset for the class ID calculation",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 65535,
+                                                    "default": 1
+                                                },
+                                                "divisor": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "or": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "and": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "xor": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "rshift": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "addend": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                }
+                                            },
+                                            "oneOf": [
+                                                {
+                                                    "required": [
+                                                        "kind",
+                                                        "mode",
+                                                        "key"
+                                                    ],
+                                                    "properties": {
+                                                        "mode": {
+                                                            "description": "filter mode",
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "map"
+                                                            ]
+                                                        },
+                                                        "key": {
+                                                            "description": "map to class ID by key",
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "src",
+                                                                "dst",
+                                                                "proto",
+                                                                "proto-src",
+                                                                "proto-dst",
+                                                                "iif",
+                                                                "priority",
+                                                                "mark",
+                                                                "nfct",
+                                                                "nfct-src",
+                                                                "nfct-dst",
+                                                                "nfct-proto-src",
+                                                                "nfct-proto-dst",
+                                                                "rt-classid",
+                                                                "sk-uid",
+                                                                "sk-gid",
+                                                                "vlan-tag",
+                                                                "rxhash"
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "required": [
+                                                        "kind",
+                                                        "mode",
+                                                        "keys"
+                                                    ],
+                                                    "properties": {
+                                                        "mode": {
+                                                            "description": "filter mode",
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "hash"
+                                                            ]
+                                                        },
+                                                        "keys": {
+                                                            "description": "hash over keys for class ID calculation",
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "src",
+                                                                    "dst",
+                                                                    "proto",
+                                                                    "proto-src",
+                                                                    "proto-dst",
+                                                                    "iif",
+                                                                    "priority",
+                                                                    "mark",
+                                                                    "nfct",
+                                                                    "nfct-src",
+                                                                    "nfct-dst",
+                                                                    "nfct-proto-src",
+                                                                    "nfct-proto-dst",
+                                                                    "rt-classid",
+                                                                    "sk-uid",
+                                                                    "sk-gid",
+                                                                    "vlan-tag",
+                                                                    "rxhash"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "perturb": {
+                                                            "description": "rehashing interval (in seconds)",
+                                                            "type": "integer",
+                                                            "minimum": 0,
+                                                            "maximum": 294967295
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "description": "[fw](https://man7.org/linux/man-pages/man8/tc-fw.8.html) - fwmark traffic control filter",
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "kind",
+                                                "handle"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "fw"
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/$defs/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/$defs/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/$defs/iface-tc_action"
+                                                },
+                                                "handle": {
+                                                    "description": "fwmark (iptables) to match",
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description": "[matchall](https://man7.org/linux/man-pages/man8/tc-matchall.8.html) - traffic control filter that matches every packet",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "kind": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "matchall"
+                                                    ]
+                                                },
+                                                "parent": {
+                                                    "$ref": "#/$defs/iface-tc_qid"
+                                                },
+                                                "protocol": {
+                                                    "$ref": "#/$defs/iface-tc_protocol"
+                                                },
+                                                "prio": {
+                                                    "$ref": "#/$defs/iface-tc_prio"
+                                                },
+                                                "action": {
+                                                    "$ref": "#/$defs/iface-tc_action"
+                                                },
+                                                "classid": {
+                                                    "description": "push matching packets into class",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                },
+                                                "flags": {
+                                                    "description": "process flags (1: SKIP_HW, 2: SKIP_SW)",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 4294967295
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "wireguard": {
+                        "description": "settings for WireGuard interfaces",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                            "private_key"
+                        ],
+                        "properties": {
+                            "private_key": {
+                                "description": "local private key (consider to use the `!include` tag to read the key from file)",
+                                "type": "string"
+                            },
+                            "listen_port": {
+                                "description": "port for listening",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 65535
+                            },
+                            "fwmark": {
+                                "description": "fwmark for outgoing packets",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            },
+                            "peers": {
+                                "description": "list of peer definitions",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "public_key"
+                                    ],
+                                    "properties": {
+                                        "public_key": {
+                                            "description": "the peer's public key",
+                                            "type": "string"
+                                        },
+                                        "preshared_key": {
+                                            "description": "preshared key for post-quantum resistance (consider to use the `!include` tag to read the key from file)",
+                                            "type": "string"
+                                        },
+                                        "endpoint": {
+                                            "description": "initial endpoint IP or hostname",
+                                            "type": "string"
+                                        },
+                                        "persistent_keepalive_interval": {
+                                            "description": "keepalive interval seconds",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 65535
+                                        },
+                                        "allowedips": {
+                                            "description": "list of prefixes in CIDR notation",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "xdp": {
+                        "description": "settings for XDP (\"eXpress Data Path\") BPF program",
+                        "oneOf": [
+                            {
+                                "description": "remove attached XDP program",
+                                "type": "boolean",
+                                "enum": [
+                                    false
+                                ]
+                            },
+                            {
+                                "description": "attach already pinned XDP program",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                    "pinned"
+                                ],
+                                "properties": {
+                                    "mode": {
+                                        "$ref": "#/$defs/xdp_mode"
+                                    },
+                                    "pinned": {
+                                        "description": "path to already pinned XDP program",
+                                        "type": "string",
+                                        "format": "^/sys/fs/bfd/."
+                                    }
+                                }
+                            },
+                            {
+                                "description": "BPF program from ifstate's bpf config section",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                    "bpf"
+                                ],
+                                "properties": {
+                                    "mode": {
+                                        "$ref": "#/$defs/xdp_mode"
+                                    },
+                                    "bpf": {
+                                        "description": "BPF program (key in bpf config section)",
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "routing": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "routes": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "to"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                            "type": {
+                                "description": "the type of this route",
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "enum": [
+                                    "unicast",
+                                    "local",
+                                    "broadcast",
+                                    "anycast",
+                                    "multicast",
+                                    "blackhole",
+                                    "unreachable",
+                                    "prohibit",
+                                    "throw",
+                                    "nat",
+                                    "xresolve"
+                                ],
+                                "minimum": 1,
+                                "maximum": 11,
+                                "default": "unicast"
+                            },
+                            "dev": {
+                                "description": "the output device name",
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ]
+                            },
+                            "proto": {
+                                "description": "the routing protool identifier of this route",
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "default": "boot"
+                            },
+                            "realm": {
+                                "description": "the realm to which this route is assigned",
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ]
+                            },
+                            "scope": {
+                                "description": "the scope of the destinations covered by the route prefix",
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ]
+                            },
+                            "table": {
+                                "description": "the table to add this route to",
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "default": "main"
+                            },
+                            "to": {
+                                "description": "the destination prefix of the route",
+                                "type": "string"
+                            },
+                            "via": {
+                                "description": "address of the nexthop router",
+                                "type": "string",
+                                "oneOf": [
+                                    {
+                                        "format": "ipv4"
+                                    },
+                                    {
+                                        "format": "ipv6"
+                                    }
+                                ]
+                            },
+                            "vrrp": {
+                                "$ref": "#/$defs/condition-vrrp"
+                            },
+                            "src": {
+                                "description": "the source address to prefer",
+                                "type": "string",
+                                "oneOf": [
+                                    {
+                                        "format": "ipv4"
+                                    },
+                                    {
+                                        "format": "ipv6"
+                                    }
+                                ]
+                            },
+                            "preference": {
+                                "description": "preference of the route",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 0
+                            }
+                        }
+                    }
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "if": {
+                            "properties": {
+                                "action": {
+                                    "const": "to_tbl"
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "table",
+                                "priority"
+                            ]
+                        },
+                        "else": {
+                            "required": [
+                                "priority"
+                            ]
+                        },
+                        "additionalProperties": false,
+                        "properties": {
+                            "action": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "description": "the type of this rule",
+                                "enum": [
+                                    "to_tbl",
+                                    "blackhole",
+                                    "unreachable",
+                                    "prohibit"
+                                ],
+                                "default": "to_tbl"
+                            },
+                            "table": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "minimum": 0,
+                                "maximum": 255
+                            },
+                            "priority": {
+                                "type": "integer",
+                                "description": "the priority of this rule",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            },
+                            "from": {
+                                "type": "string",
+                                "description": "select the source prefix to match"
+                            },
+                            "to": {
+                                "type": "string",
+                                "description": "select the destination prefix to match"
+                            },
+                            "iif": {
+                                "type": "string",
+                                "description": "select the incoming device to match"
+                            },
+                            "oif": {
+                                "type": "string",
+                                "description": "select the outgoing device to match"
+                            },
+                            "proto": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "default": "unspec",
+                                "description": "routing protocol number (`/etc/iproute2/rt_protos`)"
+                            },
+                            "fwmark": {
+                                "type": "integer",
+                                "description": "select the *fwmark* value to match"
+                            },
+                            "ipproto": {
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ],
+                                "description": "select the ip protocol to match"
+                            },
+                            "vrrp": {
+                                "$ref": "#/$defs/condition-vrrp"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "namespaces": {
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                ".+": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "interfaces"
+                    ],
+                    "properties": {
+                        "bpf": {
+                            "$ref": "#/properties/bpf"
+                        },
+                        "options": {
+                            "$ref": "#/properties/options"
+                        },
+                        "interfaces": {
+                            "$ref": "#/properties/interfaces"
+                        },
+                        "routing": {
+                            "$ref": "#/properties/routing"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

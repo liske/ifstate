@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://ifstate.net/schema/ifstate.conf.schema.json
+#ignore:
+#  ifname:
+#    - .*
+interfaces:
+  - name: eno1
+    link:
+      state: up
+      kind: physical
+
+  - name: bond0
+    link:
+      state: up
+      kind: bond
+      bond_mode: 802.3ad
+      bond_ad_lacp_rate: fast

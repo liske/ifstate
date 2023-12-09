@@ -1,0 +1,49 @@
+#ignore:
+#  ifname:
+#    - .*
+
+defaults:
+  - match:
+      - ifname: ''
+    link:
+      master: null
+
+options:
+  sysctl:
+    all:
+      ipv4:
+        forwarding: 1
+    default:
+      ipv4:
+        forwarding: 0
+interfaces:
+  - name: eno1
+    addresses:
+      - 10.2.0.254/24
+      - fd00:10:2:0:56b2:3ff:fe16:9408/64
+    link:
+      state: up
+      kind: physical
+      address: 54:b2:03:16:94:08
+  - name: enp5s0
+    link:
+      state: up
+      kind: physical
+      # master: po2
+      businfo: '0000:05:00.0'
+  - name: po2
+    link:
+      state: up
+      kind: bond
+  - name: pppoe
+    link:
+      ifalias: PPPoE Ether
+      state: up
+      kind: bridge
+
+routing:
+  routes:
+    - to: 0.0.0.0/0
+      via: 10.2.0.1
+#    - to: 42.42.42.42
+#      dev: asddas

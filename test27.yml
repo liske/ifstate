@@ -1,0 +1,75 @@
+#ignore:
+#  ifname:
+#    - .*
+ignore:
+  ifname:
+    - ^eno1$
+    - ^wl
+    - ^vnet
+    - ^eth0
+
+bpf:
+  test:
+    object: /home/thomas/src/xdp-tutorial/basic03-map-counter/xdp_prog_kern.o
+    section: xdp
+#    maps:
+#      xdp_ipv4_backlist:
+#        entries: []
+
+defaults:
+  - match: []
+    clear_addresses: true
+    clear_neighbours: true
+    link:
+      state: down
+      ifalias: up
+
+interfaces:
+  - name: enp5s0
+    link:
+      state: up
+      kind: physical
+    xdp:
+      bpf: test
+#      master: br-test
+#    brport:
+#      cost: 42
+#      unicast_flood: on
+
+routing:
+  routes:
+    - to: 0.0.0.0/0
+      via: 10.2.0.1
+
+namespaces:
+  tenant1:
+    interfaces: []
+  tenant2:
+    interfaces: []
+  service:
+    interfaces:
+    - name: br-test
+      link:
+        state: up
+        kind: bridge
+      xdp:
+        bpf: test
+    - name: wg0
+      addresses:
+      - 192.0.2.1/25
+      link:
+        state: up
+#        bind_netns: null
+        kind: wireguard
+      wireguard:
+        private_key: !include /etc/wireguard/peer_A.key
+        peers:
+        - public_key: 3Eimby+9YtJwtx+peCsz6RiubRqAp+cATHNiGWsUsEU=
+          endpoint: 192.168.42.1:42424
+          persistent_keepalive_interval: 4
+          allowedips:
+          - 192.0.2.128/25
+    bpf:
+      test:
+        object: /home/thomas/src/xdp-tutorial/basic03-map-counter/xdp_prog_kern.o
+        section: xdp

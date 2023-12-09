@@ -1,0 +1,38 @@
+<h1 id="alpine-linux">Alpine Linux</h1>
+
+<h2 id="alpine-linux-313">Alpine Linux ≥ 3.13</h2>
+
+<p><em>IfState</em> is available in the <em>community</em> repository since <em>Alpine Linux 3.13</em>.</p>
+
+<p>If the <code class="language-plaintext highlighter-rouge">wireguard-tools-wg</code> package is going to be installed it will pull also <code class="language-plaintext highlighter-rouge">py3-wgnlpy</code> which enables <em>Wireguard</em> support in <em>Ifstate</em>.</p>
+
+<p>To enable <em>eXpress Data Path</em> (XDP) support you need to install <code class="language-plaintext highlighter-rouge">libbpf</code> (available since <em>Alpine Linux 3.17+</em>).</p>
+
+<p>You need to install <code class="language-plaintext highlighter-rouge">py3-pygments</code> to enable syntax highlighting in ifstate’s interactive python shell.</p>
+
+<h1 id="manual-installation">Manual installation</h1>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<p><em>IfState</em> depends on <em>Python3</em> and the following python packages:</p>
+<ul>
+  <li><a href="https://pyroute2.org/">pyroute2</a> - Python Netlink library</li>
+  <li><a href="https://pyyaml.org/">PyYAML</a> - YAML parser and emitter for Python</li>
+  <li><a href="https://github.com/Julian/jsonschema">jsonschema</a> - An implementation of JSON Schema validation for Python</li>
+  <li><a href="https://github.com/ArgosyLabs/wgnlpy">wgnlpy</a> - Python netlink connector to WireGuard <em>(optional)</em></li>
+  <li><a href="https://pygments.org/">Pygments</a> - Python syntax highlighter <em>(optional)</em></li>
+</ul>
+
+<p><em>IfState</em> uses python ctypes to configure XDP. You need to have <code class="language-plaintext highlighter-rouge">libbp.so.1</code> available to configure XDP.</p>
+
+<h2 id="pypi">PyPI</h2>
+
+<p><em>IfState</em> is available at <a href="https://pypi.org/project/ifstate/">Python Package Index</a>.  Use <em>pip3</em> for installation:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip3 <span class="nb">install </span>ifstate
+</code></pre></div></div>
+
+<p>This will also install all dependencies if not already statisfied. The optional dependenies can be installed via pip’s extra feature:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip3 <span class="nb">install </span>ifstate[shell,wireguard]
+</code></pre></div></div>

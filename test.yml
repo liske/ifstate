@@ -1,0 +1,41 @@
+#ignore:
+#  ifname:
+#    - .*
+options:
+  sysctl:
+    all:
+      ipv4:
+        forwarding: 1
+    default:
+      ipv4:
+        forwarding: 1
+interfaces:
+  - name: eno1
+    addresses:
+      - 10.2.0.254/24
+      - fd00:10:2:0:56b2:3ff:fe16:9408/64
+    link:
+      state: up
+      kind: physical
+      address: 54:b2:03:16:94:08
+  - name: po1
+    link:
+      state: up
+      kind: bond
+      bond_mode: 4
+      bond_xmit_hash_policy: 1
+      bond_miimon: 100
+      bond_updelay: 300
+      bond_ad_lacp_rate: 1
+  - name: enp5s0
+    link:
+      state: up
+      kind: physical
+      master: po1
+
+routing:
+  routes:
+    - to: 0.0.0.0/0
+      via: 10.2.0.1
+    - to: 42.42.42.42
+      dev: asddas
