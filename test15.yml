@@ -1,0 +1,23 @@
+#ignore:
+#  ifname:
+#    - .*
+ignore:
+  ifname:
+    - ^eno1$
+    - ^wl
+
+interfaces:
+  - name: enp5s0
+    link:
+      state: up
+      kind: physical
+      # master: enp5s42
+      # master: eno1
+    ethtool:
+      eee:
+        eee: off
+
+routing:
+  routes:
+    - to: 0.0.0.0/0
+      via: 10.2.0.1

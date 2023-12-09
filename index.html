@@ -1,0 +1,144 @@
+<p><em>IfState</em> is a python3 utility to configure the Linux network stack in a
+declarative manner. It is a frontend for the kernel’s netlink protocol based on
+<a href="https://pyroute2.org/">pyroute2</a> and aims to be as powerful as the following commands:</p>
+
+<ul>
+  <li>bridge</li>
+  <li>ethtool</li>
+  <li>iproute2
+    <ul>
+      <li>address</li>
+      <li>link</li>
+      <li>neighbour</li>
+      <li>netns</li>
+      <li>route</li>
+      <li>rule</li>
+      <li>vrf</li>
+    </ul>
+  </li>
+  <li>sysctl for network config (<code class="language-plaintext highlighter-rouge">/proc/sys/net/ipv[46]/conf/$IFACE/</code>)</li>
+  <li>tc</li>
+  <li>wireguard</li>
+  <li>xdp-tools</li>
+</ul>
+
+<p>It was written for interface configuration on lightweight software defined linux
+routers <strong>without</strong> using any additional network management daemon like
+<a href="https://gitlab.freedesktop.org/NetworkManager/NetworkManager">Network-Manager</a> or
+<a href="https://www.freedesktop.org/software/systemd/man/systemd-networkd.service.html">systemd-networkd</a>.
+Can be used with deployment and automation tools like
+<a href="https://github.com/ansible/ansible">ansible</a> since it’s declarative and
+operates idempotent.</p>
+
+<p>When <em>IfState</em> was born there where already other projects for declarative
+interface configuration. Sadly they require network management daemons and lack
+support for many virtual link types:</p>
+<ul>
+  <li><a href="https://nmstate.io">NMState</a> - A Declarative API for Host Network Management</li>
+  <li><a href="https://netplan.io">Netplan</a> - The network configuration abstraction renderer</li>
+</ul>
+
+<p><em>IfState</em> can be used as a base for dynamic routing daemons like:</p>
+<ul>
+  <li><a href="https://bird.network.cz/">BIRD</a> - Internet Routing Daemon</li>
+  <li><a href="https://frrouting.org/">FRR</a> - The FRRouting Protocol Suite</li>
+  <li><a href="https://www.quagga.net/">Quagga</a> - Routing Software Suite</li>
+</ul>
+
+<p>It is possible to skip different settings (addresses, routes, …) in <em>IfState</em>
+completely if a routing daemon (<em>FRR</em>, <em>Quagga</em>) does handle it.</p>
+
+<p><em>IfState</em> has full support for Linux netns namespaces. This allows to build
+firewalls and routers with hard multi-client capability without much effort.
+<a href="https://wiki.alpinelinux.org/wiki/Netns">Alpine Linux</a> is one of the few
+(the only?) Linux distributions with native netns support for daemons.</p>
+
+<h1 id="presentations">Presentations</h1>
+
+<p>The following recordings of public talks about IfState are available online:</p>
+
+<ul>
+  <li><a href="https://youtu.be/n1ZTGrwXPkY">Declarative network configuration with ifstate</a>
+at <a href="https://alpinelinux.org/conf/">AlpineConf 2021</a> (in English)</li>
+  <li><a href="https://media.ccc.de/v/clt23-225-deklarative-netzwerkkonfiguration-mit-ifstate">Deklarative Netzwerkkonfiguration mit IfState</a>
+at <a href="https://chemnitzer.linux-tage.de/2023/de/programm/beitrag/225">Chemnitzer Linux-Tage 2023</a> (in German)</li>
+</ul>
+
+<h1 id="installation">Installation</h1>
+
+<p><em>IfState</em> is available in the following linux distributions:</p>
+
+<ul>
+  <li><a href="install.md#Alpine-Linux">Alpine Linux</a></li>
+</ul>
+
+<p>Alternatively you could use <em>pip3</em> to install <em>IfState</em>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip3 <span class="nb">install </span>ifstate
+</code></pre></div></div>
+
+<p>This will also install all python dependencies if not already statisfied.</p>
+
+<p><a href="install.md">More…</a></p>
+
+<h1 id="usage">Usage</h1>
+
+<p>Be aware that using the <code class="language-plaintext highlighter-rouge">ifstatecli</code> command will by default <strong>shutdown and remove any interfaces</strong> which are not declared in the configuration. It ships with a build-in ignore list for some well-known interfaces which should not handled by <em>IfState</em> (i.e. <code class="language-plaintext highlighter-rouge">docker0</code>, <code class="language-plaintext highlighter-rouge">veth</code>, …).</p>
+
+<p>Example configuration:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">interfaces</span><span class="pi">:</span>
+<span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">eth0</span>
+  <span class="na">addresses</span><span class="pi">:</span> <span class="pi">[]</span>
+  <span class="na">link</span><span class="pi">:</span>
+    <span class="na">kind</span><span class="pi">:</span> <span class="s">physical</span>
+<span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">eth0.10</span>
+  <span class="na">addresses</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">198.51.100.3/27</span>
+  <span class="na">link</span><span class="pi">:</span>
+    <span class="na">kind</span><span class="pi">:</span> <span class="s">vlan</span>
+    <span class="na">link</span><span class="pi">:</span> <span class="s">eth0</span>
+    <span class="na">vlan_id</span><span class="pi">:</span> <span class="m">10</span>
+<span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">LOOP</span>
+  <span class="na">addresses</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">192.0.2.3</span>
+  <span class="pi">-</span> <span class="s">2001:db8::3</span>
+  <span class="na">link</span><span class="pi">:</span>
+    <span class="na">kind</span><span class="pi">:</span> <span class="s">dummy</span>
+
+<span class="na">routing</span><span class="pi">:</span>
+  <span class="na">routes</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">to</span><span class="pi">:</span> <span class="s">198.51.100.128/25</span>
+    <span class="na">via</span><span class="pi">:</span> <span class="s">198.51.100.1</span>
+</code></pre></div></div>
+
+<p>Run the <code class="language-plaintext highlighter-rouge">ifstatecli</code> command:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># ifstatecli -c test.yml apply</span>
+cleanup orphan interfaces...
+   eth1                              orphan
+
+configure interfaces...
+ lo
+   <span class="nb">link                              </span>ok
+   addresses                         <span class="o">=</span> 127.0.0.1/8
+   addresses                         <span class="o">=</span> ::1/128
+ eth0
+   <span class="nb">link                              </span>ok
+ eth0.10
+   <span class="nb">link                              </span>add
+   addresses                         + 198.51.100.3/27
+ LOOP
+   <span class="nb">link                              </span>ok
+   addresses                         <span class="o">=</span> 192.0.2.3/32
+   addresses                         <span class="o">=</span> 2001:db8::3/128
+
+configure routing...
+   main                              + 198.51.100.128/25
+</code></pre></div></div>
+
+<p>It is possible to create a configuration template from the currently available interfaces using the <code class="language-plaintext highlighter-rouge">ifstatecli show</code> command.</p>
+
+<p><a href="cli.md">More…</a></p>
+
+<p><a rel="me" href="https://ibh.social/@liske"></a></p>

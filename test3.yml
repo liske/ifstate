@@ -1,0 +1,46 @@
+#ignore:
+#  ifname:
+#    - .*
+ignore:
+  ifname:
+    - ^eno1$
+    - ^wl
+
+interfaces:
+  - name: ifb5s0
+    link:
+      state: up
+      kind: ifb
+    tc:
+      qdisc:
+        kind: cake
+        handle: "1:"
+        bandwidth: 90mbit
+        rtt: regional
+  - name: enp5s0
+    link:
+      state: up
+      kind: physical
+    ethtool:
+      eee:
+        eee: off
+    tc:
+      ingress: true
+      qdisc:
+        kind: cake
+        handle: "1:"
+        bandwidth: 100mbit
+        rtt: regional
+      filter:
+        - kind: matchall
+          parent: "ffff:"
+          action:
+            - kind: mirred
+              direction: egress
+              action: redirect
+              dev: ifb5s0
+
+routing:
+  routes:
+    - to: 0.0.0.0/0
+      via: 10.2.0.1

@@ -1,0 +1,9 @@
+#ignore:
+#  ifname:
+#    - .*
+interfaces:
+  - name: eno1
+    link:
+      state: up
+      kind: physical
+      address: 54:b2:03:16:94:08

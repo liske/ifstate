@@ -1,0 +1,27 @@
+#ignore:
+#  ifname:
+#    - .*
+ignore:
+  ifname:
+    - ^eno1$
+    - ^wl
+    - ^vnet
+    - ^eth0
+
+interfaces:
+  - name: tun-p0
+    link:
+      state: up
+      kind: tun
+      tun_type: tun
+
+  - name: tun-p1
+    link:
+      state: up
+      kind: tun
+      tun_type: tun
+      tun_persist: true
+      tun_multi_queue: true
+      tun_vnet_hdr: true
+      tun_owner: thomas
+      tun_group: users

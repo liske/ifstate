@@ -1,0 +1,37 @@
+#ignore:
+#  ifname:
+#    - .*
+options:
+  sysctl:
+    all:
+      ipv4:
+        forwarding: 1
+    default:
+      ipv4:
+        forwarding: 1
+interfaces:
+  - name: eno1
+    addresses:
+      - 10.2.0.254/24
+      - fd00:10:2:0:56b2:3ff:fe16:9408/64
+    link:
+      state: up
+      kind: physical
+      address: 54:b2:03:16:94:08
+  - name: enp5s0
+    link:
+      state: up
+      kind: physical
+  - name: outside123@5678
+    link:
+      kind: vlan
+      link: enp5s0
+      vlan_id: 42
+      vlan_protocol: 34984
+
+routing:
+  routes:
+    - to: 0.0.0.0/0
+      via: 10.2.0.1
+#    - to: 42.42.42.42
+#      dev: asddas

@@ -1,0 +1,48 @@
+#ignore:
+#  ifname:
+#    - .*
+ignore:
+  ifname:
+    - ^eno1$
+    - ^wl
+    - ^vnet
+
+interfaces:
+  - name: br-test
+    link:
+      state: up
+      kind: bridge
+
+  - name: enp5s0
+    link:
+      state: up
+      kind: physical
+      master: br-test
+    ethtool:
+      eee:
+        eee: off
+    brport:
+#      cost: 42
+      unicast_flood: on
+
+  - name: tttt
+    link:
+      state: up
+      kind: veth
+      peer: t2
+      master: br-test
+    brport:
+      mode: on
+#      cost: 21
+      unicast_flood: on
+
+  - name: t2
+    link:
+      state: up
+      kind: veth
+      peer: tttt
+
+routing:
+  routes:
+    - to: 0.0.0.0/0
+      via: 10.2.0.1

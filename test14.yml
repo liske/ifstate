@@ -1,0 +1,24 @@
+#ignore:
+#  ifname:
+#    - .*
+ignore:
+  ifname:
+    - ^eno1$
+    - ^wl
+
+interfaces:
+  - name: enp5s0
+    link:
+      state: up
+      kind: physical
+    ethtool:
+      eee:
+        eee: off
+    cshaper:
+      egress: 100mbit
+#      ingress: 10mbit
+
+routing:
+  routes:
+    - to: 0.0.0.0/0
+      via: 10.2.0.1
