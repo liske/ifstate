@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>IfState | Manage host interface settings in a declarative manner</title>
+<meta name="generator" content="Jekyll v4.3.1" />
+<meta property="og:title" content="IfState" />
+<meta name="author" content="Thomas Liske" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Manage host interface settings in a declarative manner" />
+<meta property="og:description" content="Manage host interface settings in a declarative manner" />
+<meta property="og:site_name" content="IfState" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="IfState" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"IfState","url":"/examples/vrf.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="IfState" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">IfState</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/">About</a><a class="page-link" href="/features/">Features</a><a class="page-link" href="/install/">Install</a><a class="page-link" href="/cli/">CLI</a><a class="page-link" href="/examples/">Examples</a><a class="page-link" href="/schema.html">Schema</a><a class="page-link" href="/source/">🔗Source</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title"></h1>
+  </header>
+
+  <div class="post-content">
+    <h1 id="example-virtual-routing-and-forwarding-vrf">Example: Virtual Routing and Forwarding (VRF)</h1>
+
+<p>This example attaches two physical interfaces to a <a href="https://www.kernel.org/doc/Documentation/networking/vrf.txt">VRF</a> called <code class="language-plaintext highlighter-rouge">vrf-blue</code>:</p>
+<ul>
+  <li>configure <code class="language-plaintext highlighter-rouge">eth0</code> in the default vrf</li>
+  <li>create the vrf <code class="language-plaintext highlighter-rouge">vrf-blue</code></li>
+  <li>add <code class="language-plaintext highlighter-rouge">eth1</code> and <code class="language-plaintext highlighter-rouge">eth2</code> to the vrf <code class="language-plaintext highlighter-rouge">vrf-blue</code></li>
+  <li>configure ip routing</li>
+</ul>
+
+<p><a href=".">Back</a></p>
+
+<h2 id="ifstate">ifstate</h2>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">interfaces</span><span class="pi">:</span>
+    <span class="c1"># default vrf</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">eth0</span>
+      <span class="na">addresses</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">198.51.100.2/31</span>
+      <span class="na">link</span><span class="pi">:</span>
+        <span class="na">state</span><span class="pi">:</span> <span class="s">up</span>
+        <span class="na">kind</span><span class="pi">:</span> <span class="s">physical</span>
+
+    <span class="c1"># "blue" vrf</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">vrf-blue</span>
+      <span class="na">addresses</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">link</span><span class="pi">:</span>
+        <span class="na">state</span><span class="pi">:</span> <span class="s">up</span>
+        <span class="na">kind</span><span class="pi">:</span> <span class="s">vrf</span>
+        <span class="na">vrf_table</span><span class="pi">:</span> <span class="m">10</span>
+
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">eth1</span>
+      <span class="na">addresses</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">192.0.2.2/25</span>
+      <span class="na">link</span><span class="pi">:</span>
+        <span class="na">state</span><span class="pi">:</span> <span class="s">up</span>
+        <span class="na">kind</span><span class="pi">:</span> <span class="s">physical</span>
+        <span class="na">master</span><span class="pi">:</span> <span class="s">vrf-blue</span>
+
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">eth2</span>
+      <span class="na">addresses</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">192.0.2.129/25</span>
+      <span class="na">link</span><span class="pi">:</span>
+        <span class="na">state</span><span class="pi">:</span> <span class="s">up</span>
+        <span class="na">kind</span><span class="pi">:</span> <span class="s">physical</span>
+        <span class="na">master</span><span class="pi">:</span> <span class="s">vrf-blue</span>
+
+<span class="na">routing</span><span class="pi">:</span>
+    <span class="c1"># default route in default vrf</span>
+    <span class="pi">-</span> <span class="na">to</span><span class="pi">:</span> <span class="s">0.0.0.0/0</span>
+      <span class="na">via</span><span class="pi">:</span> <span class="s">198.51.100.1</span>
+
+    <span class="c1"># default route in "blue" vrf</span>
+    <span class="pi">-</span> <span class="na">to</span><span class="pi">:</span> <span class="s">0.0.0.0/0</span>
+      <span class="na">via</span><span class="pi">:</span> <span class="s">192.0.2.1</span>
+      <span class="na">table</span><span class="pi">:</span> <span class="m">10</span>
+</code></pre></div></div>
+
+<h2 id="manually">manually</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ip address add 198.51.100.2/31 dev eth0
+ip <span class="nb">link </span>dev eth0 <span class="nb">set </span>up
+ip route add default via 198.51.100.1
+ip <span class="nb">link </span>add name vrf-blue <span class="nb">type </span>vrf table 10
+ip <span class="nb">link set </span>vrf-blue up
+ip <span class="nb">link set </span>eth1 master vrf-blue up
+ip address add 192.0.2.2/25 dev eth1
+ip <span class="nb">link set </span>eth2 master vrf-blue up
+ip address add 192.0.2.129/25 dev eth2
+ip route add default via 192.0.2.1 table 10
+</code></pre></div></div>
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">IfState</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Thomas Liske</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://ibh.social/@liske"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#mastodon"></use></svg> <span class="username">liske</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Manage host interface settings in a declarative manner</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

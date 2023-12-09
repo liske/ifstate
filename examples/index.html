@@ -3,9 +3,9 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Schema | IfState</title>
+<title>Examples | IfState</title>
 <meta name="generator" content="Jekyll v4.3.1" />
-<meta property="og:title" content="Schema" />
+<meta property="og:title" content="Examples" />
 <meta name="author" content="Thomas Liske" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Manage host interface settings in a declarative manner" />
@@ -13,9 +13,9 @@
 <meta property="og:site_name" content="IfState" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Schema" />
+<meta property="twitter:title" content="Examples" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"Schema","url":"/schema.html"}</script>
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"Examples","url":"/examples/"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="IfState" /></head>
 <body><header class="site-header" role="banner">
@@ -38,17 +38,57 @@
         <article class="post">
 
   <header class="post-header">
-    <h1 class="post-title">Schema</h1>
+    <h1 class="post-title">Examples</h1>
   </header>
 
   <div class="post-content">
-    <p>The <code class="language-plaintext highlighter-rouge">ifstatecli</code> command uses a config file based on <em>Yaml</em> and must comply to
-the provided <em>JSON Schema</em>. It is possible to include values from external files
-(i.e. private keys) using the provided <code class="language-plaintext highlighter-rouge">!include</code> tag.</p>
+    <p>This is a collection of configuration examples for different interface link types and routing setups.</p>
 
+<h2 id="keepalived">Keepalived</h2>
 <ul>
-  <li><a href="schema/">schema description</a></li>
-  <li><a href="schema/ifstate.conf.schema.json">ifstate.conf.schema.json</a></li>
+  <li><a href="vrrp-fifo.html">VRRP with notify_fifo script (prefered)</a></li>
+  <li><a href="vrrp.html">VRRP with notify script</a></li>
+</ul>
+
+<h2 id="links">Links</h2>
+<ul>
+  <li><a href="lacp.html">Bonding Interface w/ LACP (802.3ad)</a></li>
+  <li><a href="gretap.html">EoGRE Layer 2 Tunnel</a></li>
+  <li><a href="geneve.html">GENEVE Layer 2 Tunnel</a></li>
+  <li><a href="physical.html">Physical Interface</a></li>
+  <li><a href="vlan-dot1q.html">VLAN Subinterface (802.1q)</a></li>
+  <li><a href="vlan-qinq.html">VLAN Q-in-Q Subinterfaces (802.1ad + 802.1q)</a></li>
+</ul>
+
+<h2 id="vpn">VPN</h2>
+<ul>
+  <li><a href="wireguard.html">WireGuard tunnel</a></li>
+  <li><a href="xfrm-vrf.html">XFRM interfaces with VRF-based multitenant IPsec</a></li>
+</ul>
+
+<h2 id="routing">Routing</h2>
+<ul>
+  <li><a href="pbr.html">Policy Based Routing (PBR)</a></li>
+  <li><a href="vrf.html">Virtual Routing and Forwarding (VRF)</a></li>
+</ul>
+
+<h2 id="traffic-control">Traffic Control</h2>
+<ul>
+  <li><a href="cshaper.html">simple bandwidth shaping with cshaper</a></li>
+  <li><a href="tc-shaping.html">traffic control shaping</a></li>
+</ul>
+
+<h2 id="xdpbpf">XDP/BPF</h2>
+<ul>
+  <li><a href="bpf.html">pin a eBPF program for eXpress Data Path (XDP) routing</a></li>
+  <li><a href="xdp.html">attach XDP program to interface</a></li>
+</ul>
+
+<h2 id="misc">Misc</h2>
+<ul>
+  <li><a href="neigh.html">permanent neighbour/ARP tables entries</a></li>
+  <li><a href="ethtool.html">ethtool hardware settings</a></li>
+  <li><a href="sysctl.html">sysctl interface settings</a></li>
 </ul>
 
   </div>

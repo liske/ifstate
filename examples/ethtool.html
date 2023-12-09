@@ -3,9 +3,9 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Schema | IfState</title>
+<title>IfState | Manage host interface settings in a declarative manner</title>
 <meta name="generator" content="Jekyll v4.3.1" />
-<meta property="og:title" content="Schema" />
+<meta property="og:title" content="IfState" />
 <meta name="author" content="Thomas Liske" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Manage host interface settings in a declarative manner" />
@@ -13,9 +13,9 @@
 <meta property="og:site_name" content="IfState" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Schema" />
+<meta property="twitter:title" content="IfState" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"Schema","url":"/schema.html"}</script>
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"IfState","url":"/examples/ethtool.html"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="IfState" /></head>
 <body><header class="site-header" role="banner">
@@ -38,18 +38,50 @@
         <article class="post">
 
   <header class="post-header">
-    <h1 class="post-title">Schema</h1>
+    <h1 class="post-title"></h1>
   </header>
 
   <div class="post-content">
-    <p>The <code class="language-plaintext highlighter-rouge">ifstatecli</code> command uses a config file based on <em>Yaml</em> and must comply to
-the provided <em>JSON Schema</em>. It is possible to include values from external files
-(i.e. private keys) using the provided <code class="language-plaintext highlighter-rouge">!include</code> tag.</p>
+    <h1 id="example-ethtool-hardware-settings">Example: ethtool hardware settings</h1>
 
+<p>This example configures ethtool hardware settings:</p>
 <ul>
-  <li><a href="schema/">schema description</a></li>
-  <li><a href="schema/ifstate.conf.schema.json">ifstate.conf.schema.json</a></li>
+  <li>change auto negotation to 10 or 100Mbps FD</li>
+  <li>disable flow control</li>
+  <li>add an ipv4 address</li>
+  <li>set the link state to <code class="language-plaintext highlighter-rouge">up</code></li>
 </ul>
+
+<p><a href=".">Back</a></p>
+
+<h2 id="ifstate">ifstate</h2>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">interfaces</span><span class="pi">:</span>
+<span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">eth0</span>
+  <span class="na">addresses</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">192.0.2.1/24</span>
+  <span class="na">ethtool</span><span class="pi">:</span>
+    <span class="na">change</span><span class="pi">:</span>
+      <span class="na">autoneg</span><span class="pi">:</span> <span class="s">on</span>
+      <span class="c1">#  0x002     10baseT Full</span>
+      <span class="c1"># +0x008    100baseT Full</span>
+      <span class="na">advertise</span><span class="pi">:</span> <span class="s">0x00a</span>
+    <span class="na">pause</span><span class="pi">:</span>
+      <span class="na">autoneg</span><span class="pi">:</span> <span class="s">on</span>
+      <span class="na">tx</span><span class="pi">:</span> <span class="s">off</span>
+      <span class="na">rx</span><span class="pi">:</span> <span class="s">off</span>
+  <span class="na">link</span><span class="pi">:</span>
+    <span class="na">kind</span><span class="pi">:</span> <span class="s">physical</span>
+    <span class="na">state</span><span class="pi">:</span> <span class="s">up</span>
+</code></pre></div></div>
+
+<h2 id="manually">manually</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ethtool <span class="nt">--pause</span> eth0 autoneg on rx off tx off
+ethtool <span class="nt">--change</span> eth0 autoneg on adverstise 0x00a
+ip address add 192.0.2.1/24 dev eth0
+ip <span class="nb">link set </span>eth0 up
+</code></pre></div></div>
 
   </div>
 

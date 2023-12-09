@@ -3,9 +3,9 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Schema | IfState</title>
+<title>IfState | Manage host interface settings in a declarative manner</title>
 <meta name="generator" content="Jekyll v4.3.1" />
-<meta property="og:title" content="Schema" />
+<meta property="og:title" content="IfState" />
 <meta name="author" content="Thomas Liske" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Manage host interface settings in a declarative manner" />
@@ -13,9 +13,9 @@
 <meta property="og:site_name" content="IfState" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Schema" />
+<meta property="twitter:title" content="IfState" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"Schema","url":"/schema.html"}</script>
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"IfState","url":"/examples/sysctl.html"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="IfState" /></head>
 <body><header class="site-header" role="banner">
@@ -38,18 +38,55 @@
         <article class="post">
 
   <header class="post-header">
-    <h1 class="post-title">Schema</h1>
+    <h1 class="post-title"></h1>
   </header>
 
   <div class="post-content">
-    <p>The <code class="language-plaintext highlighter-rouge">ifstatecli</code> command uses a config file based on <em>Yaml</em> and must comply to
-the provided <em>JSON Schema</em>. It is possible to include values from external files
-(i.e. private keys) using the provided <code class="language-plaintext highlighter-rouge">!include</code> tag.</p>
+    <h1 id="example-sysctl-interface-settings">Example: sysctl interface settings</h1>
 
+<p>This example configures sysctl interface settings:</p>
 <ul>
-  <li><a href="schema/">schema description</a></li>
-  <li><a href="schema/ifstate.conf.schema.json">ifstate.conf.schema.json</a></li>
+  <li>enable ip forwarding for <em>all</em> interfaces</li>
+  <li>ignore ipv6 router advertisments by <em>default</em></li>
+  <li>accept ipv6 router advertisments on <code class="language-plaintext highlighter-rouge">eth0</code> and generate a private ipv6 address</li>
+  <li>configure a static ipv6 address on <code class="language-plaintext highlighter-rouge">eth1</code></li>
 </ul>
+
+<p><a href=".">Back</a></p>
+
+<h2 id="ifstate">ifstate</h2>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">options</span><span class="pi">:</span>
+  <span class="na">sysctl</span><span class="pi">:</span>
+    <span class="na">all</span><span class="pi">:</span>
+      <span class="na">ipv6</span><span class="pi">:</span>
+        <span class="na">forwarding</span><span class="pi">:</span> <span class="m">1</span>
+<span class="na">interfaces</span><span class="pi">:</span>
+<span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">eth0</span>
+  <span class="na">link</span><span class="pi">:</span>
+    <span class="na">kind</span><span class="pi">:</span> <span class="s">physical</span>
+    <span class="na">state</span><span class="pi">:</span> <span class="s">up</span>
+  <span class="na">sysctl</span><span class="pi">:</span>
+    <span class="na">ipv6</span><span class="pi">:</span>
+      <span class="na">accept_ra</span><span class="pi">:</span> <span class="m">2</span>
+      <span class="na">addr_gen_mode</span><span class="pi">:</span> <span class="m">3</span>
+<span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">eth1</span>
+  <span class="na">addresses</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">2001:db8::defa/64</span>
+  <span class="na">link</span><span class="pi">:</span>
+    <span class="na">kind</span><span class="pi">:</span> <span class="s">physical</span>
+    <span class="na">state</span><span class="pi">:</span> <span class="s">up</span>
+</code></pre></div></div>
+
+<h2 id="manually">manually</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sysctl net.ipv6.conf.all.forwarding<span class="o">=</span>1
+sysctl net.ipv6.conf.eth0.accept_ra<span class="o">=</span>2
+sysctl net.ipv6.conf.eth0.addr_gen_mode<span class="o">=</span>3
+ip address add 2001:db8::defa/64 dev eth1
+ip <span class="nb">link </span>dev eth0 <span class="nb">set </span>up
+ip <span class="nb">link </span>dev eth1 <span class="nb">set </span>up
+</code></pre></div></div>
 
   </div>
 

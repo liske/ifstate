@@ -3,9 +3,9 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Schema | IfState</title>
+<title>IfState | Manage host interface settings in a declarative manner</title>
 <meta name="generator" content="Jekyll v4.3.1" />
-<meta property="og:title" content="Schema" />
+<meta property="og:title" content="IfState" />
 <meta name="author" content="Thomas Liske" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Manage host interface settings in a declarative manner" />
@@ -13,9 +13,9 @@
 <meta property="og:site_name" content="IfState" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Schema" />
+<meta property="twitter:title" content="IfState" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"Schema","url":"/schema.html"}</script>
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"IfState","url":"/examples/bpf.html"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="IfState" /></head>
 <body><header class="site-header" role="banner">
@@ -38,18 +38,45 @@
         <article class="post">
 
   <header class="post-header">
-    <h1 class="post-title">Schema</h1>
+    <h1 class="post-title"></h1>
   </header>
 
   <div class="post-content">
-    <p>The <code class="language-plaintext highlighter-rouge">ifstatecli</code> command uses a config file based on <em>Yaml</em> and must comply to
-the provided <em>JSON Schema</em>. It is possible to include values from external files
-(i.e. private keys) using the provided <code class="language-plaintext highlighter-rouge">!include</code> tag.</p>
+    <h1 id="example-pin-a-ebpf-program-for-express-data-path-xdp-routing">Example: pin a eBPF program for eXpress Data Path (XDP) routing</h1>
 
+<p>This example uses XDP:</p>
 <ul>
-  <li><a href="schema/">schema description</a></li>
-  <li><a href="schema/ifstate.conf.schema.json">ifstate.conf.schema.json</a></li>
+  <li>load and pin a XDP program from object file</li>
+  <li>attach the pinned XDP program to <code class="language-plaintext highlighter-rouge">eth0</code></li>
+  <li>set interfaces to <code class="language-plaintext highlighter-rouge">up</code></li>
 </ul>
+
+<p><a href=".">Back</a></p>
+
+<h2 id="ifstate">ifstate</h2>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">bpf</span><span class="pi">:</span>
+  <span class="na">blacklist</span><span class="pi">:</span>
+    <span class="na">object</span><span class="pi">:</span> <span class="s">/home/thomas/src/xdp-tutorial/basic03-map-counter/xdp_prog_kern.o</span>
+    <span class="na">section</span><span class="pi">:</span> <span class="s">xdp</span>
+
+<span class="na">interfaces</span><span class="pi">:</span>
+<span class="c1"># attach XDP program from pinned BPF program</span>
+<span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">eth0</span>
+  <span class="na">link</span><span class="pi">:</span>
+    <span class="na">state</span><span class="pi">:</span> <span class="s">up</span>
+    <span class="na">kind</span><span class="pi">:</span> <span class="s">physical</span>
+  <span class="na">xdp</span><span class="pi">:</span>
+    <span class="na">bpf</span><span class="pi">:</span> <span class="s">blacklist</span>
+</code></pre></div></div>
+
+<h2 id="manually">manually</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdfir <span class="nt">-p</span> /sys/fs/bpf/ifstate/progs /sys/fs/bpf/ifstate/maps
+bpftool prog load /home/thomas/src/xdp-tutorial/basic03-map-counter/xdp_prog_kern.o /sys/fs/bpf/ifstate/progs/blacklist <span class="nb">type </span>xdp pinmaps /sys/fs/bpf/ifstate/maps/blacklist
+ip <span class="nb">link set </span>dev eth0 xdp pinned /sys/fs/bpf/ifstate/progs/blacklist
+ip <span class="nb">link set </span>dev eth0 up
+</code></pre></div></div>
 
   </div>
 

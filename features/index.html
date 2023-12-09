@@ -3,9 +3,9 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Schema | IfState</title>
+<title>Features | IfState</title>
 <meta name="generator" content="Jekyll v4.3.1" />
-<meta property="og:title" content="Schema" />
+<meta property="og:title" content="Features" />
 <meta name="author" content="Thomas Liske" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Manage host interface settings in a declarative manner" />
@@ -13,9 +13,9 @@
 <meta property="og:site_name" content="IfState" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Schema" />
+<meta property="twitter:title" content="Features" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"Schema","url":"/schema.html"}</script>
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"Features","url":"/features/"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="IfState" /></head>
 <body><header class="site-header" role="banner">
@@ -38,17 +38,60 @@
         <article class="post">
 
   <header class="post-header">
-    <h1 class="post-title">Schema</h1>
+    <h1 class="post-title">Features</h1>
   </header>
 
   <div class="post-content">
-    <p>The <code class="language-plaintext highlighter-rouge">ifstatecli</code> command uses a config file based on <em>Yaml</em> and must comply to
-the provided <em>JSON Schema</em>. It is possible to include values from external files
-(i.e. private keys) using the provided <code class="language-plaintext highlighter-rouge">!include</code> tag.</p>
+    <h1 id="available-features">Available features</h1>
+
+<p>The following features are already available:</p>
 
 <ul>
-  <li><a href="schema/">schema description</a></li>
-  <li><a href="schema/ifstate.conf.schema.json">ifstate.conf.schema.json</a></li>
+  <li>operates idempotent</li>
+  <li>identify explicit physical interfaces by:
+    <ul>
+      <li>permanent mac address (<code class="language-plaintext highlighter-rouge">ethtool -P</code>) [≥ 1.3.0]</li>
+      <li>bus information (<code class="language-plaintext highlighter-rouge">ethtool -i</code>) [≥ 1.4.0]</li>
+    </ul>
+  </li>
+  <li>create and configure interfaces
+    <ul>
+      <li>interface state</li>
+      <li>tx queue length [≥ 1.6.0]</li>
+      <li>mtu</li>
+      <li>bridge port settings [≥ 1.7.0]</li>
+      <li>supports many <a href="../schema/#interfaces_items_link">interface types</a></li>
+    </ul>
+  </li>
+  <li>configure ip addresses</li>
+  <li>remove orphan interfaces and ip addresses</li>
+  <li>configure routing tables [≥ 0.6.0]</li>
+  <li>configure routing rules [≥ 0.7.0]</li>
+  <li>configure interface <code class="language-plaintext highlighter-rouge">sysctl</code> options [≥ 0.7.1]</li>
+  <li>configure interface driver and hardware settings via <code class="language-plaintext highlighter-rouge">ethtool</code> [≥ 0.7.2]</li>
+  <li>full netns namespace support [≥ 1.9.0]</li>
+  <li>configure WireGuard settings [≥ 0.8.0]</li>
+  <li>load and attach XDP program [≥ 1.6.0]</li>
+  <li>configure traffic control (<code class="language-plaintext highlighter-rouge">tc</code>) qdisc and filters [≥ 1.1.0]</li>
+  <li>simple bandwidth shaping wrapper using <a href="https://man7.org/linux/man-pages/man8/tc-cake.8.html">cake</a> (<code class="language-plaintext highlighter-rouge">cshaper</code>) [≥ 1.5.7]</li>
+  <li>conditional interfaces for VRRP failover setups based on keepalived [≥ 1.5.0]</li>
+  <li>ignore interfaces by patterns</li>
+  <li>ignore ip addresses by prefix lists</li>
+  <li>ignore routing table entries by protocol</li>
+  <li>ignore routing rules by protocol</li>
+  <li>configurable default settings</li>
+  <li>full netns support for all features</li>
+</ul>
+
+<h1 id="planned-features">Planned features</h1>
+
+<p>The following features a planned for a later release of <em>ifstate</em>:</p>
+
+<ul>
+  <li>extend support for traffic control (<code class="language-plaintext highlighter-rouge">tc</code>)</li>
+  <li>support for hotplug interfaces</li>
+  <li>XDP maps</li>
+  <li>XDP pinning</li>
 </ul>
 
   </div>
