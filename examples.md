@@ -20,6 +20,7 @@ This is a collection of configuration examples for different interface link type
 
 ## VPN
 - [WireGuard tunnel](wireguard.html)
+- [WireGuard tunnel with netns namespace](wireguard-netns.html)
 - [XFRM interfaces with VRF-based multitenant IPsec](xfrm-vrf.html)
 
 ## Routing
