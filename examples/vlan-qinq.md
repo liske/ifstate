@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: VLAN Q-in-Q Subinterfaces (802.1ad + 802.1q)
 
 This example configures a service VLAN subinterface (IEEE 802.1ad) with a stacked customer VLAN subinterface (IEEE 802.1q):
@@ -7,7 +11,7 @@ This example configures a service VLAN subinterface (IEEE 802.1ad) with a stacke
 - set the subinterface links state to `up`
 - add an ipv4 address on the C-VLAN subinterface
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

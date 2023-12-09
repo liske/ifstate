@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: permanent neighbour/ARP tables entries
 
 This example configures an neighbour entry on a physical link:
@@ -5,7 +9,7 @@ This example configures an neighbour entry on a physical link:
 - set the link state to `up`
 - add static ARP entry
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

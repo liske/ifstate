@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: GENEVE Layer 2 Tunnel
 
 This example configures a GENEVE layer 2 tunnel and a bridge:
@@ -7,7 +11,7 @@ This example configures a GENEVE layer 2 tunnel and a bridge:
 - disable STP on the bridge `br0`
 - set all interface link states to `up`
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

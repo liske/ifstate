@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: traffic control shaping
 
 This example configures traffic control settings:
@@ -6,7 +10,7 @@ This example configures traffic control settings:
 - add a `ifb0` device for incoming shaping on eth0
 - set shaper to 80Mbps download and 30Mbps upload speed
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: pin a eBPF program for eXpress Data Path (XDP) routing
 
 This example uses XDP:
@@ -5,7 +9,7 @@ This example uses XDP:
 - attach the pinned XDP program to `eth0`
 - set interfaces to `up`
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

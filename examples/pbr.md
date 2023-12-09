@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: Policy Based Routing (PBR)
 
 This example configures policy based routing:
@@ -7,7 +11,7 @@ This example configures policy based routing:
 - configure a default route
 - configure policy based routing using another gateway
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

@@ -1,5 +1,7 @@
 ---
 title: Install
+layout: page
+permalink: install/
 ---
 
 # Alpine Linux

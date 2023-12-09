@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: Physical Interface
 
 This example configures an existing physical interface link:
@@ -5,7 +9,7 @@ This example configures an existing physical interface link:
 - add an ipv4 address
 - set the link state to `up`
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: Virtual Routing and Forwarding (VRF)
 
 This example attaches two physical interfaces to a [VRF](https://www.kernel.org/doc/Documentation/networking/vrf.txt) called `vrf-blue`:
@@ -6,7 +10,7 @@ This example attaches two physical interfaces to a [VRF](https://www.kernel.org/
 - add `eth1` and `eth2` to the vrf `vrf-blue`
 - configure ip routing
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

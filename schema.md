@@ -1,5 +1,6 @@
 ---
 title: Schema
+layout: page
 ---
 
 The `ifstatecli` command uses a config file based on *Yaml* and must comply to

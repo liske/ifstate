@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: ethtool hardware settings
 
 This example configures ethtool hardware settings:
@@ -6,7 +10,7 @@ This example configures ethtool hardware settings:
 - add an ipv4 address
 - set the link state to `up`
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

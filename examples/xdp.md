@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: attach eXpress Data Path (XDP) program to interface
 
 This example uses XDP:
@@ -5,7 +9,7 @@ This example uses XDP:
 - load a XDP program from object file and attach it to `eth0`
 - clear any attached XDP program from `eth1`
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

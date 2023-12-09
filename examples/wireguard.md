@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: WireGuard tunnel
 
 This example configures a WireGuard tunnel:
@@ -8,7 +12,7 @@ This example configures a WireGuard tunnel:
 - configure a WireGuard remote peer at `198.51.100.2:4711`
 - setup routing for the remote network via `wg0`
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

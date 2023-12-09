@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: Bonding Interface w/ LACP (802.3ad)
 
 This example configures a bond interface with two physical interfaces using LACP (IEEE 802.3ad) with fast timers:
@@ -6,7 +10,7 @@ This example configures a bond interface with two physical interfaces using LACP
 - assign phyiscal interfaces to `bond0`
 - set the physical interfaces links to `up`
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

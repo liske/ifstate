@@ -1,5 +1,6 @@
 ---
 title: About
+layout: home
 ---
 
 *IfState* is a python3 utility to configure the Linux network stack in a
@@ -62,7 +63,7 @@ The following recordings of public talks about IfState are available online:
 
 *IfState* is available in the following linux distributions:
 
-- [Alpine Linux](install.md#Alpine-Linux)
+- [Alpine Linux](install/#Alpine-Linux)
 
 Alternatively you could use *pip3* to install *IfState*:
 
@@ -72,7 +73,7 @@ pip3 install ifstate
 
 This will also install all python dependencies if not already statisfied.
 
-[More…](install.md)
+[More…](install/)
 
 
 # Usage
@@ -135,6 +136,6 @@ configure routing...
 
 It is possible to create a configuration template from the currently available interfaces using the `ifstatecli show` command.
 
-[More…](cli.md)
+[More…](cli/)
 
 <a rel="me" href="https://ibh.social/@liske"></a>

@@ -1,10 +1,14 @@
+---
+layout: page
+---
+
 # Example: VRRP with keepalived's notify_fifo script
 
 This basic example uses keepalived for VRRP and ifstate as vrrp_fifo script:
 - use keepalived for VRRP
 - use ifstate as notify_fifo script to configure the floating virtual IP
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

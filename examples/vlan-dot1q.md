@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: VLAN Subinterface (802.1q)
 
 This example configures a VLAN subinterface (IEEE 802.1q):
@@ -7,7 +11,7 @@ This example configures a VLAN subinterface (IEEE 802.1q):
 - set the subinterface link state to `up`
 - add an ipv4 address on the subinterface
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

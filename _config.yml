@@ -33,4 +33,6 @@ header_pages:
 minima:
   skin: solarized-dark
   social_links:
-    github: liske
+    mastodon:
+    - username: liske
+      instance: ibh.social

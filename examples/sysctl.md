@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: sysctl interface settings
 
 This example configures sysctl interface settings:
@@ -6,7 +10,7 @@ This example configures sysctl interface settings:
 - accept ipv6 router advertisments on `eth0` and generate a private ipv6 address
 - configure a static ipv6 address on `eth1`
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate

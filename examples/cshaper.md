@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 # Example: simple bandwidth shaping with cshaper
 
 This example configures traffic control settings using the cshaper feature:
@@ -6,7 +10,7 @@ This example configures traffic control settings using the cshaper feature:
 - add a `ifb0` device for incoming shaping on eth0
 - set shaper to 80Mbps ingress and 30Mbps egress speed
 
-[Back](../examples.md)
+[Back](.)
 
 
 ## ifstate (cshaper)
