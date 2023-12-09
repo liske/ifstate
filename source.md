@@ -1,4 +1,4 @@
 ---
 title: 🔗Source
-redirect_to: https://github.com/liske/ifstate
+redirect_to: https://codeberg.org/liske/ifstate
 ---

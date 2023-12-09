@@ -12,9 +12,9 @@ kramdown:
 plugins:
   - jekyll-redirect-from
 
-github_username: liske
-github:
-  repository_url: https://codeberg.org/liske/ifstate
+mastodon:
+- username: liske
+  instance: ibh.social
 
 exclude:
   - build.sh
