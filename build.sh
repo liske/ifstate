@@ -9,8 +9,12 @@ trap 'git worktree remove "$tempdir"; rm -rf -- "$tempdir";  rm -rf -- "$builddi
 commit=$(git describe --always)
 
 # rebuild jekyll site
+echo $builddir
+read
 jekyll clean --destination "$builddir"
+read
 jekyll build --destination "$builddir"
+read
 
 # sync into 'pages' branch
 git worktree add "$tempdir" pages
