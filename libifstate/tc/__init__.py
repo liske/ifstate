@@ -1,6 +1,6 @@
 from libifstate.util import logger, IfStateLogging
 from libifstate.exception import ExceptionCollector, netlinkerror_classes
-
+from pyroute2 import NetlinkError
 
 class TC():
     ROOT_HANDLE = 0xFFFFFFFF
@@ -87,6 +87,19 @@ class TC():
         return False
 
     def apply_qtree(self, tc, qdisc, ipr_qdiscs, parent, excpts, do_apply, recreate=False):
+        # if tc is None, we shall cleanup the qdisc tree
+        # (remove the root qdisc to restore the interface's default)
+        if tc is None:
+            if do_apply:
+                try:
+                    self.netns.ipr.tc("del", index=self.idx, parent=TC.ROOT_HANDLE)
+                    return True
+                except NetlinkError:
+                    # the default cannot be removed by design,
+                    # so there was no custom qdisc at all
+                    pass
+            return False
+
         if qdisc is None:
             recreate = True
 

@@ -283,6 +283,13 @@ class IfState():
             if 'tc' in ifstate:
                 netns.tc[name] = TC(
                     netns, name, ifstate['tc'])
+            elif defaults.get('clear_tc', False):
+                netns.tc[name] = TC(
+                    netns, name, {
+                        'ingress': False,
+                        'filter': [],
+                        'qdisc': None
+                    })
 
             if 'wireguard' in ifstate:
                 if not self.features['wireguard']:
