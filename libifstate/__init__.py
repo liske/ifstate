@@ -245,6 +245,9 @@ class IfState():
                 ifb_state['tc']['qdisc']['bandwidth'] = ifstate['cshaper'].get(
                     'ingress', 'unlimited')
 
+                if 'vrrp' in ifstate:
+                    ifb_state['vrrp'] = ifstate['vrrp']
+
                 ifstates['interfaces'].append(ifb_state)
 
                 # egress
