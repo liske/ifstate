@@ -1,5 +1,7 @@
 from libifstate.util import logger, IfStateLogging
 from libifstate.exception import ExceptionCollector, netlinkerror_classes
+
+import errno
 from pyroute2 import NetlinkError
 
 class TC():
@@ -92,12 +94,13 @@ class TC():
         if tc is None:
             if do_apply:
                 try:
-                    self.netns.ipr.tc("del", index=self.idx, parent=TC.ROOT_HANDLE)
+                    self.netns.ipr.tc("del", index=self.idx, parent=parent)
                     return True
-                except NetlinkError:
-                    # the default cannot be removed by design,
-                    # so there was no custom qdisc at all
-                    pass
+                except NetlinkError as ex:
+                    # the native qdisc cannot be removed but only replaced,
+                    # so we ignore any ENOENT
+                    if ex.code != errno.ENOENT:
+                        logger.exception('cannot remove qdisc')
             return False
 
         if qdisc is None:
@@ -118,8 +121,11 @@ class TC():
             if qdisc is not None:
                 try:
                     self.netns.ipr.tc("del", index=self.idx, parent=qdisc["parent"])
-                except:
-                    logger.exception("cannot remove tc")
+                except NetlinkError as ex:
+                    # the native qdisc cannot be removed but only replaced,
+                    # so we ignore any ENOENT
+                    if ex.code != errno.ENOENT:
+                        logger.exception('cannot remove qdisc')
 
         opts = {
             "index": self.idx,
