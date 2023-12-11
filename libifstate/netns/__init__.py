@@ -131,18 +131,20 @@ def get_netns_root():
             netns_name_root = name
             return name
 
+_netns_instances = {}
 def get_netns_instances():
-    netns_instances = []
+    global _netns_instances
     for netns_name in pyroute2.netns.listnetns():
-        try:
-            netns_instances.append(NetNameSpace(netns_name))
-        except OSError as ex:
-            if ex.errno == 22:
-                logger.warn("Cannot open netns %s: %s", netns_name, ex.strerror)
-            else:
-               raise ex
+        if not netns_name in _netns_instances:
+            try:
+                _netns_instances[netns_name] = NetNameSpace(netns_name)
+            except OSError as ex:
+                if ex.errno == 22:
+                    logger.warn("Cannot open netns %s: %s", netns_name, ex.strerror)
+                else:
+                   raise ex
 
-    return netns_instances
+    return _netns_instances.values()
 
 class LinkRegistry():
     def __init__(self, ignores, root_netns):
