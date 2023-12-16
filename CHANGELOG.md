@@ -1,5 +1,16 @@
 # ChangeLog
 
+## 1.11.4 - 
+
+Changes:
+- tc: add missing defaults cleanup option for tc settings (closes #32)
+- vrrp-fifo: improve handling of multiple instances/groups, apply config on reload
+
+Fixes:
+- link: add missing copy of vrrp options to cshaper ifb devices (closes #31)
+- tc: fix false positive exceptions when cleaning qdiscs (closes #33)
+- netns: fix process forks for every NetNS on every vrrp-fifo state change
+
 ## 1.11.3 - 2023-12-06
 
 Changes:
