@@ -70,7 +70,7 @@ class IfStateLogging:
             return IfStateLogging.ANSI_YELLOW
         return ""
 
-    def __init__(self, level, handlers=[], action=None):
+    def __init__(self, level, handlers=[], action=None, log_stderr=True):
         if level != logging.DEBUG:
             sys.tracebacklimit = 0
 
@@ -78,8 +78,11 @@ class IfStateLogging:
             level=level,
         )
 
-        has_stderr = sys.stderr is not None
-        is_terminal = has_stderr and sys.stderr.isatty()
+        if log_stderr:
+            has_stderr = sys.stderr is not None
+            is_terminal = has_stderr and sys.stderr.isatty()
+        else:
+            has_stderr = False
 
         # add custom logging handlers
         if not handlers:

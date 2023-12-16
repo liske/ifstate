@@ -4,8 +4,6 @@ from libifstate.parser import YamlParser
 from libifstate import __version__, IfState
 from libifstate.exception import FeatureMissingError, LinkNoConfigFound, LinkCircularLinked, ParserValidationError, ParserOpenError, ParserParseError, ParserIncludeError
 from libifstate.util import logger, IfStateLogging
-from collections import namedtuple
-from copy import deepcopy
 from setproctitle import setproctitle
 
 import argparse
@@ -44,11 +42,16 @@ class IfsConfigHandler():
         self.soft_schema = soft_schema
 
         self.ifs = self.load_config()
+        self.cb = None
+
+    def set_callback(self, cb):
+        self.cb = cb
 
     def sighup_handler(self, signum, frame):
         logger.info("SIGHUP: reloading configuration")
         try:
             self.ifs = self.load_config()
+            self.cb(self.ifs)
         except:
             logger.exception("failed to reload configuration")
 
@@ -195,37 +198,8 @@ def main():
                 ifslog.quit()
                 exit(ex.exit_code())
         elif args.action == Actions.VRRP_FIFO:
-            signal.signal(signal.SIGHUP, ifs_config.sighup_handler)
-            signal.signal(signal.SIGPIPE, signal.SIG_IGN)
-            signal.signal(signal.SIGTERM, signal.SIG_IGN)
-
-            pid_file = f"/run/libifstate/vrrp/{os.getpid()}.pid"
-            try:
-                os.makedirs("/run/libifstate/vrrp", exist_ok=True)
-
-                with open(pid_file, "w", encoding="utf-8") as fh:
-                    fh.write(args.fifo)
-            except:
-                logger.exception("failed to write pid file f{pid_file}")
-
-            try:
-                status_pattern = re.compile(
-                    r'(group|instance) "([^"]+)" (unknown|fault|backup|master)( \d+)?$', re.IGNORECASE)
-
-                with open(args.fifo) as fifo:
-                    for line in fifo:
-                        m = status_pattern.match(line.strip())
-                        if m:
-                            try:
-                                ifs_tmp = deepcopy(ifs_config.ifs)
-                                ifs_tmp.apply(m.group(1), m.group(2), m.group(3))
-                            except:
-                                logger.exception("failed to apply state change")
-            finally:
-                try:
-                    os.remove(pid_file)
-                except:
-                    pass
+            from ifstate.vrrp import vrrp_fifo
+            vrrp_fifo(args.fifo, ifs_config, lvl)
         else:
             # ignore some well-known signals to prevent interruptions (i.e. due to ssh connection loss)
             signal.signal(signal.SIGHUP, signal.SIG_IGN)

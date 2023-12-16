@@ -438,7 +438,7 @@ class IfState():
         by_vrrp = not None in [
             vrrp_type, vrrp_name, vrrp_state]
         if by_vrrp:
-            logger.info("triggered by vrrp state change")
+            logger.info("triggered by vrrp state update")
             logger.log_change("{} {}".format(vrrp_type, vrrp_name), vrrp_state)
             logger.info("")
 
