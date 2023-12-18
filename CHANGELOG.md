@@ -3,6 +3,7 @@
 ## 1.11.4 - 
 
 Changes:
+- show: do not dump lo interfaces
 - tc: add missing defaults cleanup option for tc settings (closes #32)
 - vrrp-fifo: improve handling of multiple instances/groups, apply config on reload
 

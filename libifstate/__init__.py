@@ -628,7 +628,7 @@ class IfState():
         for ipr_link in netns.ipr.get_links():
             name = ipr_link.get_attr('IFLA_IFNAME')
             # skip links on ignore list
-            if not any(re.match(regex, name) for regex in Parser._default_ifstates['ignore']['ifname_builtin']):
+            if name != 'lo' and not any(re.match(regex, name) for regex in Parser._default_ifstates['ignore']['ifname_builtin']):
                 ifs_link = {
                     'name': name,
                     'addresses': [],
