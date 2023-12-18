@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 1.11.4 - 
+## 1.11.4 - 2023-12-18
 
 Changes:
 - show: do not dump lo interfaces
