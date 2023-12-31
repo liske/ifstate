@@ -47,7 +47,7 @@ configuring interface links
  eth1            orphan
  eth1.20         del
 
-configuring ip addresses...
+configuring ip addresses…
  eth0.10         198.51.100.3/27
  LOOP            192.0.2.3/32
  LOOP            2001:db8::3/128

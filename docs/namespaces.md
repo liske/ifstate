@@ -65,7 +65,7 @@ If namespaces are used it is possible to bind, link or use a master from another
 
 - `master_netns` - use an master interface from another namespace (i.e. a bridge)
 - `link_netns` - link the subinterface to an interface in another namespace
-- `bind_netns` - bind the outside of a virtual tunnel (wireguard, xfrm, gre, ...) in another namespace
+- `bind_netns` - bind the outside of a virtual tunnel (wireguard, xfrm, gre, …) in another namespace
 
 All features of *IfState* are netns aware and the link lookup by `businfo` and `permaddr` works across namespaces.
 

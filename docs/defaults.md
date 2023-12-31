@@ -20,6 +20,6 @@ defaults:
       ifalias: ''
 ```
 
-With *defaults* it is possible to configure implicit default settings for interfaces. The `match:` option is a filter to select on which interfaces the defaults should be applied. Only the defaults of the first match are applied. There are several [*clear_...* settings](../schema/#defaults_items) which allows to clear interface settings (*addresses*, *fdb*, ...).
+With *defaults* it is possible to configure implicit default settings for interfaces. The `match:` option is a filter to select on which interfaces the defaults should be applied. Only the defaults of the first match are applied. There are several [*clear_…* settings](../schema/#defaults_items) which allows to clear interface settings (*addresses*, *fdb*, …).
 
 [Back](..#configuration-file)

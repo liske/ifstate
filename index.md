@@ -41,7 +41,7 @@ support for many virtual link types:
 - [FRR](https://frrouting.org/) - The FRRouting Protocol Suite
 - [Quagga](https://www.quagga.net/) - Routing Software Suite
 
-It is possible to skip different settings (addresses, routes, ...) in *IfState*
+It is possible to skip different settings (addresses, routes, …) in *IfState*
 completely if a routing daemon (*FRR*, *Quagga*) does handle it.
 
 *IfState* has full support for Linux netns namespaces. This allows to build
@@ -78,7 +78,7 @@ This will also install all python dependencies if not already statisfied.
 
 # Usage
 
-Be aware that using the `ifstatecli` command will by default **shutdown and remove any interfaces** which are not declared in the configuration. It ships with a build-in ignore list for some well-known interfaces which should not handled by *IfState* (i.e. `docker0`, `veth`, ...).
+Be aware that using the `ifstatecli` command will by default **shutdown and remove any interfaces** which are not declared in the configuration. It ships with a build-in ignore list for some well-known interfaces which should not handled by *IfState* (i.e. `docker0`, `veth`, …).
 
 Example configuration:
 
@@ -112,10 +112,10 @@ Run the `ifstatecli` command:
 
 ```bash
 # ifstatecli -c test.yml apply
-cleanup orphan interfaces...
+cleanup orphan interfaces…
    eth1                              orphan
 
-configure interfaces...
+configure interfaces…
  lo
    link                              ok
    addresses                         = 127.0.0.1/8
@@ -130,7 +130,7 @@ configure interfaces...
    addresses                         = 192.0.2.3/32
    addresses                         = 2001:db8::3/128
 
-configure routing...
+configure routing…
    main                              + 198.51.100.128/25
 ```
 
