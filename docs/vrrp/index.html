@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>vrrp | IfState</title>
+<meta name="generator" content="Jekyll v4.3.1" />
+<meta property="og:title" content="vrrp" />
+<meta name="author" content="Thomas Liske" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Manage host interface settings in a declarative manner" />
+<meta property="og:description" content="Manage host interface settings in a declarative manner" />
+<meta property="og:site_name" content="IfState" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="vrrp" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"vrrp","url":"/docs/vrrp/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="IfState" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">IfState</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/">About</a><a class="page-link" href="/docs/">Docs</a><a class="page-link" href="/examples/">Examples</a><a class="page-link" href="/schema.html">Schema</a><a class="page-link" href="/changelog/">ChangeLog</a><a class="page-link" href="/source/">🔗Source</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">vrrp</h1>
+  </header>
+
+  <div class="post-content">
+    <p><a href="../../schema/#interfaces_items_vrrp">Schema description</a></p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># …</span>
+
+<span class="na">interfaces</span><span class="pi">:</span>
+<span class="c1"># …</span>
+<span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">vip</span>
+  <span class="na">addresses</span><span class="pi">:</span>
+  <span class="c1"># the VRRP ip</span>
+  <span class="pi">-</span> <span class="s">192.0.2.254/24</span>
+  <span class="na">link</span><span class="pi">:</span>
+    <span class="c1"># any interface can be used as a vrrp interface</span>
+    <span class="na">kind</span><span class="pi">:</span> <span class="s">macvlan</span>
+    <span class="na">state</span><span class="pi">:</span> <span class="s">up</span>
+    <span class="c1"># virtual interfaces use random mac addresses,</span>
+    <span class="c1"># consider to set it to a static value</span>
+    <span class="na">address</span><span class="pi">:</span> <span class="s">42:0d:ef:a0:00:21</span>
+    <span class="na">link</span><span class="pi">:</span> <span class="s">eth0</span>
+  <span class="c1"># configure this interface only in vrrp(-fifo) mode</span>
+  <span class="c1"># (DRY: add a YAML anchor)</span>
+  <span class="na">vrrp</span><span class="pi">:</span> <span class="nl">&amp;vrrp0</span>
+    <span class="c1"># match a Keepalived's instance by name</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">VRRP0</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">instance</span>
+    <span class="c1"># enable interface/add route only in these states</span>
+    <span class="na">states</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">master</span>
+
+<span class="c1"># …</span>
+
+<span class="na">routing</span><span class="pi">:</span>
+  <span class="na">routes</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">to</span><span class="pi">:</span> <span class="s">0.0.0.0/0</span>
+      <span class="na">via</span><span class="pi">:</span> <span class="s">192.0.2.1</span>
+      <span class="c1"># configure the default route only in vrrp(-fifo) mode</span>
+      <span class="c1"># (DRY: refer to YAML anchor)</span>
+      <span class="na">vrrp</span><span class="pi">:</span> <span class="nv">*vrrp0</span>
+
+<span class="c1"># …</span>
+</code></pre></div></div>
+
+<p>Examples:</p>
+<ul>
+  <li><a href="../../examples/vrrp-fifo.html">VRRP with notify_fifo script (prefered)</a></li>
+  <li><a href="../../examples/vrrp.html">VRRP with notify script</a></li>
+</ul>
+
+<p><em>IfState</em> can be combined with <a href="https://www.keepalived.org/"><em>Keepalived</em></a> as a notify script for complex network HA setups. Interfaces, routes and routing rules with a <em>vrrp</em> option will only be handled by <code class="language-plaintext highlighter-rouge">ifstatecli vrrp-fifo</code> (recommended) or <code class="language-plaintext highlighter-rouge">ifstatecli vrrp</code>.</p>
+
+<p>Example for a basic <code class="language-plaintext highlighter-rouge">/etc/keepalived/keepalived.conf</code>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">global_defs</span> <span class="p">{</span>
+  <span class="c1"># script settings
+</span>  <span class="n">script_user</span> <span class="n">root</span>
+  <span class="n">enable_script_security</span>
+
+  <span class="c1"># vrrp notify fifo (ifstate)
+</span>  <span class="n">vrrp_notify_fifo</span> <span class="o">/</span><span class="n">run</span><span class="o">/</span><span class="n">vrrp</span><span class="o">-</span><span class="n">ifstate</span><span class="p">.</span><span class="n">fifo</span>
+  <span class="n">vrrp_notify_fifo_script</span> <span class="s">"/usr/bin/ifstatecli vrrp-fifo"</span>
+<span class="p">}</span>
+
+<span class="n">vrrp_instance</span> <span class="n">VRRP0</span> <span class="p">{</span>
+  <span class="c1"># VRRP interface
+</span>  <span class="n">interface</span> <span class="n">eth0</span>
+
+  <span class="c1"># VRRP w/o VIP (requires keepalived 2.2.8+)
+</span>  <span class="n">no_virtual_ipaddress</span>
+
+  <span class="c1"># VRRP router id
+</span>  <span class="n">virtual_router_id</span> <span class="mi">21</span>
+
+  <span class="c1"># instance priority
+</span>  <span class="n">priority</span> <span class="mi">100</span>
+
+  <span class="c1"># …
+</span><span class="p">}</span>
+</code></pre></div></div>
+
+<p>This allows to build active/standby HA gateways where only a single ip address for each interface is required. The vrrp protocol of <em>Keepalived</em> can be run on a dedicated link or using ipv6 link-local addresses, only. This allows to keep the kernels reverse path filtering (<code class="language-plaintext highlighter-rouge">/proc/sys/net/ipv4/conf/*/rp_filter</code> or <code class="language-plaintext highlighter-rouge">rpfilter</code> netfilter module) enabled in strict mode.</p>
+
+<p><a href="..#vrrp-actions--keepalived">Back</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">IfState</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Thomas Liske</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://ibh.social/@liske"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#mastodon"></use></svg> <span class="username">liske</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Manage host interface settings in a declarative manner</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
