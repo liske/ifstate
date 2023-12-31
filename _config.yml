@@ -26,6 +26,7 @@ header_pages:
   - docs.md
   - examples.md
   - schema.md
+  - changelog.md
   - source.md
 
 minima:
