@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# This script builds the static website using jekyll.
+
 # build directory
 tempdir=$(mktemp -d)
 builddir=$(mktemp -d)
