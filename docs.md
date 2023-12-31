@@ -80,4 +80,4 @@ Adding the following line to the configuration file instructs editors and IDEs u
 
 # VRRP actions & Keepalived
 
-*IfState* can be combined with [*Keepalived*](https://www.keepalived.org/) as a notify script. The [vrrp option](vrrp.html) for interface and routing settings allows to reconfigure parts of the network stack depending on the state of a VRRP instance or group. This allows to move complex network configuration out of *Keepalived* while still using it for VRRP.
+*IfState* can be combined with [*Keepalived*](https://www.keepalived.org/) as a notify script. The [vrrp option](vrrp) for interface and routing settings allows to reconfigure parts of the network stack depending on the state of a VRRP instance or group. This allows to move complex network configuration out of *Keepalived* while still using it for VRRP.

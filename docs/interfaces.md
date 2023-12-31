@@ -44,7 +44,7 @@ Other settings available for an inteface:
 - [*addresses*](../../schema/#interfaces_items_addresses) - assigned ip addresses
 - [*brport*](../../schema/#interfaces_items_brport) - bridge port specific settings
 - [*fdb*](../../schema/#interfaces_items_fdb) - permanent bridge forwarding database entries
-- [*vrrp*](../../schema/#interfaces_items_vrrp) - VRRP action conditions
+- [*vrrp*](../../schema/#interfaces_items_vrrp) - [VRRP action conditions](../vrrp)
 - [*link*](../../schema/#interfaces_items_link) - link settings
 - [*neighbours*](../../schema/#interfaces_items_neighbours) - permanent ip neighbour cache entries
 - [*sysctl*](../../schema/#interfaces_items_sysctl) - interface specific procfs settings
