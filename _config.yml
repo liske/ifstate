@@ -18,7 +18,7 @@ mastodon:
 
 exclude:
   - build.sh
-  - update-schema.sh
+  - update.sh
   - dist
   - test
 header_pages:
