@@ -12,7 +12,7 @@ interfaces:
 - name: eno1
   # ip addresses (ip address)
   addresses:
-  - 192.0.1.254/24
+  - 192.0.2.254/24
   # link settings (ip link)
   link:
     state: up

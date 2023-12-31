@@ -42,7 +42,7 @@ This is a basic example configuration for a single interface and a default route
 interfaces:
 - name: eno1
   addresses:
-  - 192.0.1.254/24
+  - 192.0.2.254/24
   link:
     state: up
     kind: physical
