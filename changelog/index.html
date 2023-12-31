@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>ChangeLog | IfState</title>
+<meta name="generator" content="Jekyll v4.3.1" />
+<meta property="og:title" content="ChangeLog" />
+<meta name="author" content="Thomas Liske" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Manage host interface settings in a declarative manner" />
+<meta property="og:description" content="Manage host interface settings in a declarative manner" />
+<meta property="og:site_name" content="IfState" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="ChangeLog" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"ChangeLog","url":"/changelog/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="IfState" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">IfState</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/">About</a><a class="page-link" href="/docs/">Docs</a><a class="page-link" href="/examples/">Examples</a><a class="page-link" href="/schema.html">Schema</a><a class="page-link" href="/changelog/">ChangeLog</a><a class="page-link" href="/source/">🔗Source</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">ChangeLog</h1>
+  </header>
+
+  <div class="post-content">
+    <h1 id="ifstate-1114---2023-12-18">ifstate 1.11.4 - 2023-12-18</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>show: do not dump lo interfaces</li>
+  <li>tc: add missing defaults cleanup option for tc settings (closes <a href="https://codeberg.org/liske/ifstate/issues/32">#32</a>)</li>
+  <li>vrrp-fifo: improve handling of multiple instances/groups, apply config on reload</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: add missing copy of vrrp options to cshaper ifb devices (closes <a href="https://codeberg.org/liske/ifstate/issues/31">#31</a>)</li>
+  <li>tc: fix false positive exceptions when cleaning qdiscs (closes <a href="https://codeberg.org/liske/ifstate/issues/33">#33</a>)</li>
+  <li>netns: fix process forks for every NetNS on every vrrp-fifo state change</li>
+</ul>
+
+<h1 id="ifstate-1113---2023-12-06">ifstate 1.11.3 - 2023-12-06</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>routing: add support for new iproute2 6.5+ rt_* files directory (/usr/lib/iproute2)</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>cli: fix broken show commands</li>
+</ul>
+
+<h1 id="ifstate-1112---2023-11-25">ifstate 1.11.2 - 2023-11-25</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>vrrp-fifo: track pids and send SIGHUP for reloading vrrp-fifo runners during apply</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>do not use /run/ifstate as a state directory since it may collide with the state file of ifupdown*</li>
+  <li>vrrp-fifo: fix using outdated LinkRegistry breaking most vrrp setups</li>
+</ul>
+
+<p>This release fixes yet another regression (ifstate 1.9.0+) breaking the vrrp-fifo implementation for
+interfaces not existing on start-up of the vrrp-fifo action.</p>
+
+<h1 id="ifstate-1111---2023-11-24">ifstate 1.11.1 - 2023-11-24</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>logging: add logging.exception to some exception handlers</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>vrrp-fifo: fix TypeError exceptions on state changes breaking vrrp</li>
+  <li>routing: fix vrrp routing setup for netns (regression by <a href="https://codeberg.org/liske/ifstate/commit/6feb5ba">6feb5ba</a>)</li>
+</ul>
+
+<p>This release fixes a regression (ifstate 1.9.0+) breaking the vrrp-fifo implementation due to an
+internal exception.</p>
+
+<h1 id="ifstate-1110---2023-11-19">ifstate 1.11.0 - 2023-11-19</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>ethtool: allow default settings for ethtool</li>
+  <li>link: allow unsetting the master attribute</li>
+  <li>link: improve attr state debug logging</li>
+  <li>routing: add vrrp conditions for routing item</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>ethtool: fix broken speed and duplex advertise</li>
+  <li>ethtool: fix ‘change’ settings not working at all</li>
+  <li>link: fix logging a change for orphan physical links which are already down</li>
+</ul>
+
+<h1 id="ifstate-1101---2023-11-13">ifstate 1.10.1 - 2023-11-13</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>netns: port set_netnsid from pyroute2 to make netns handling work on pyroute &lt;=0.79</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>netns: fix showing new netns namespaces as unchanged</li>
+  <li>netns: fix “missing lo” errors due to missing inventory of new created netns namespaces</li>
+  <li>schema: xfrm interfaces requires the xfrm_if_id attribute, xfrm_link is optional</li>
+</ul>
+
+<h1 id="ifstate-1100---2023-11-01">ifstate 1.10.0 - 2023-11-01</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>fdb: allow to configure bridge fdb permanent and noarp (static) entries</li>
+  <li>link: allow binding of virtual tunnel interfaces into another netns (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/28">#28</a>)</li>
+  <li>link: configure <code class="language-plaintext highlighter-rouge">lo</code> interface by default in all namespaces (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/24">#24</a>)</li>
+  <li>link: sort links in stage by netns and name but handle <code class="language-plaintext highlighter-rouge">lo</code> always first</li>
+  <li>sysctl: add mpls settings support</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>cli: fix NameError exception for show action</li>
+  <li>vxlan: the vxlan_link attribute is not required</li>
+</ul>
+
+<p>This version adds support to manage bridge fdb entries. This allows, among
+other things, to build distributed bridges using vxlan tunneling with
+unicast underlays and static flooding.</p>
+
+<h1 id="ifstate-190---2023-09-14">ifstate 1.9.0 - 2023-09-14</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>defaults: add default interface settings (addresses, link, neighbours)</li>
+  <li>netns: add networking namespace support</li>
+  <li>link: add link registry and track link dependencies</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: false positive warnings about settings that could not be changed (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/24">#24</a>)</li>
+  <li>xdp: ctype exception if a bpf program refered from xpd is missing</li>
+</ul>
+
+<p>This version adds netns super capabilities. A dependency resolver optimizes the
+order in which interfaces are configured, circular dependencies are now
+correctly detected.</p>
+
+<h1 id="ifstate-185---2023-07-01">ifstate 1.8.5 - 2023-07-01</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>vrrp: add SIGHUP handler for config reloading (vrrp-fifo)</li>
+  <li>vrrp: set process title to ease reloading by SIGHUP (vrrp-fifo)</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: recreate virtual interfaces if settings could not be changed (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/17">#17</a>, liske/ifstate#23)</li>
+</ul>
+
+<p>Before this release it was possible that some link settings were not changed unnoticed (if the kernel did not throw a netlink error). A known setting is the <code class="language-plaintext highlighter-rouge">vlan_id</code> for vlan links which cannot be changed after link creation nor throws any netlink error. This condition is now detected and the interface is recreated using the correct settings.</p>
+
+<h1 id="ifstate-184---2023-06-08">ifstate 1.8.4 - 2023-06-08</h1>
+
+<p>Fixes:</p>
+<ul>
+  <li>logging: drop defaults from logging formatter to be python 3.9 compatible (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/21">#21</a>)</li>
+</ul>
+
+<h1 id="ifstate-183---2023-04-12">ifstate 1.8.3 - 2023-04-12</h1>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: fix broken interface recreation (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/13">#13</a>)</li>
+  <li>link: fix unusable tun/tap implementation (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/14">#14</a>)</li>
+  <li>link: do not change link states in check mode (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/16">#16</a>)</li>
+  <li>link:  fix handling of multiple interface with same mac address (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/18">#18</a>)</li>
+  <li>logging: fix using always lastResort logger (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/20">#20</a>)</li>
+  <li>vrrp: fix broken fifo instance handling due to extra priority values (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/15">#15</a>)</li>
+</ul>
+
+<p>Changes:</p>
+<ul>
+  <li>logging: add syslog logging while running detached (i.e. vrrp script)</li>
+</ul>
+
+<h1 id="ifstate-182---2023-02-17">ifstate 1.8.2 - 2023-02-17</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>link: add missing device group support</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: fix TypeError exception when a physical link is missing (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/8">#8</a>)</li>
+  <li>routing: handle unresolvable rt lookups gracefully</li>
+</ul>
+
+<p><strong>This release fixes a bug that could cause a host to not get a working network configuration at boot time.</strong></p>
+
+<p>When a physical link is missing ifstate prints a warning about it. Due to
+a TypeError exception (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/8">#8</a>) ifstate did crash in the link configuration
+phase. This breaks all ip configuration if any referenced physical link
+was missing.</p>
+
+<h1 id="ifstate-181---2023-01-30">ifstate 1.8.1 - 2023-01-30</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>bpf: add missing map pinning</li>
+  <li>bpf: cleanup unused libbpf1 bindings</li>
+  <li>bpf: improve error handling</li>
+  <li>sysctl: apply settings before interface state is set to up</li>
+  <li>xdp: improve error handling</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>bpf: do not reload unchanged bpf programs due to broken error condition</li>
+  <li>bpf: fix bpffs mount detection</li>
+  <li>link: drop IFLA_ALT_IFNAME conflict on IFLA_IFNAME on rename or create</li>
+  <li>logging: don’t crash if stderr is closed<sup>1</sup> (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/5">#5</a>)</li>
+  <li>sysctl: fix setting for renamed interfaces<sup>2</sup></li>
+  <li>sysctl: handle procfs errors gracefully<sup>3</sup> (liske/ifstate<a href="https://codeberg.org/liske/ifstate/issues/6">#6</a>)</li>
+  <li>xdp: fix broken detection of current attached xdp</li>
+</ul>
+
+<p><strong>This release fixes critical bugs that could cause a host to not get a working network configuration at boot time.</strong></p>
+
+<p>Remarks:
+1) This could break the complete network setup if a host is booted with a broken <code class="language-plaintext highlighter-rouge">console=</code> kernel parameter.
+2) The sysctl settings were applied using the wrong interface name. Combined with 3. it breaks the network setup during boot if the sysctl setting was used on a interface which needs to be renamed.
+3) Do not crash if a procfs file cannot be opened.</p>
+
+<h1 id="ifstate-180---2022-11-17">ifstate 1.8.0 - 2022-11-17</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>brport: add settings to show commands</li>
+  <li>bpf: add shared bpf programs support</li>
+  <li>shell: add tab completion</li>
+  <li>xdp: pin maps for loaded objects</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>xdp: fix error handling on libbpf.bpf_object__open_file</li>
+  <li>xdp: fix loading of pinned programs</li>
+</ul>
+
+<h1 id="ifstate-170---2022-11-13">ifstate 1.7.0 - 2022-11-13</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>bport: add support for bridge port settings</li>
+  <li>logger: silence skipped steps unless being verbose</li>
+  <li>shell: add a interactive python shell</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: fix exception on link recreation</li>
+  <li>link: several minor bugfixes</li>
+</ul>
+
+<h1 id="ifstate-161---2021-11-05">ifstate 1.6.1 - 2021-11-05</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>xdp: allow to specify attach mode</li>
+  <li>xdp: check libbpf symbols before enabling feature</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>schema: fix xdp pinned format pattern</li>
+  <li>xdp: fix exception if libbpf.so.1 is not available</li>
+</ul>
+
+<h1 id="ifstate-160---2021-11-03">ifstate 1.6.0 - 2021-11-03</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>xdp: add experimental eXpress Data Path (XDP) support</li>
+  <li>link: add txqlen link setting</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>schema: fix link kind descriptions</li>
+</ul>
+
+<h1 id="ifstate-158---2021-11-14">ifstate 1.5.8 - 2021-11-14</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>neighbours: add static ip neighbour configuration</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>schema: revert to json schema Draft 7 due to regressions</li>
+  <li>schema: fix usage of ipv4 &amp; ipv6 format</li>
+  <li>packaging: make setup.py work with pyroute2&lt;0.6, pyroute2&gt;=0.6 and
+           pyroute2.minimal</li>
+</ul>
+
+<h1 id="ifstate-157---2021-10-31">ifstate 1.5.7 - 2021-10-31</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>cshaper: add simple tc-cake based shaping</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>addresses: add missing exception handling</li>
+  <li>pyroute2: workaround NetlinkError regression (pyroute2 <a href="https://codeberg.org/liske/ifstate/issues/845">#845</a> #847)</li>
+</ul>
+
+<h1 id="ifstate-156---2021-09-25">ifstate 1.5.6 - 2021-09-25</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>link: add attribute value mappings for bond and vlan interfaces</li>
+  <li>schema: add link name validation</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: fix exception while ‘show’ for master/link to other netns</li>
+  <li>schema: simplify and make it work on jschon validator</li>
+  <li>schema: fix shortened path output on validation errors</li>
+</ul>
+
+<h1 id="ifstate-155---2021-08-25">ifstate 1.5.5 - 2021-08-25</h1>
+
+<p>Fixes:</p>
+<ul>
+  <li>ethtool: fix module import for pyroute2 0.6+</li>
+  <li>show: fix missing attributes</li>
+  <li>tc: fix internal exception during apply</li>
+</ul>
+
+<h1 id="ifstate-154---2021-08-01">ifstate 1.5.4 - 2021-08-01</h1>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: recreate virtual interfaces if updating fails</li>
+  <li>wireguard: deep compare a peer’s set of allowedips</li>
+</ul>
+
+<h1 id="ifstate-153---2021-07-05">ifstate 1.5.3 - 2021-07-05</h1>
+
+<p>Fixes:</p>
+<ul>
+  <li>schema: fix broken geneve links</li>
+</ul>
+
+<h1 id="ifstate-152---2021-06-05">ifstate 1.5.2 - 2021-06-05</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>routing: make route matching verbose in verbose mode</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>routing: fix ipv6 routes get removed accidentally since the kernel uses
+         a default priority of 1024 vs. 0 on ipv4 routes</li>
+</ul>
+
+<h1 id="ifstate-151---2021-03-15">ifstate 1.5.1 - 2021-03-15</h1>
+
+<p>Fixes:</p>
+<ul>
+  <li>check: fix broken check command (TypeError exception)</li>
+</ul>
+
+<h1 id="ifstate-150---2021-03-23">ifstate 1.5.0 - 2021-03-23</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>vrrp: add support for failover link setups, design to work with
+      keepalived’s notify script or fifo interface</li>
+  <li>ignore: add proto keepalived(18) to builtin lists</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>addresses: replacing primary ipv4 addr was broken due to add-before-del</li>
+  <li>link: make businfo available in iface settings check</li>
+  <li>link: make businfo lower case</li>
+  <li>link: supress exceptions on unsupported permaddr or businfo</li>
+  <li>wireguard: fix broken apply iface settings</li>
+</ul>
+
+<h1 id="ifstate-140---2021-01-09">ifstate 1.4.0 - 2021-01-09</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>support bus_info link identification [ethtool -i]</li>
+</ul>
+
+<h1 id="ifstate-132---2020-12-20">ifstate 1.3.2 - 2020-12-20</h1>
+
+<p>Fixes:</p>
+<ul>
+  <li>wireguard: fix name of persistent_keepalive_interval</li>
+  <li>link: add permaddr to kernel iface settings before for compare</li>
+</ul>
+
+<h1 id="ifstate-131---2020-12-07">ifstate 1.3.1 - 2020-12-07</h1>
+
+<p>Fixes:</p>
+<ul>
+  <li>several bugs in show command:
+    <ul>
+      <li>show missing master device</li>
+      <li>ignore non-scalar link attributes</li>
+      <li>fix kind None for some physical devices</li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="ifstate-130---2020-09-28">ifstate 1.3.0 - 2020-09-28</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>support prefered src address on routes</li>
+  <li>support preference on routes</li>
+  <li>support mtu setting on links</li>
+  <li>support permanent address link identification [ethtool -P]</li>
+  <li>improve show command output, drop unset values</li>
+  <li>apply builtin filters on show command</li>
+  <li>add the showall command to view builtin settings</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>fix broken show command</li>
+</ul>
+
+<h1 id="ifstate-121---2020-09-25">ifstate 1.2.1 - 2020-09-25</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>add schema support for ifalias</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>fix link lookup by mac address</li>
+</ul>
+
+<h1 id="ifstate-120---2020-09-18">ifstate 1.2.0 - 2020-09-18</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>ignore: move defaults to builtin keys to make them
+extendable by the config</li>
+  <li>update project &amp; schema url to new domain (ifstate.net)</li>
+  <li>improve tc implementation, support ingress qdisc</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>handle empty configs more gracefully</li>
+  <li>add quirks to make veth links work</li>
+</ul>
+
+<h1 id="ifstate-110---2020-09-04">ifstate 1.1.0 - 2020-09-04</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>link: add ifb support</li>
+  <li>tc: add experimental support
+    <ul>
+      <li>tc qdisc</li>
+      <li>tc filter</li>
+    </ul>
+  </li>
+  <li>wireguard: catch exception if wireguard netlink support is missing</li>
+</ul>
+
+<h1 id="ifstate-100---2020-08-24">ifstate 1.0.0 - 2020-08-24</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>ignore dynamic ip addresses by default and make it configurable</li>
+  <li>logging: make it async to prevent lockup while running ifstatecli from remote connections</li>
+  <li>netlink: handle exceptions more gracefully (<code class="language-plaintext highlighter-rouge">EEXIST</code>)</li>
+  <li>parser: handle pyyaml exceptions more gracefully</li>
+  <li>parser: improve <code class="language-plaintext highlighter-rouge">!include</code> tag</li>
+  <li>schema: add missing additionalProperties constraints</li>
+  <li>schema: add missing <code class="language-plaintext highlighter-rouge">master</code> link property (for dummy and wireguard links)</li>
+  <li>schema: add <code class="language-plaintext highlighter-rouge">--soft-schema</code> CLI parameter</li>
+</ul>
+
+<h1 id="ifstate-090---2020-08-17">ifstate 0.9.0 - 2020-08-17</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>ignore keepalive’s vrrp interfaces by default</li>
+  <li>make routing ignores more flexible allowing to filter for any properties</li>
+  <li>jsonschema: do not allow addtional properties on more settings</li>
+  <li>handle missing physical links more gracefully</li>
+  <li>ethtool: fallback to predefined executable if it is not found in <code class="language-plaintext highlighter-rouge">$PATH</code></li>
+  <li>rules: make table id only required for <code class="language-plaintext highlighter-rouge">to_tbl</code> action</li>
+  <li>multiple bugfixes</li>
+</ul>
+
+<h1 id="ifstate-081---2020-07-26">ifstate 0.8.1 - 2020-07-26</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>Add missing <code class="language-plaintext highlighter-rouge">dummy</code> interface type to schema.</li>
+  <li>Fix WireGuard peer <code class="language-plaintext highlighter-rouge">endpoint</code> setting handling.</li>
+</ul>
+
+<h1 id="ifstate-080---2020-07-26">ifstate 0.8.0 - 2020-07-26</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>ifstatecli: Add <code class="language-plaintext highlighter-rouge">!include</code> tag to read secrets from external files.</li>
+  <li>Add WireGuard configuration support.</li>
+</ul>
+
+<h1 id="ifstate-073---2020-07-24">ifstate 0.7.3 - 2020-07-24</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>Fix broken ethtool pause schema.</li>
+  <li>Make link dependencies work.</li>
+  <li>Change interface state in a final dedicated step.</li>
+  <li>Minor bugfixes.</li>
+</ul>
+
+<h1 id="ifstate-072---2020-07-16">ifstate 0.7.2 - 2020-07-16</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>Add ethtool support.</li>
+  <li>Minor cleanups.</li>
+</ul>
+
+<h1 id="ifstate-071---2020-07-12">ifstate 0.7.1 - 2020-07-12</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>Add <em>sysctl</em> support.</li>
+  <li>Add more exception handling for <em>pyroute2</em> calls (NetLinkErrors).</li>
+  <li>Minor bugfixes.</li>
+</ul>
+
+<h1 id="ifstate-070---2020-07-04">ifstate 0.7.0 - 2020-07-04</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>Ignore kernel routes flagged <code class="language-plaintext highlighter-rouge">RTM_F_CLONED</code>.</li>
+  <li>Ignore IPv6 multicast route prefix (required for <code class="language-plaintext highlighter-rouge">VRF</code>).</li>
+  <li>Merge <code class="language-plaintext highlighter-rouge">ignore</code> configuration for unset keys with default values.</li>
+  <li>Handle interface name collisions more gracefully.</li>
+  <li>Implement routing rule support.</li>
+</ul>
+
+<h1 id="ifstate-063---2020-06-20">ifstate 0.6.3 - 2020-06-20</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>Add interface index translations for some interface types:
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">GRE</code></li>
+      <li><code class="language-plaintext highlighter-rouge">IP6GRE</code></li>
+      <li><code class="language-plaintext highlighter-rouge">VXLAN</code></li>
+      <li><code class="language-plaintext highlighter-rouge">XFRM</code></li>
+    </ul>
+  </li>
+  <li>Delay route interface lookup to fix exception for routes on new interfaces.</li>
+</ul>
+
+<h1 id="ifstate-062---2020-06-16">ifstate 0.6.2 - 2020-06-16</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>Bugfix: support <code class="language-plaintext highlighter-rouge">master</code> attribute as interface name (add lookup).</li>
+  <li>Improve route comparision: ignore unconfigured kernel route settings.</li>
+  <li>Update schema to support integer values for various fields.</li>
+</ul>
+
+<h1 id="ifstate-061-first-public-release---2020-06-09">ifstate 0.6.1 (first public release) - 2020-06-09</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>Add schema support (json-schema).</li>
+  <li>Ignore dynamic docker bridges by default (<code class="language-plaintext highlighter-rouge">^br-[\da-f]{12}</code>).</li>
+</ul>
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">IfState</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Thomas Liske</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://ibh.social/@liske"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#mastodon"></use></svg> <span class="username">liske</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Manage host interface settings in a declarative manner</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

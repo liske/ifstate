@@ -30,7 +30,7 @@
           </span>
         </label>
 
-        <div class="trigger"><a class="page-link" href="/">About</a><a class="page-link" href="/docs/">Docs</a><a class="page-link" href="/examples/">Examples</a><a class="page-link" href="/schema.html">Schema</a><a class="page-link" href="/source/">🔗Source</a></div>
+        <div class="trigger"><a class="page-link" href="/">About</a><a class="page-link" href="/docs/">Docs</a><a class="page-link" href="/examples/">Examples</a><a class="page-link" href="/schema.html">Schema</a><a class="page-link" href="/changelog/">ChangeLog</a><a class="page-link" href="/source/">🔗Source</a></div>
       </nav></div>
 </header>
 <main class="page-content" aria-label="Content">
@@ -106,7 +106,7 @@ at <a href="https://chemnitzer.linux-tage.de/2023/de/programm/beitrag/225">Chemn
 <p><em>IfState</em> is available in the following linux distributions:</p>
 
 <ul>
-  <li><a href="install/#Alpine-Linux">Alpine Linux</a></li>
+  <li><a href="docs/install/#Alpine-Linux">Alpine Linux</a></li>
 </ul>
 
 <p>Alternatively you could use <em>pip3</em> to install <em>IfState</em>:</p>
@@ -116,7 +116,7 @@ at <a href="https://chemnitzer.linux-tage.de/2023/de/programm/beitrag/225">Chemn
 
 <p>This will also install all python dependencies if not already statisfied.</p>
 
-<p><a href="install/">More…</a></p>
+<p><a href="docs/install/">More…</a></p>
 
 <h1 id="usage">Usage</h1>
 
@@ -152,10 +152,10 @@ at <a href="https://chemnitzer.linux-tage.de/2023/de/programm/beitrag/225">Chemn
 <p>Run the <code class="language-plaintext highlighter-rouge">ifstatecli</code> command:</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># ifstatecli -c test.yml apply</span>
-cleanup orphan interfaces...
+cleanup orphan interfaces…
    eth1                              orphan
 
-configure interfaces...
+configure interfaces…
  lo
    <span class="nb">link                              </span>ok
    addresses                         <span class="o">=</span> 127.0.0.1/8
@@ -170,13 +170,13 @@ configure interfaces...
    addresses                         <span class="o">=</span> 192.0.2.3/32
    addresses                         <span class="o">=</span> 2001:db8::3/128
 
-configure routing...
+configure routing…
    main                              + 198.51.100.128/25
 </code></pre></div></div>
 
 <p>It is possible to create a configuration template from the currently available interfaces using the <code class="language-plaintext highlighter-rouge">ifstatecli show</code> command.</p>
 
-<p><a href="cli/">More…</a></p>
+<p><a href="docs/">More…</a></p>
 
 <p><a rel="me" href="https://ibh.social/@liske"></a></p>
 </div>
