@@ -1,0 +1,2 @@
+[console_scripts]
+ifstatecli = ifstate.ifstate:main

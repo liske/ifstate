@@ -1,0 +1,38 @@
+Metadata-Version: 2.1
+Name: ifstate
+Version: 1.11.4
+Summary: Manage host interface settings in a declarative manner
+Home-page: https://ifstate.net/
+Author: Thomas Liske
+Author-email: thomas@fiasko-nw.net
+License: GPL3+
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: jsonschema
+Requires-Dist: pyroute2
+Requires-Dist: pyyaml
+Requires-Dist: setproctitle
+Provides-Extra: shell
+Requires-Dist: pygments; extra == "shell"
+Provides-Extra: wireguard
+Requires-Dist: wgnlpy; extra == "wireguard"
+
+# IfState
+
+[![PyPI version](https://badge.fury.io/py/ifstate.svg)](https://badge.fury.io/py/ifstate)
+
+A python tool to configure (linux) host interfaces in a declarative manner.
+It is a frontend for the kernel netlink protocol using
+[pyroute2](https://pyroute2.org/) and aims to be as powerful as the
+iproute2/bridge/ethtool/tc/wireguard commands.
+
+It was written for interface configuration on lightweight software defined linux
+routers **without** using any additional network management daemon like
+[Network-Manager](https://gitlab.freedesktop.org/NetworkManager/NetworkManager) or
+[systemd-networkd](https://www.freedesktop.org/software/systemd/man/systemd-networkd.service.html).
+
+Can be used with deployment and automation tools like
+[ansible](https://github.com/ansible/ansible) since it's declarative and
+operates idempotent.
+
+[More...](https://ifstate.net/)

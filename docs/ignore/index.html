@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>ignore | IfState</title>
+<meta name="generator" content="Jekyll v4.3.1" />
+<meta property="og:title" content="ignore" />
+<meta name="author" content="Thomas Liske" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Manage host interface settings in a declarative manner" />
+<meta property="og:description" content="Manage host interface settings in a declarative manner" />
+<meta property="og:site_name" content="IfState" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="ignore" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Thomas Liske"},"description":"Manage host interface settings in a declarative manner","headline":"ignore","url":"/docs/ignore/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="IfState" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">IfState</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/">About</a><a class="page-link" href="/docs/">Docs</a><a class="page-link" href="/examples/">Examples</a><a class="page-link" href="/schema.html">Schema</a><a class="page-link" href="/source/">🔗Source</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">ignore</h1>
+  </header>
+
+  <div class="post-content">
+    <p><a href="../../schema/#ignore">Schema description</a></p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">ignore</span><span class="pi">:</span>
+  <span class="na">ifname</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">^eno1$</span>
+    <span class="pi">-</span> <span class="s">^wl</span>
+</code></pre></div></div>
+
+<p>The <em>ignore</em> setting contains a dictionary to configure different items which should be ignored by <em>IfState</em> completely:</p>
+
+<ul>
+  <li><a href="../../schema/#ignore_ipaddr"><em>ipaddr</em></a> - ip addresses</li>
+  <li><a href="../../schema/#ignore_ipaddr_dynamic"><em>ipaddr_dynamic</em></a> - dynamic ip addresses (<abbr title="Stateless Address Autoconfiguration (IPv6)">SLAAC</abbr>)</li>
+  <li><a href="../../schema/#ignore_ifname"><em>ifname</em></a> - interfaces by name</li>
+  <li><a href="../../schema/#ignore_fdb"><em>fdb</em></a> - bridge forwarding database entries</li>
+  <li><a href="../../schema/#ignore_routes"><em>routes</em></a> - routes</li>
+  <li><a href="../../schema/#ignore_rules"><em>rules</em></a> - <abbr title="Policy Based Routing">PBR</abbr> rules</li>
+  <li><a href="../../schema/#ignore_rules"><em>netns</em></a> - netns namespaces</li>
+</ul>
+
+<p>There are also some <code class="language-plaintext highlighter-rouge">*_builtin</code> entries which contains some sane defaults (i.e. to ignore <em>docker</em> bridges or <em>pppd</em> interfaces). These built-in entries can be viewed by <code class="language-plaintext highlighter-rouge">ìfstatecli showall</code>.</p>
+
+<p><a href="..#configuration-file">Back</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">IfState</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Thomas Liske</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://ibh.social/@liske"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#mastodon"></use></svg> <span class="username">liske</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Manage host interface settings in a declarative manner</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

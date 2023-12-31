@@ -1568,6 +1568,11 @@
                         "type": "boolean",
                         "default": false
                     },
+                    "clear_tc": {
+                        "description": "implicit remove all tc qdiscs",
+                        "type": "boolean",
+                        "default": false
+                    },
                     "ethtool": {
                         "$ref": "#/$defs/iface-ethtool"
                     },
