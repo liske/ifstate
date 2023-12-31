@@ -1,7 +1,7 @@
 ---
 title: CLI
 layout: page
-permalink: cli/
+permalink: docs/cli/
 ---
 
 # Usage

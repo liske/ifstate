@@ -23,9 +23,7 @@ exclude:
   - test
 header_pages:
   - index.md
-  - features.md
-  - install.md
-  - cli.md
+  - docs.md
   - examples.md
   - schema.md
   - source.md
