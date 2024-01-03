@@ -6,7 +6,7 @@ permalink: docs/
 
 # Declarative network stack configuration
 
-*IfState* will (re)configure the hosts network stack configuration to match the desired configuration. As a result unspecified interfaces or ip addresses are automatically shutdown or removed. It should always be possible to achieve the desired network configuration from any (complex) previous state. Simular to *ansible* only those parts of the network stack that are referenced in the configuration file are taken into account.
+*IfState* will (re)configure the hosts network stack configuration to match the desired configuration. As a result unspecified interfaces or ip addresses are automatically shutdown or removed. *IfState* reaches the desired network configuration from any previous state. Simular to *ansible* only those parts of the network stack that are referenced in the configuration file are taken into account.
 
 # Usage
 
