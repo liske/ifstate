@@ -339,9 +339,12 @@ class IfState():
                     item.netns.ipr.link('del', index=item.attributes['index'])
                 except Exception as err:
                     if not isinstance(err, netlinkerror_classes):
-                        raise
-                    logger.warning('removing link {} failed: {}'.format(
-                        ifname, err.args[1]), extra={'netns': item.netns})
+                         raise
+                    # ignore if the link is already gone, this might happen
+                    # when removing veth link peers
+                    if err.code != errno.ENODEV:
+                        logger.warning('removing link {} failed: {}'.format(
+                            ifname, err.args[1]), extra={'netns': item.netns})
             return True
         else:
             # shutdown physical interfaces
