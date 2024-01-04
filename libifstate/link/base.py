@@ -83,6 +83,7 @@ class Link(ABC):
     attr_bind_kinds = [
         'ip6tnl',
         'tun',
+        'veth',
         'vti',
         'vti6',
         'vxlan',
@@ -401,7 +402,12 @@ class Link(ABC):
             with open(fn, 'rb') as fh:
                 state = fh.read()
         except IOError:
+            logger.debug('no bind_netns state available',
+                extra={'iface': self.settings['ifname'], 'netns': self.netns})
             return True
+
+        logger.debug(f'bind_netns differ: {state} != {bind_netns.mount}',
+            extra={'iface': self.settings['ifname'], 'netns': self.netns})
 
         return state != bind_netns.mount
 

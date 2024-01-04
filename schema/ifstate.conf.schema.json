@@ -2847,6 +2847,13 @@
                                     "peer": {
                                         "$ref": "#/$defs/iface-link_link"
                                     },
+                                    "peer_netns": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "description": "specifies the peer's netns name or null if the peer isn't in a netns namespace"
+                                                                },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
