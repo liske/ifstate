@@ -538,7 +538,8 @@ class Link(ABC):
             " ".join("{}={}".format(k, v) for k, v in settings.items())))
         if do_apply:
             try:
-                # set state later
+                # set master and state later
+                master = settings.pop('master', None)
                 state = settings.pop('state', None)
 
                 # prevent altname conflict
@@ -576,14 +577,22 @@ class Link(ABC):
                         if self.brport.has_changes(self.idx):
                             self.brport.apply(do_apply, self.idx, excpts)
 
-                    # set state if required
-                    if state is not None and not excpts.has_op('brport'):
-                        try:
-                            self.netns.ipr.link('set', index=self.idx, state=state)
-                        except Exception as err:
-                            if not isinstance(err, netlinkerror_classes):
-                                raise
-                            excpts.add('set', err, state=state)
+                    # set master and state if required
+                    if not excpts.has_op('brport'):
+                        if master is not None:
+                            try:
+                                self.netns.ipr.link('set', index=self.idx, master=master)
+                            except Exception as err:
+                                if not isinstance(err, netlinkerror_classes):
+                                    raise
+                                excpts.add('set', err, master=master)
+                        if state is not None:
+                            try:
+                                self.netns.ipr.link('set', index=self.idx, state=state)
+                            except Exception as err:
+                                if not isinstance(err, netlinkerror_classes):
+                                    raise
+                                excpts.add('set', err, state=state)
             except Exception as err:
                 if not isinstance(err, netlinkerror_classes):
                     raise
