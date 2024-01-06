@@ -3,6 +3,7 @@ from libifstate.exception import netlinkerror_classes, FeatureMissingError
 from wgnlpy import WireGuard as WG
 from ipaddress import ip_network
 import collections
+from copy import deepcopy
 import pyroute2.netns
 
 class WireGuard():
@@ -27,6 +28,20 @@ class WireGuard():
                 if 'allowedips' in peer:
                     self.wireguard['peers'][i]['allowedips'] = set(
                         [ip_network(x) for x in self.wireguard['peers'][i]['allowedips']])
+
+    def __deepcopy__(self, memo):
+        '''
+        Add custom deepcopy implementation to keep single wgnlpy.WireGuard instances.
+        '''
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k == 'wg':
+                setattr(result, k, v)
+            else:
+                setattr(result, k, deepcopy(v, memo))
+        return result
 
     def apply(self, do_apply):
         # get kernel's wireguard settings for the interface
