@@ -86,14 +86,15 @@ def vrrp_fifo(args_fifo, ifs_config, log_level):
 
         with open(pid_file, "w", encoding="utf-8") as fh:
             fh.write(args_fifo)
-    except:
-        logger.exception("failed to write pid file f{pid_file}")
+    except IOError as err:
+        logger.exception(f'failed to write pid file {pid_file}: {err}')
 
     try:
         status_pattern = re.compile(
             r'(group|instance) "([^"]+)" (unknown|fault|backup|master)( \d+)?$', re.IGNORECASE)
 
         with open(args_fifo) as fifo:
+            logger.debug("entering fifo loop...")
             for line in fifo:
                 m = status_pattern.match(line.strip())
                 if m:
@@ -102,9 +103,11 @@ def vrrp_fifo(args_fifo, ifs_config, log_level):
                     vrrp_state = m.group(3)
 
                     vrrp_states.update(vrrp_type, vrrp_name, vrrp_state)
+                else:
+                    logger.warning(f'failed to parse fifo input: {line.strip()}')
                 mp.active_children()
     finally:
         try:
             os.remove(pid_file)
-        except:
+        except IOError:
             pass
