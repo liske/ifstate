@@ -507,11 +507,10 @@ class IfState():
         logger.info("configure interfaces...")
         for stage in stages:
             for link_dep in stage:
-                logger.info(" {}".format(link_dep))
                 if link_dep.netns is None:
-                    self._apply_iface(do_apply, self.root_netns, link_dep.ifname, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
+                    self._apply_iface(do_apply, self.root_netns, link_dep, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
                 else:
-                    self._apply_iface(do_apply, self.namespaces[link_dep.netns], link_dep.ifname, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
+                    self._apply_iface(do_apply, self.namespaces[link_dep.netns], link_dep, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
 
         # configure routing
         logger.info("")
@@ -546,7 +545,8 @@ class IfState():
 
         return had_sysctl
 
-    def _apply_iface(self, do_apply, netns, ifname, by_vrrp, vrrp_type, vrrp_name, vrrp_state):
+    def _apply_iface(self, do_apply, netns, link_dep, by_vrrp, vrrp_type, vrrp_name, vrrp_state):
+        ifname = link_dep.ifname
         if ifname in netns.links:
             link = netns.links[ifname]
 
@@ -560,18 +560,22 @@ class IfState():
             else:
                 # skip if another vrrp type & name is addressed
                 if not link.match_vrrp_select(vrrp_type, vrrp_name):
-                    logger.log_ok("other vrrp")
+                    logger.debug('other vrrp',
+                                extra={'iface': ifname})
                     return
                 # vrrp type & name does match, but the state does not => disable this interface
                 elif not vrrp_name in netns.vrrp[vrrp_type] or not vrrp_state in netns.vrrp[vrrp_type][vrrp_name] or not ifname in netns.vrrp[vrrp_type][vrrp_name][vrrp_state]:
                     if ifname in netns.links:
-                        logger.debug('to be disabled due to vrrp constraint',
+                        logger.debug('disabled due to vrrp constraint',
                                     extra={'iface': ifname})
                         link.settings['state'] = 'down'
         # ignore if this link is not vrrp aware at all
         elif by_vrrp:
-            logger.log_ok("no vrrp")
+            logger.debug('no vrrp setting',
+                        extra={'iface': ifname})
             return
+
+        logger.info(" {}".format(link_dep))
 
         if ifname in netns.links:
             excpts = link.apply(do_apply, netns.sysctl)
