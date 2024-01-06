@@ -1,5 +1,17 @@
 # ChangeLog
 
+## 1.11.5 - 2024-01-06
+
+Changes:
+- vrrp: reduce logging severity for skipped interfaces in vrrp actions to debug
+
+Fixes:
+- link: make veth links netns aware (fixes #34)
+        (reported by @magic_rb)
+- link: fix creating virtual links with master attribute (closes #35)
+- link: fix false positive error when removing veth links (closes #36)
+- vrrp-fifo: fix exception in worker process if WireGuard is used (closes #37)
+
 ## 1.11.4 - 2023-12-18
 
 Changes:
