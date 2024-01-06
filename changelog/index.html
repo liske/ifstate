@@ -42,7 +42,23 @@
   </header>
 
   <div class="post-content">
-    <h1 id="ifstate-1114---2023-12-18">ifstate 1.11.4 - 2023-12-18</h1>
+    <h1 id="ifstate-1115---2024-01-06">ifstate 1.11.5 - 2024-01-06</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>vrrp: reduce logging severity for skipped interfaces in vrrp actions to debug</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: make veth links netns aware (fixes <a href="https://codeberg.org/liske/ifstate/issues/34">#34</a>)
+      (reported by @magic_rb)</li>
+  <li>link: fix creating virtual links with master attribute (closes <a href="https://codeberg.org/liske/ifstate/issues/35">#35</a>)</li>
+  <li>link: fix false positive error when removing veth links (closes <a href="https://codeberg.org/liske/ifstate/issues/36">#36</a>)</li>
+  <li>vrrp-fifo: fix exception in worker process if WireGuard is used (closes <a href="https://codeberg.org/liske/ifstate/issues/37">#37</a>)</li>
+</ul>
+
+<h1 id="ifstate-1114---2023-12-18">ifstate 1.11.4 - 2023-12-18</h1>
 
 <p>Changes:</p>
 <ul>
