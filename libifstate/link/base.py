@@ -572,20 +572,22 @@ class Link(ABC):
                     # set sysctl settings if required
                     sysctl.apply(self.settings['ifname'], do_apply)
 
+                    # set master if required
+                    if master is not None:
+                        try:
+                            self.netns.ipr.link('set', index=self.idx, master=master)
+                        except Exception as err:
+                            if not isinstance(err, netlinkerror_classes):
+                                raise
+                            excpts.add('set', err, master=master)
+
                     # set brport settings if required
                     if self.brport:
                         if self.brport.has_changes(self.idx):
                             self.brport.apply(do_apply, self.idx, excpts)
 
-                    # set master and state if required
+                    # set state if required
                     if not excpts.has_op('brport'):
-                        if master is not None:
-                            try:
-                                self.netns.ipr.link('set', index=self.idx, master=master)
-                            except Exception as err:
-                                if not isinstance(err, netlinkerror_classes):
-                                    raise
-                                excpts.add('set', err, master=master)
                         if state is not None:
                             try:
                                 self.netns.ipr.link('set', index=self.idx, state=state)
