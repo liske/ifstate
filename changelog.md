@@ -4,6 +4,11 @@ layout: page
 permalink: changelog/
 ---
 
+# ifstate 1.11.6 - 2024-01-09
+
+Fixes:
+- link: set master before applying brport settings (regression from fixing [#35](https://codeberg.org/liske/ifstate/issues/35))
+
 # ifstate 1.11.5 - 2024-01-06
 
 Changes:
