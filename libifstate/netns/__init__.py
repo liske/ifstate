@@ -66,7 +66,10 @@ class NetNameSpace():
         memo[id(self)] = result
         for k, v in self.__dict__.items():
             if k == 'ipr':
-                setattr(result, k, v)
+                if self.netns is None:
+                    setattr(result, k, IPRouteExt())
+                else:
+                    setattr(result, k, NetNSExt(self.netns))
             else:
                 setattr(result, k, deepcopy(v, memo))
         return result
