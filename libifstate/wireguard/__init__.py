@@ -38,7 +38,14 @@ class WireGuard():
         memo[id(self)] = result
         for k, v in self.__dict__.items():
             if k == 'wg':
-                setattr(result, k, v)
+                if self.netns.netns is not None:
+                    pyroute2.netns.pushns(self.netns.netns)
+
+                try:
+                    setattr(result, k, WG())
+                finally:
+                    if self.netns.netns is not None:
+                        pyroute2.netns.popns()
             else:
                 setattr(result, k, deepcopy(v, memo))
         return result
