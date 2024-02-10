@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 1.11.7 - 2024-02-10
+
+Fixes:
+- netns: fix vrrp race condition due to concurrent netlink socket access
+- wireguard: fix vrrp race condition due to concurrent netlink socket access
+
 ## 1.11.6 - 2024-01-09
 
 Fixes:
