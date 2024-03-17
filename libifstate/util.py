@@ -164,6 +164,19 @@ class IPRouteExt(IPRoute):
 
             return self.nlm_request(msg, RTM_NEWNSID, NLM_F_REQUEST | NLM_F_ACK)
 
+    def get_link(self, *argv, **kwarg):
+        '''
+        Returns the first link info by wrapping a `get_links()` call and return
+        `None` rather than raising any pyroute2 netlink exception on error.
+        '''
+        try:
+            return next(iter(self.get_links(*argv, **kwarg)), None)
+        except Exception as err:
+            if not isinstance(err, netlinkerror_classes):
+                raise
+
+        return None
+
 class NetNSExt(NetNS):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -274,6 +287,19 @@ class NetNSExt(NetNS):
                 msg['attrs'].append(('NETNSA_FD', fd))
 
             return self.nlm_request(msg, RTM_NEWNSID, NLM_F_REQUEST | NLM_F_ACK)
+
+    def get_link(self, *argv, **kwarg):
+        '''
+        Returns the first link info by wrapping a `get_links()` call and return
+        `None` rather than raising any pyroute2 netlink exception on error.
+        '''
+        try:
+            return next(iter(self.get_links(*argv, **kwarg)), None)
+        except Exception as err:
+            if not isinstance(err, netlinkerror_classes):
+                raise
+
+        return None
 
 class LinkDependency:
     def __init__(self, ifname, netns):

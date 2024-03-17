@@ -488,7 +488,8 @@ class Link(ABC):
             self.idx = item.index
 
         if self.idx is not None:
-            self.iface = next(iter(item.netns.ipr.get_links(self.idx)), None)
+            self.iface = item.netns.ipr.get_link(self.idx)
+        if self.idx is not None and self.iface is not None:
             permaddr = item.netns.ipr.get_permaddr(self.iface.get_attr('IFLA_IFNAME'))
             if not permaddr is None:
                 self.iface['permaddr'] = permaddr
@@ -548,15 +549,13 @@ class Link(ABC):
                 # add link
                 if bind_netns is None or bind_netns.netns == self.netns.netns:
                     self.netns.ipr.link('add', **(settings))
-                    link = next(iter(self.netns.ipr.get_links(
-                                ifname=settings['ifname'])), None)
+                    link = self.netns.ipr.get_link(ifname=settings['ifname'])
                     if link is not None:
                         item = self.ifstate.link_registry.add_link(self.netns, link)
                 # add and move link
                 else:
                     bind_netns.ipr.link('add', **(settings))
-                    link = next(iter(bind_netns.ipr.get_links(
-                                ifname=settings['ifname'])), None)
+                    link = bind_netns.ipr.get_link(ifname=settings['ifname'])
                     if link is not None:
                         item = self.ifstate.link_registry.add_link(bind_netns, link)
                         item.update_netns(self.netns)
