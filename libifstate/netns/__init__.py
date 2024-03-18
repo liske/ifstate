@@ -206,8 +206,8 @@ class LinkRegistry():
         hex_length = int((15-len(prefix))/2)
         free = False
         while True:
-            ifname = prefix + token_hex(hex_length)
-            if self.get_link({'ifname': ifname}) is None:
+            ifname = prefix + secrets.token_hex(hex_length)
+            if self.get_link(ifname=ifname) is None:
                 return ifname
 
     def debug_dump(self):
@@ -270,7 +270,7 @@ class LinkRegistryItem():
         idx = next(iter(netns.ipr.link_lookup(ifname=self.attributes['ifname'])), None)
         if idx is not None:
             # ToDo
-            self.update_ifname( self.link_registry.get_random_name('__netns__') )
+            self.update_ifname( self.registry.get_random_name('__netns__') )
 
         self.__ipr_link('set', index=self.attributes['index'], net_ns_fd=netns_name)
         self.netns = netns
