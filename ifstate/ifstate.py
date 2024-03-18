@@ -2,7 +2,7 @@
 
 from libifstate.parser import YamlParser
 from libifstate import __version__, IfState
-from libifstate.exception import FeatureMissingError, LinkNoConfigFound, LinkCircularLinked, ParserValidationError, ParserOpenError, ParserParseError, ParserIncludeError
+from libifstate.exception import FeatureMissingError, LinkNoConfigFound, LinkCircularLinked, NetNSNotRoot, ParserValidationError, ParserOpenError, ParserParseError, ParserIncludeError
 from libifstate.util import logger, IfStateLogging
 from setproctitle import setproctitle
 
@@ -82,6 +82,9 @@ class IfsConfigHandler():
         except FeatureMissingError as ex:
             logger.error(
                 "Config uses unavailable feature: {}".format(ex.feature))
+            raise ex
+        except NetNSNotRoot as ex:
+            logger.error("Must not be run from inside a netns!")
             raise ex
 
 
@@ -185,7 +188,8 @@ def main():
                 ParserParseError,
                 ParserIncludeError,
                 ParserValidationError,
-                FeatureMissingError) as ex:
+                FeatureMissingError,
+                NetNSNotRoot) as ex:
             ifslog.quit()
             exit(ex.exit_code())
 

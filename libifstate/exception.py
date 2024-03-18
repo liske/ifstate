@@ -58,6 +58,9 @@ class FeatureMissingError(Exception):
     def exit_code(self):
         return 5
 
+class NetNSNotRoot(Exception):
+    def exit_code(self):
+        return 6
 
 class LinkCannotAdd(Exception):
     pass
