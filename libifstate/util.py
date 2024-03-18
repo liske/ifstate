@@ -1,3 +1,4 @@
+import libifstate.exception
 from libifstate.log import logger, IfStateLogging
 from pyroute2 import IPRoute, NetNS, netns
 
@@ -296,7 +297,7 @@ class NetNSExt(NetNS):
         try:
             return next(iter(self.get_links(*argv, **kwarg)), None)
         except Exception as err:
-            if not isinstance(err, netlinkerror_classes):
+            if not isinstance(err, libifstate.exception.netlinkerror_classes):
                 raise
 
         return None
