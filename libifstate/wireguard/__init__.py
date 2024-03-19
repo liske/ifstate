@@ -5,6 +5,7 @@ from ipaddress import ip_network
 import collections
 from copy import deepcopy
 import pyroute2.netns
+import socket
 
 class WireGuard():
     def __init__(self, netns, iface, wireguard):
@@ -95,7 +96,7 @@ class WireGuard():
                     has_pchanges = True
                     if do_apply:
                         try:
-                            self.wg.set_peer(self.iface, **peer)
+                            self.safe_set_peer(peer)
                         except Exception as err:
                             if not isinstance(err, netlinkerror_classes):
                                 raise
@@ -119,7 +120,7 @@ class WireGuard():
                         has_pchanges = True
                         if do_apply:
                             try:
-                                self.wg.set_peer(self.iface, **peer)
+                                self.safe_set_peer(peer)
                             except Exception as err:
                                 if not isinstance(err, netlinkerror_classes):
                                     raise
@@ -141,3 +142,12 @@ class WireGuard():
                 logger.log_change('wg.peers')
             else:
                 logger.log_ok('wg.peers')
+
+    def safe_set_peer(self, peer):
+        try:
+            self.wg.set_peer(self.iface, **peer)
+        except (socket.gaierror, ValueError) as err:
+            logger.warning('failed to set wireguard endpoint at {}: {}'.format(self.iface, err))
+
+            del(peer['endpoint'])
+            self.wg.set_peer(self.iface, **peer)
