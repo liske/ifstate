@@ -1,5 +1,16 @@
 # ChangeLog
 
+## 1.11.8 - 2024-03-19
+
+Changes:
+- netns: fail if run from inside a netns if namespaces to be configured
+
+Fixes:
+- link: drop master_netns option as it is not supported by the linux kernel
+- link: fix netns related temporary link name generation
+- link: fix racy netlink exceptions in IPRoute.get_links() for missing links
+- wireguard: handle endpoint lookup errors gracefully
+
 ## 1.11.7 - 2024-02-10
 
 Fixes:
