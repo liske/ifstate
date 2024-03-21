@@ -4,6 +4,23 @@ layout: page
 permalink: changelog/
 ---
 
+# ifstate 1.11.8 - 2024-03-19
+
+Changes:
+- netns: fail if run from inside a netns if namespaces to be configured
+
+Fixes:
+- link: drop master_netns option as it is not supported by the linux kernel
+- link: fix netns related temporary link name generation
+- link: fix racy netlink exceptions in IPRoute.get_links() for missing links
+- wireguard: handle endpoint lookup errors gracefully
+
+# ifstate 1.11.7 - 2024-02-10
+
+Fixes:
+- netns: fix vrrp race condition due to concurrent netlink socket access
+- wireguard: fix vrrp race condition due to concurrent netlink socket access
+
 # ifstate 1.11.6 - 2024-01-09
 
 Fixes:
