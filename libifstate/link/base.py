@@ -76,6 +76,12 @@ class Link(ABC):
             0x88a8: '802.1ad',
             0x8100: '802.1q',
         },
+        # === vxlan ===
+        'vxlan_df': {
+            0: 'unset',
+            1: 'set',
+            2: 'inherit',
+        },
     }
     attr_value_lookup = {
         'group': RTLookups.group,

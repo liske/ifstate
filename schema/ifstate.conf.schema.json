@@ -1888,7 +1888,9 @@
                         "items": {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": ["lladdr"],
+                            "required": [
+                                "lladdr"
+                            ],
                             "properties": {
                                 "lladdr": {
                                     "description": "destination link layer address",
@@ -2809,7 +2811,7 @@
                                             "null"
                                         ],
                                         "description": "specifies the peer's netns name or null if the peer isn't in a netns namespace"
-                                                                },
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
@@ -2924,17 +2926,154 @@
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
                                     "vxlan_id": {
-                                        "type": [
-                                            "integer"
-                                        ],
+                                        "type": "integer",
                                         "minimum": 0,
                                         "maximum": 16777215,
                                         "description": "specifies the VNI"
                                     },
+                                    "vxlan_ageing": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 4294967296,
+                                        "description": "specifies the lifetime in seconds of FDB entries learnt by the kernel (0: none)",
+                                        "default": 300
+                                    },
+                                    "vxlan_df": {
+                                        "enum": [
+                                            0,
+                                            "unset",
+                                            1,
+                                            "set",
+                                            2,
+                                            "inherit"
+                                        ],
+                                        "default": "unset",
+                                        "description": "specifies the usage of the DF bit in outgoing packets with IPv4 headers"
+                                    },
+                                    "vxlan_label": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1048575,
+                                        "description": "specifies a fixed flowlabel"
+                                    },
+                                    "vxlan_learning": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "description": "specifies if unknown source link layer addresses and IP addresses are entered into the VXLAN device fdb",
+                                        "default": 1
+                                    },
+                                    "vxlan_limit": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 4294967296,
+                                        "description": "specifies the maximum number of FDB entries (0: none)",
+                                        "default": 0
+                                    },
+                                    "vxlan_proxy": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "description": "specifies if ARP proxy is turned on",
+                                        "default": 0
+                                    },
+                                    "vxlan_rsc": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "description": "specifies if route short circuit is turned on",
+                                        "default": 0
+                                    },
+                                    "vxlan_l2miss": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "description": "specifies if netlink LLADDR miss notifications are generated",
+                                        "default": 0
+                                    },
+                                    "vxlan_l3miss": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "description": "specifies if netlink IP ADDR miss notifications are generated",
+                                        "default": 0
+                                    },
+                                    "vxlan_udp_csum": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "description": "specifies if UDP checksum is calculated for tx packets over IPv4",
+                                        "default": 1
+                                    },
                                     "vxlan_link": {
                                         "$ref": "#/$defs/iface-link_tun-dev"
+                                    },
+                                    "vxlan_local": {
+                                        "type": "string",
+                                        "description": "tunnel source ip address",
+                                        "oneOf": [
+                                            {
+                                                "format": "ipv4"
+                                            },
+                                            {
+                                                "format": "ipv6"
+                                            }
+                                        ]
+                                    },
+                                    "vxlan_group": {
+                                        "type": "string",
+                                        "description": "remote unicast destination or multicast group IPv4 address",
+                                        "format": "ipv4"
+                                    },
+                                    "vxlan_group6": {
+                                        "type": "string",
+                                        "description": "remote unicast destination or multicast group IPv6 address",
+                                        "format": "ipv6"
+                                    },
+                                    "vxlan_tos": {
+                                        "type": "integer",
+                                        "description": "specifies the TOS value to use in outgoing packets (0: inherit)",
+                                        "minimum": 0,
+                                        "maximum": 255,
+                                        "default": 0
+                                    },
+                                    "vxlan_ttl": {
+                                        "type": "integer",
+                                        "description": "specifies the TTL value to use in outgoing packets (0: auto)",
+                                        "minimum": 0,
+                                        "maximum": 255,
+                                        "default": 0
+                                    },
+                                    "vxlan_ttl_inherit": {
+                                        "type": "boolean",
+                                        "description": "control whether TTL is propagated",
+                                        "default": false
                                     }
-                                }
+                                },
+                                "anyOf": [
+                                    {
+                                        "oneOf": [
+                                            {
+                                                "required": [
+                                                    "vxlan_group"
+                                                ]
+                                            },
+                                            {
+                                                "required": [
+                                                    "vxlan_group6"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "not": {
+                                            "required": [
+                                                "vxlan_group",
+                                                "vxlan_group6"
+                                            ]
+                                        }
+                                    }
+                                ]
                             },
                             {
                                 "description": "IPIP interface",
