@@ -1783,7 +1783,8 @@
             "items": {
                 "type": "object",
                 "required": [
-                    "name"
+                    "name",
+                    "link"
                 ],
                 "additionalProperties": false,
                 "properties": {
