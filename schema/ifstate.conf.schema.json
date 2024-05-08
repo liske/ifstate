@@ -1960,6 +1960,9 @@
                     "link": {
                         "description": "link settings of the interface",
                         "type": "object",
+                        "required": [
+                            "kind"
+                        ],
                         "oneOf": [
                             {
                                 "description": "Intermediate Functional Block device",
