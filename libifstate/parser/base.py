@@ -18,79 +18,96 @@ class Parser(ABC):
         }
     }
     _default_ifstates = {
-        'ignore': {
-            'ipaddr_builtin': [
-                'fe80::/10'
-            ],
-            'ipaddr_dynamic': True,
-            'ifname_builtin': [
-                r'^br-[\da-f]{12}',
-                r'^docker\d+',
-                r'^ppp\d+$',
-                r'^veth',
-                r'^virbr\d+',
-                r'^vrrp\d*\.\d+$'
-            ],
-            'fdb_builtin': [
-                r'^33:33:',
-                r'^01:00:5e:'
-            ],
-            'routes_builtin': [
-                {'proto': 1},
-                {'proto': 2},
-                {'proto': 8},
-                {'proto': 9},
-                {'proto': 10},
-                {'proto': 11},
-                {'proto': 12},
-                {'proto': 13},
-                {'proto': 14},
-                {'proto': 15},
-                {'proto': 16},
-                {'proto': 18},
-                {'proto': 42},
-                {'proto': 186},
-                {'proto': 187},
-                {'proto': 188},
-                {'proto': 189},
-                {'proto': 192},
-                {'to': 'ff00::/8'},
-            ],
-            'rules_builtin': [
-                {'proto': 1},
-                {'proto': 2},
-                {'proto': 8},
-                {'proto': 9},
-                {'proto': 10},
-                {'proto': 11},
-                {'proto': 12},
-                {'proto': 13},
-                {'proto': 14},
-                {'proto': 15},
-                {'proto': 16},
-                {'proto': 18},
-                {'proto': 42},
-                {'proto': 186},
-                {'proto': 187},
-                {'proto': 188},
-                {'proto': 189},
-                {'proto': 192},
-            ],
-        },
-        'cshaper': {
-            'default': {
-                'egress_qdisc': {
-                    'kind': 'cake',
-                    'handle': '1:',
-                },
-                'ingress_qdisc': {
-                    'kind': 'cake',
-                    'handle': '1:',
-                },
-                'ingress_ifname': {
-                    'search': r'^\D{1,3}',
-                    'replace': 'ifb',
+        'parameters': {
+            'cshaper': {
+                'default': {
+                    'egress_qdisc': {
+                        'kind': 'cake',
+                        'handle': '1:',
+                    },
+                    'ingress_qdisc': {
+                        'kind': 'cake',
+                        'handle': '1:',
+                    },
+                    'ingress_ifname': {
+                        'search': r'^\D{1,3}',
+                        'replace': 'ifb',
+                    }
                 }
+            },
+            'defaults_builtin': [
+                {
+                    'match': [
+                        {'ifname': ''}
+                    ],
+                    'clear_addresses': True,
+                    'clear_fdb': True,
+                    'clear_neighbours': True,
+                    'clear_tc': True,
+                    'link': {
+                        'state': 'down',
+                        'master': None
+                    }
+                }
+            ],
+            'ignore': {
+                'ipaddr_builtin': [
+                    'fe80::/10'
+                ],
+                'ipaddr_dynamic': True,
+                'ifname_builtin': [
+                    r'^br-[\da-f]{12}',
+                    r'^docker\d+',
+                    r'^ppp\d+$',
+                    r'^veth',
+                    r'^virbr\d+',
+                    r'^vrrp\d*\.\d+$'
+                ],
+                'fdb_builtin': [
+                    r'^33:33:',
+                    r'^01:00:5e:'
+                ],
+                'routes_builtin': [
+                    {'proto': 1},
+                    {'proto': 2},
+                    {'proto': 8},
+                    {'proto': 9},
+                    {'proto': 10},
+                    {'proto': 11},
+                    {'proto': 12},
+                    {'proto': 13},
+                    {'proto': 14},
+                    {'proto': 15},
+                    {'proto': 16},
+                    {'proto': 18},
+                    {'proto': 42},
+                    {'proto': 186},
+                    {'proto': 187},
+                    {'proto': 188},
+                    {'proto': 189},
+                    {'proto': 192},
+                    {'to': 'ff00::/8'},
+                ],
+                'rules_builtin': [
+                    {'proto': 1},
+                    {'proto': 2},
+                    {'proto': 8},
+                    {'proto': 9},
+                    {'proto': 10},
+                    {'proto': 11},
+                    {'proto': 12},
+                    {'proto': 13},
+                    {'proto': 14},
+                    {'proto': 15},
+                    {'proto': 16},
+                    {'proto': 18},
+                    {'proto': 42},
+                    {'proto': 186},
+                    {'proto': 187},
+                    {'proto': 188},
+                    {'proto': 189},
+                    {'proto': 192},
+                ],
             }
         }
     }
@@ -114,9 +131,11 @@ class Parser(ABC):
 
     def _update_lo(self, cfg):
         if 'interfaces' in cfg:
-            lo = next((idx for idx, iface in enumerate(cfg['interfaces']) if iface['name'] == 'lo'), None)
+            lo = next((idx for idx, iface in enumerate(
+                cfg['interfaces']) if iface['name'] == 'lo'), None)
             if lo is not None:
-                cfg['interfaces'][lo] = self.merge(deepcopy(Parser._default_lo_link), cfg['interfaces'][lo])
+                cfg['interfaces'][lo] = self.merge(
+                    deepcopy(Parser._default_lo_link), cfg['interfaces'][lo])
             else:
                 cfg['interfaces'].append(Parser._default_lo_link)
 
@@ -126,7 +145,7 @@ class Parser(ABC):
 
         # 'ignore' should still be an object
         try:
-            iter(cfg["ignore"])
+            iter(cfg["parameters"]["ignore"])
         except TypeError:
             raise ParserValidationError("$.ignore: is not of type 'object'")
 
@@ -136,17 +155,24 @@ class Parser(ABC):
             self._update_lo(cfg['namespaces'][namespace])
 
         # merge builtin defaults
-        for k in list(cfg["ignore"]):
+        if "defaults" in cfg["parameters"]:
+            cfg["parameters"]["defaults"].extend(cfg["parameters"]["defaults_builtin"])
+        else:
+            cfg["parameters"]["defaults"] = cfg["parameters"]["defaults_builtin"]
+        del cfg["parameters"]["defaults_builtin"]
+
+        # merge builtin ignore lists
+        for k in list(cfg["parameters"]["ignore"]):
             if k.endswith("_builtin"):
                 n = k[:-8]
-                if n in cfg["ignore"]:
+                if n in cfg["parameters"]["ignore"]:
                     try:
-                        cfg["ignore"][n] += cfg["ignore"][k]
+                        cfg["parameters"]["ignore"][n] += cfg["parameters"]["ignore"][k]
                     except TypeError:
                         raise ParserValidationError("$.ignore.{}: is not of type '{}'".format(
-                            n, type(cfg["ignore"][k]).__name__))
+                            n, type(cfg["parameters"]["ignore"][k]).__name__))
                 else:
-                    cfg["ignore"][n] = cfg["ignore"][k]
-                del(cfg["ignore"][k])
+                    cfg["parameters"]["ignore"][n] = cfg["parameters"]["ignore"][k]
+                del (cfg["parameters"]["ignore"][k])
 
         return cfg

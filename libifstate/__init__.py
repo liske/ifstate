@@ -104,16 +104,16 @@ class IfState():
 
         # add interface defaults
         if 'defaults' in ifstates:
-            self.defaults = ifstates['defaults']
+            self.defaults = ifstates['parameters']['defaults']
 
         # add ignore list items
-        self.ignore.update(ifstates['ignore'])
+        self.ignore.update(ifstates['parameters']['ignore'])
         self.ipaddr_ignore = set()
         for ip in self.ignore.get('ipaddr', []):
             self.ipaddr_ignore.add(ip_network(ip))
 
         # save cshaper profiles
-        self.cshaper_profiles = ifstates['cshaper']
+        self.cshaper_profiles = ifstates['parameters']['cshaper']
 
         # build link registry over all named netns
         self.link_registry = LinkRegistry(self.ignore.get('ifname', []), self.root_netns)
@@ -229,7 +229,7 @@ class IfState():
                 netns.sysctl.add(name, ifstate['sysctl'])
 
             if 'cshaper' in ifstate:
-                profile_name = ifstate['cshaper'].get(
+                profile_name = ifstate['parameters']['cshaper'].get(
                     'profile', 'default')
                 logger.debug('cshaper profile {} enabled'.format(profile_name),
                              extra={'iface': name, 'netns': netns})
@@ -251,7 +251,7 @@ class IfState():
                         'qdisc': cshaper_profile['ingress_qdisc'],
                     }
                 }
-                ifb_state['tc']['qdisc']['bandwidth'] = ifstate['cshaper'].get(
+                ifb_state['tc']['qdisc']['bandwidth'] = ifstate['parameters']['cshaper'].get(
                     'ingress', 'unlimited')
 
                 if 'vrrp' in ifstate:
@@ -284,10 +284,10 @@ class IfState():
                     ]
                 }
 
-                ifstate['tc']['qdisc']['bandwidth'] = ifstate['cshaper'].get(
+                ifstate['tc']['qdisc']['bandwidth'] = ifstate['parameters']['cshaper'].get(
                     'egress', 'unlimited')
 
-                del ifstate['cshaper']
+                del ifstate['parameters']['cshaper']
 
             if 'tc' in ifstate:
                 netns.tc[name] = TC(
@@ -628,7 +628,7 @@ class IfState():
             defaults = {}
 
         ipaddr_ignore = []
-        for ip in Parser._default_ifstates['ignore']['ipaddr_builtin']:
+        for ip in Parser._default_ifstates['parameters']['ignore']['ipaddr_builtin']:
             ipaddr_ignore.append(ip_network(ip))
 
         root_config = self._show_netns(self.root_netns, showall, ipaddr_ignore)
@@ -648,7 +648,7 @@ class IfState():
         for ipr_link in netns.ipr.get_links():
             name = ipr_link.get_attr('IFLA_IFNAME')
             # skip links on ignore list
-            if name != 'lo' and not any(re.match(regex, name) for regex in Parser._default_ifstates['ignore']['ifname_builtin']):
+            if name != 'lo' and not any(re.match(regex, name) for regex in Parser._default_ifstates['parameters']['ignore']['ifname_builtin']):
                 ifs_link = {
                     'name': name,
                     'addresses': [],
@@ -738,8 +738,8 @@ class IfState():
                     ifs_links.append(ifs_link)
 
         routing = {
-            'routes': Tables(netns).show_routes(Parser._default_ifstates['ignore']['routes_builtin']),
-            'rules': Rules(netns).show_rules(Parser._default_ifstates['ignore']['rules_builtin']),
+            'routes': Tables(netns).show_routes(Parser._default_ifstates['parameters']['ignore']['routes_builtin']),
+            'rules': Rules(netns).show_rules(Parser._default_ifstates['parameters']['ignore']['rules_builtin']),
         }
 
         return {**{'interfaces': ifs_links, 'routing': routing}}
