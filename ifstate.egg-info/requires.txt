@@ -1,0 +1,10 @@
+jsonschema
+pyroute2
+pyyaml
+setproctitle
+
+[shell]
+pygments
+
+[wireguard]
+wgnlpy

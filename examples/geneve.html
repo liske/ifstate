@@ -83,9 +83,9 @@
 ip <span class="nb">link set </span>dev eth0 master br0
 ip <span class="nb">link </span>add gen0 <span class="nb">type </span>geneve <span class="nb">id </span>42 remote 192.0.2.2
 ip <span class="nb">link set </span>dev gen0 master br0
-ip <span class="nb">link </span>dev br0 <span class="nb">set </span>up
-ip <span class="nb">link </span>dev eth0 <span class="nb">set </span>up
-ip <span class="nb">link </span>dev gen0 <span class="nb">set </span>up
+ip <span class="nb">link set </span>dev br0 up
+ip <span class="nb">link set </span>dev eth0 up
+ip <span class="nb">link set </span>dev gen0 up
 </code></pre></div></div>
 
   </div>

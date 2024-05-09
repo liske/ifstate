@@ -103,7 +103,7 @@
 <h2 id="manually">manually</h2>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ip address add 198.51.100.2/31 dev eth0
-ip <span class="nb">link </span>dev eth0 <span class="nb">set </span>up
+ip <span class="nb">link set </span>dev eth0 up
 ip route add default via 198.51.100.1
 ip <span class="nb">link </span>add name vrf-blue <span class="nb">type </span>vrf table 10
 ip <span class="nb">link set </span>vrf-blue up

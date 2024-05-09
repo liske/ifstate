@@ -98,11 +98,11 @@ ip address add 192.0.2.1/24 dev bond0
 <span class="c"># first physical interface</span>
 ip <span class="nb">link set </span>dev eth0 name port1 up
 ip <span class="nb">link set </span>dev port1 master bond0
-ip <span class="nb">link </span>dev port1 <span class="nb">set </span>up
+ip <span class="nb">link set </span>dev port1 up
 <span class="c"># second physical interface</span>
 ip <span class="nb">link set </span>dev eth1 name port2 up
 ip <span class="nb">link set </span>dev port2 master bond0
-ip <span class="nb">link </span>dev port2 <span class="nb">set </span>up
+ip <span class="nb">link set </span>dev port2 up
 </code></pre></div></div>
 
   </div>
