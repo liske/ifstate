@@ -554,7 +554,7 @@ class Rules():
             if ignore:
                 continue
 
-            logger.log_del(log_str)
+            logger.log_del('#{}'.format(rule['priority']))
             try:
                 if do_apply:
                     self.netns.ipr.rule('del', **rule)
