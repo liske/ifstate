@@ -1714,49 +1714,6 @@
                 }
             }
         },
-        "options": {
-            "description": "global configuration settings",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "sysctl": {
-                    "description": "global sysctl settings",
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "all": {
-                            "description": "overrides [per interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/all/`",
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "ipv4": {
-                                    "$ref": "#/$defs/iface-sysctl-ipv4"
-                                },
-                                "ipv6": {
-                                    "$ref": "#/$defs/iface-sysctl-ipv6"
-                                }
-                            }
-                        },
-                        "default": {
-                            "description": "default [per interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/default/`",
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "ipv4": {
-                                    "$ref": "#/$defs/iface-sysctl-ipv4"
-                                },
-                                "ipv6": {
-                                    "$ref": "#/$defs/iface-sysctl-ipv6"
-                                }
-                            }
-                        },
-                        "mpls": {
-                            "$ref": "#/$defs/iface-sysctl-mpls"
-                        }
-                    }
-                }
-            }
-        },
         "bpf": {
             "description": "load and pin eBPF programs (i.e. for XDP)",
             "type": "object",
@@ -4174,6 +4131,42 @@
                 }
             }
         },
+        "sysctl": {
+            "description": "network sysctl settings",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "all": {
+                    "description": "overrides [per interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/all/`",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "ipv4": {
+                            "$ref": "#/$defs/iface-sysctl-ipv4"
+                        },
+                        "ipv6": {
+                            "$ref": "#/$defs/iface-sysctl-ipv6"
+                        }
+                    }
+                },
+                "default": {
+                    "description": "default [per interface sysctl settings](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) in `/proc/sys/net/ipv*/conf/default/`",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "ipv4": {
+                            "$ref": "#/$defs/iface-sysctl-ipv4"
+                        },
+                        "ipv6": {
+                            "$ref": "#/$defs/iface-sysctl-ipv6"
+                        }
+                    }
+                },
+                "mpls": {
+                    "$ref": "#/$defs/iface-sysctl-mpls"
+                }
+            }
+        },
         "namespaces": {
             "type": "object",
             "additionalProperties": false,
@@ -4188,14 +4181,14 @@
                         "bpf": {
                             "$ref": "#/properties/bpf"
                         },
-                        "options": {
-                            "$ref": "#/properties/options"
-                        },
                         "interfaces": {
                             "$ref": "#/properties/interfaces"
                         },
                         "routing": {
                             "$ref": "#/properties/routing"
+                        },
+                        "sysctl": {
+                            "$ref": "#/properties/sysctl"
                         }
                     }
                 }
