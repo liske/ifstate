@@ -4,10 +4,20 @@ layout: page
 permalink: changelog/
 ---
 
+# ifstate 1.11.9 - 2024-05-09
+
+Fixes:
+- addresses: reassign ipv6 addresses when IFA_F_DADFAILED flag is set (closes [#42](https://codeberg.org/liske/ifstate/issues/42))
+- link: add most missing vxlan attributes (closes [#43](https://codeberg.org/liske/ifstate/issues/43))
+- routing: improve handling for routes with broken dev setting (closes [#40](https://codeberg.org/liske/ifstate/issues/40))
+- routing: fix exception when removing ip rules (closes [#39](https://codeberg.org/liske/ifstate/issues/39))
+- schema: interfaces needs to have link settings (closes [#41](https://codeberg.org/liske/ifstate/issues/41))
+- schema: require a kind setting in interfaces.link
+
 # ifstate 1.11.8 - 2024-03-19
 
 Changes:
-- netns: fail if run from inside a netns if namespaces to be configured
+- netns: fail when run from inside a netns if namespaces to be configured
 
 Fixes:
 - link: drop master_netns option as it is not supported by the linux kernel
