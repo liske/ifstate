@@ -139,17 +139,15 @@ class IfState():
                 self._update(self.namespaces[netns_name], netns_ifstates)
 
     def _update(self, netns, ifstates):
-        # parse options
-        if 'options' in ifstates:
-            # parse global sysctl settings
-            if 'sysctl' in ifstates['options']:
-                for proto in  ifstates['options']['sysctl'].keys():
-                    if proto in ['all', 'default']:
-                        netns.sysctl.add(
-                            proto, ifstates['options']['sysctl'][proto])
-                    else:
-                        netns.sysctl.add_global(
-                            proto, ifstates['options']['sysctl'][proto])
+        # parse network sysctl settings
+        if 'sysctl' in ifstates:
+            for proto in  ifstates['sysctl'].keys():
+                if proto in ['all', 'default']:
+                    netns.sysctl.add(
+                        proto, ifstates['sysctl'][proto])
+                else:
+                    netns.sysctl.add_global(
+                        proto, ifstates['sysctl'][proto])
 
         # load BPF programs
         if 'bpf' in ifstates:
