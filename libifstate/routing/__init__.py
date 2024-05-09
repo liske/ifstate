@@ -309,8 +309,17 @@ class Tables(collections.abc.Mapping):
 
             for route in croutes:
                 if 'oif' in route and type(route['oif']) == str:
-                    route['oif'] = next(
+                    oif = next(
                         iter(self.netns.ipr.link_lookup(ifname=route['oif'])), None)
+                    if oif is None:
+                        if 'gateway' in route:
+                            logger.log_warn(log_str, '! {}: dev {} is unknown'.format(route['dst'], route['oif']))
+                            del route['oif']
+                        else:
+                            logger.log_err(log_str, '! {}: dev {} is unknown'.format(route['dst'], route['oif']))
+                            continue
+                    else:
+                        route['oif'] = oif
                 found = False
                 identical = False
                 matched = vrrp_match(route, by_vrrp, vrrp_type, vrrp_name, vrrp_state)

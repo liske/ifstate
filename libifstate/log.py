@@ -10,6 +10,8 @@ logger.log_add = lambda option, oper='add': logger.info(oper, extra={'option': o
 logger.log_change = lambda option, oper='change': logger.info(oper, extra={'option': option, 'style': IfStateLogging.STYLE_CHG})
 logger.log_ok = lambda option, oper='ok': logger.info(oper, extra={'option': option, 'style': IfStateLogging.STYLE_OK})
 logger.log_del = lambda option, oper='del': logger.info(oper, extra={'option': option, 'style': IfStateLogging.STYLE_DEL})
+logger.log_err = lambda option, oper='warn': logger.error(oper, extra={'option': option})
+logger.log_warn = lambda option, oper='warn': logger.warning(oper, extra={'option': option})
 
 formatter = logging.Formatter('%(bol)s%(prefix)s%(style)s%(message)s%(eol)s')
 
