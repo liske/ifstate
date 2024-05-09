@@ -65,7 +65,7 @@ routing:
 
 ```bash
 ip address add 198.51.100.2/31 dev eth0
-ip link dev eth0 set up
+ip link set dev eth0 up
 ip route add default via 198.51.100.1
 ip link add name vrf-blue type vrf table 10
 ip link set vrf-blue up

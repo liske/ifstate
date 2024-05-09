@@ -46,6 +46,6 @@ sysctl net.ipv6.conf.all.forwarding=1
 sysctl net.ipv6.conf.eth0.accept_ra=2
 sysctl net.ipv6.conf.eth0.addr_gen_mode=3
 ip address add 2001:db8::defa/64 dev eth1
-ip link dev eth0 set up
-ip link dev eth1 set up
+ip set link dev eth0 up
+ip set link dev eth1 up
 ```

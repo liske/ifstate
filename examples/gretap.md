@@ -45,7 +45,7 @@ ip link add name br0 type bridge stp_state 0
 ip link set dev eth0 master br0
 ip link add eogre type gretap local 192.0.2.1 remote 192.0.2.2
 ip link set dev eogre master br0
-ip link dev br0 set up
-ip link dev eth0 set up
-ip link dev eogre set up
+ip link set dev br0 up
+ip link set dev eth0 up
+ip link set dev eogre up
 ```

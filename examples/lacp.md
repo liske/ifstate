@@ -60,9 +60,9 @@ ip address add 192.0.2.1/24 dev bond0
 # first physical interface
 ip link set dev eth0 name port1 up
 ip link set dev port1 master bond0
-ip link dev port1 set up
+ip link set dev port1 up
 # second physical interface
 ip link set dev eth1 name port2 up
 ip link set dev port2 master bond0
-ip link dev port2 set up
+ip link set dev port2 up
 ```

@@ -31,6 +31,6 @@ interfaces:
 
 ```bash
 ip address add 192.0.2.1/24 dev eth0
-ip link dev eth0 set up
+ip link set dev eth0 up
 ip neigh add 192.0.2.42 lladdr 42:00:00:00:de:fa dev eth0 nud permanent
 ```
