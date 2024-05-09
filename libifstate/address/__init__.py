@@ -1,7 +1,7 @@
 from libifstate.util import logger, IfStateLogging
 from libifstate.exception import netlinkerror_classes
 from ipaddress import ip_interface
-from pyroute2.netlink.rtnl.ifaddrmsg import IFA_F_PERMANENT
+from pyroute2.netlink.rtnl.ifaddrmsg import IFA_F_DADFAILED, IFA_F_PERMANENT
 
 
 class Addresses():
@@ -25,20 +25,25 @@ class Addresses():
         # get active ip addresses
         ipr_addr = {}
         addr_add = []
+        addr_dad = []
         for addr in self.netns.ipr.get_addr(index=idx):
+            flags = addr.get_attr('IFA_FLAGS', 0)
             ip = ip_interface(addr.get_attr('IFA_ADDRESS') +
                               '/' + str(addr['prefixlen']))
+            if flags & IFA_F_DADFAILED == IFA_F_DADFAILED:
+                logger.debug('{} has failed dad'.format(ip), extra={'iface': self.iface, 'netns': self.netns})
+                addr_dad.append(ip)
             ipr_addr[ip] = addr
 
         for addr in self.addresses:
-            if addr in ipr_addr:
+            if addr in ipr_addr and addr not in addr_dad:
                 logger.log_ok('addresses', '= {}'.format(addr.with_prefixlen))
                 del ipr_addr[addr]
             else:
                 addr_add.append(addr)
 
         for ip, addr in ipr_addr.items():
-            if not any(ip in net for net in ignore):
+            if addr in addr_dad or not any(ip in net for net in ignore):
                 if not ign_dynamic or ipr_addr[ip]['flags'] & IFA_F_PERMANENT == IFA_F_PERMANENT:
                     logger.log_del('addresses', '- {}'.format(ip.with_prefixlen))
                     try:
