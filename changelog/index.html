@@ -42,11 +42,23 @@
   </header>
 
   <div class="post-content">
-    <h1 id="ifstate-1118---2024-03-19">ifstate 1.11.8 - 2024-03-19</h1>
+    <h1 id="ifstate-1119---2024-05-09">ifstate 1.11.9 - 2024-05-09</h1>
+
+<p>Fixes:</p>
+<ul>
+  <li>addresses: reassign ipv6 addresses when IFA_F_DADFAILED flag is set (closes <a href="https://codeberg.org/liske/ifstate/issues/42">#42</a>)</li>
+  <li>link: add most missing vxlan attributes (closes <a href="https://codeberg.org/liske/ifstate/issues/43">#43</a>)</li>
+  <li>routing: improve handling for routes with broken dev setting (closes <a href="https://codeberg.org/liske/ifstate/issues/40">#40</a>)</li>
+  <li>routing: fix exception when removing ip rules (closes <a href="https://codeberg.org/liske/ifstate/issues/39">#39</a>)</li>
+  <li>schema: interfaces needs to have link settings (closes <a href="https://codeberg.org/liske/ifstate/issues/41">#41</a>)</li>
+  <li>schema: require a kind setting in interfaces.link</li>
+</ul>
+
+<h1 id="ifstate-1118---2024-03-19">ifstate 1.11.8 - 2024-03-19</h1>
 
 <p>Changes:</p>
 <ul>
-  <li>netns: fail if run from inside a netns if namespaces to be configured</li>
+  <li>netns: fail when run from inside a netns if namespaces to be configured</li>
 </ul>
 
 <p>Fixes:</p>

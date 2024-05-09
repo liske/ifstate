@@ -1,15 +1,21 @@
 Metadata-Version: 2.1
 Name: ifstate
-Version: 1.11.8
+Version: 1.11.9
 Summary: Manage host interface settings in a declarative manner
 Home-page: https://ifstate.net/
 Author: Thomas Liske
 Author-email: thomas@fiasko-nw.net
 License: GPL3+
 Description-Content-Type: text/markdown
-Provides-Extra: shell
-Provides-Extra: wireguard
 License-File: LICENSE
+Requires-Dist: jsonschema
+Requires-Dist: pyroute2
+Requires-Dist: pyyaml
+Requires-Dist: setproctitle
+Provides-Extra: shell
+Requires-Dist: pygments; extra == "shell"
+Provides-Extra: wireguard
+Requires-Dist: wgnlpy; extra == "wireguard"
 
 # IfState
 
