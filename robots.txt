@@ -1,0 +1,28 @@
+Crawl-delay: 2
+
+## ChatGPT - See: https://platform.openai.com/docs/plugins/bot
+User-agent: GPTBot
+Disallow: /
+
+## Google AI Bots - See: https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers?hl=en#google-extended
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+User-agent: Omgili
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+## Amazon, e.g. Alexa - See: https://developer.amazon.com/amazonbot
+User-agent: Amazonbot
+Disallow: /
