@@ -2,6 +2,7 @@ import logging
 from logging.handlers import QueueHandler, QueueListener
 import os
 import queue
+import stat
 import sys
 
 logger = logging.getLogger('ifstate')
@@ -98,14 +99,25 @@ class IfStateLogging:
                 handlers.append(stream)
 
             # log to syslog
-            syslog = logging.handlers.SysLogHandler('/dev/log', facility=logging.handlers.SysLogHandler.LOG_DAEMON)
-            if action is None:
-                syslog.ident = 'ifstate[{}] '.format(os.getpid())
-            else:
-                syslog.ident = 'ifstate-{}[{}] '.format(action, os.getpid())
-            syslog.addFilter(IfStateLogFilter(False))
-            syslog.setFormatter(formatter)
-            handlers.append(syslog)
+            socket_filename = '/dev/log'
+            try:
+                if not stat.S_ISSOCK(os.stat(socket_filename).st_mode):
+                    socket_filename = None
+            except OSError:
+                socket_filename = None
+
+            if socket_filename is not None:
+                syslog = logging.handlers.SysLogHandler(socket_filename, facility=logging.handlers.SysLogHandler.LOG_DAEMON)
+                if action is None:
+                    syslog.ident = 'ifstate[{}] '.format(os.getpid())
+                else:
+                    syslog.ident = 'ifstate-{}[{}] '.format(action, os.getpid())
+                syslog.addFilter(IfStateLogFilter(False))
+                syslog.setFormatter(formatter)
+                handlers.append(syslog)
+
+        if len(handlers) == 0:
+            handlers.append(logging.NullHandler())
 
         qu = queue.SimpleQueue()
         queue_handler = QueueHandler(qu)
