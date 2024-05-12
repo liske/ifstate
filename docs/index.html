@@ -60,7 +60,7 @@
 <p><em>IfState</em> uses a YaML configuration file which needs to comply with the <a href="../schema"><em>IfState Configuration Schema</em></a>. The default filename of the config file is <code class="language-plaintext highlighter-rouge">/etc/ifstate/config.yml</code>.</p>
 
 <p>This is a basic example configuration for a single interface and a default route:</p>
-<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># yaml-language-server: $schema=https://ifstate.net/schema/ifstate.conf.schema.json</span>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># yaml-language-server: $schema=https://ifstate.net/schema/1/ifstate.conf.schema.json</span>
 
 <span class="c1">## default/implicit interface settings (optional)</span>
 <span class="c1"># defaults: …</span>
@@ -112,10 +112,12 @@
 
 <p>The <a href="../schema">JSON schema of the configuration file</a> is available in the <a href="https://www.schemastore.org/json/">JSON Schema Store</a> (as <code class="language-plaintext highlighter-rouge">ifstate.conf</code>). Most modern editors and IDEs have native support for JSON Schema Store.</p>
 
-<p>Adding the following line to the configuration file instructs editors and IDEs using the <a href="https://github.com/redhat-developer/yaml-language-server#clients">YAML Language Server</a> to load the <em>IfState</em> schema automatically:</p>
+<p>Adding the following line to the configuration file instructs editors and IDEs using the <a href="https://github.com/redhat-developer/yaml-language-server#clients">YAML Language Server</a> to load the <em>IfState</em> schema automatically. The schema is versioned and available for the latest <code class="language-plaintext highlighter-rouge">major</code> and <code class="language-plaintext highlighter-rouge">major</code>.<code class="language-plaintext highlighter-rouge">minor</code> releases:</p>
 
-<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># yaml-language-server: $schema=https://ifstate.net/schema/ifstate.conf.schema.json</span>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># yaml-language-server: $schema=https://ifstate.net/schema/1/ifstate.conf.schema.json</span>
 </code></pre></div></div>
+
+<p>The schema is updated from time to time. You can get the</p>
 
 <h1 id="vrrp-actions--keepalived">VRRP actions &amp; Keepalived</h1>
 
