@@ -49,9 +49,17 @@ the provided *JSON Schema*. It is possible to include values from external files
 (i.e. private keys) using the provided \`!include\` tag.
 EOF
 
+last_major=-1
 for release in $(find schema -mindepth 1 -maxdepth 1 -type d -name '*.*'|cut -d/ -f2|sort -rn); do
-cat <<EOF >> schema.md
+    major="${release%%.*}"
+    if [ "$major" -ne "$last_major" ]; then
+        echo >> schema.md
+        echo "  " >> schema.md
+        echo >> schema.md
+        last_major="$major"
+    fi
 
+    cat <<EOF >> schema.md
 - ifstate $release
   - [schema description](schema/$release/)
   - [ifstate.conf.schema.json](schema/$release/ifstate.conf.schema.json)
