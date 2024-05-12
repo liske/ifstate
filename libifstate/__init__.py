@@ -48,7 +48,7 @@ import json
 import errno
 import logging
 
-__version__ = "1.11.9"
+__version__ = "2.0.0"
 
 
 class IfState():
@@ -81,7 +81,7 @@ class IfState():
     def update(self, ifstates, soft_schema):
         # check config schema
         schema = json.loads(pkgutil.get_data(
-            "libifstate", "../schema/ifstate.conf.schema.json"))
+            "libifstate", "../schema/{}/ifstate.conf.schema.json".format(__version__.split('.')[0])))
         try:
             validate(ifstates, schema, format_checker=FormatChecker())
         except ValidationError as ex:
