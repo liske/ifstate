@@ -21,7 +21,7 @@ On [Alpine Linux](https://www.alpinelinux.org) *IfState* can be installed via *a
 
 This is a basic example configuration for a single interface and a default route:
 ```yaml
-# yaml-language-server: $schema=https://ifstate.net/schema/ifstate.conf.schema.json
+# yaml-language-server: $schema=https://ifstate.net/schema/1/ifstate.conf.schema.json
 
 ## default/implicit interface settings (optional)
 # defaults: …
@@ -71,11 +71,13 @@ Top-level setttings of the configuration file:
 
 The [JSON schema of the configuration file](../schema) is available in the [JSON Schema Store](https://www.schemastore.org/json/) (as `ifstate.conf`). Most modern editors and IDEs have native support for JSON Schema Store.
 
-Adding the following line to the configuration file instructs editors and IDEs using the [YAML Language Server](https://github.com/redhat-developer/yaml-language-server#clients) to load the *IfState* schema automatically:
+Adding the following line to the configuration file instructs editors and IDEs using the [YAML Language Server](https://github.com/redhat-developer/yaml-language-server#clients) to load the *IfState* schema automatically. The schema is versioned and available for the latest `major` and `major`.`minor` releases:
 
 ```yaml
-# yaml-language-server: $schema=https://ifstate.net/schema/ifstate.conf.schema.json
+# yaml-language-server: $schema=https://ifstate.net/schema/1/ifstate.conf.schema.json
 ```
+
+The schema is updated from time to time. You can get the
 
 
 # VRRP actions & Keepalived
