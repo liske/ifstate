@@ -35,3 +35,25 @@ tail -n +3 CHANGELOG.md | \
     >> changelog.md
 rm -f CHANGELOG.md
 git restore --staged CHANGELOG.md
+
+echo "Update schema page..."
+
+cat <<EOF > schema.md
+---
+title: Schema
+layout: page
+---
+
+The \`ifstatecli\` command uses a config file based on *Yaml* and must comply to
+the provided *JSON Schema*. It is possible to include values from external files
+(i.e. private keys) using the provided \`!include\` tag.
+EOF
+
+for release in $(find schema -mindepth 1 -maxdepth 1 -type d -name '*.*'|cut -d/ -f2|sort -rn); do
+cat <<EOF >> schema.md
+
+- ifstate $release
+  - [schema description](schema/$release/)
+  - [ifstate.conf.schema.json](schema/$release/ifstate.conf.schema.json)
+EOF
+done
