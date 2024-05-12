@@ -2,12 +2,51 @@
     "$id": "https://ifstate.net/schema/ifstate.conf.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ifstate.conf",
-    "description": "IfState 1.10.1 Configuration Schema",
+    "description": "IfState 1.11.9 Configuration Schema",
     "type": "object",
     "required": [
         "interfaces"
     ],
     "$defs": {
+        "condition-vrrp": {
+            "description": "configure depending on vrrp status",
+            "type": "object",
+            "required": [
+                "name",
+                "type",
+                "states"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "description": "related vrrp INSTANCE or GROUP name",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "failover type",
+                    "type": "string",
+                    "enum": [
+                        "instance",
+                        "group"
+                    ]
+                },
+                "states": {
+                    "description": "states at which the interface should be configured",
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "string",
+                            "enum": [
+                                "unknown",
+                                "fault",
+                                "backup",
+                                "master"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
         "ignore-fdb": {
             "description": "fdb entries matching this list of regex will be ignored",
             "type": "array",
@@ -173,6 +212,476 @@
             "type": "string",
             "pattern": "^[^/ ]{1,15}$"
         },
+        "iface-ethtool": {
+            "description": "network driver and hardware settings via [ethtool(8)](https://man7.org/linux/man-pages/man8/ethtool.8.html)",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "pause": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "pause parameters",
+                    "properties": {
+                        "autoneg": {
+                            "description": "enable pause autonegotiation",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "rx": {
+                            "description": "enable Rx pause",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "tx": {
+                            "description": "enable Tx pause",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        }
+                    }
+                },
+                "coalesce": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "interrupt coalescing",
+                    "properties": {
+                        "adaptive-rx": {
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "adaptive-tx": {
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "rx-usecs": {
+                            "type": "integer"
+                        },
+                        "rx-frames": {
+                            "type": "integer"
+                        },
+                        "rx-usecs-irq": {
+                            "type": "integer"
+                        },
+                        "rx-frames-irq": {
+                            "type": "integer"
+                        },
+                        "tx-usecs": {
+                            "type": "integer"
+                        },
+                        "tx-frames": {
+                            "type": "integer"
+                        },
+                        "tx-usecs-irq": {
+                            "type": "integer"
+                        },
+                        "tx-frames-irq": {
+                            "type": "integer"
+                        },
+                        "stats-block-usecs": {
+                            "type": "integer"
+                        },
+                        "pkt-rate-low": {
+                            "type": "integer"
+                        },
+                        "rx-usecs-low": {
+                            "type": "integer"
+                        },
+                        "rx-frames-low": {
+                            "type": "integer"
+                        },
+                        "tx-usecs-low": {
+                            "type": "integer"
+                        },
+                        "tx-frames-low": {
+                            "type": "integer"
+                        },
+                        "pkt-rate-high": {
+                            "type": "integer"
+                        },
+                        "rx-usecs-high": {
+                            "type": "integer"
+                        },
+                        "rx-frames-high": {
+                            "type": "integer"
+                        },
+                        "tx-usecs-high": {
+                            "type": "integer"
+                        },
+                        "tx-frames-high": {
+                            "type": "integer"
+                        },
+                        "sample-interval": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "ring": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "rx/tx ring parameters",
+                    "properties": {
+                        "rx": {
+                            "description": "number of ring entries for the Rx ring",
+                            "type": "integer"
+                        },
+                        "rx-mmini": {
+                            "description": "number of ring entries for the Rx Mini ring",
+                            "type": "integer"
+                        },
+                        "rx-jumbo": {
+                            "description": "number of ring entries for the Rx Jumbo ring",
+                            "type": "integer"
+                        },
+                        "tx": {
+                            "description": "number of ring entries for the Tx ring",
+                            "type": "integer"
+                        }
+                    }
+                },
+                "features": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "offload parameters and other features",
+                    "properties": {
+                        "rx": {
+                            "description": "enable RX checksumming",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "tx": {
+                            "description": "enable TX checksumming",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "sg": {
+                            "description": "enable scatter-gather",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "tso": {
+                            "description": "enable TCP segmentation offload",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "ufo": {
+                            "description": "enable UDP fragmentation offload",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "gso": {
+                            "description": "enable generic segmentation offload",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "gro": {
+                            "description": "enable generic receive offload",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "lro": {
+                            "description": "enable large receive offload",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "rxvlan": {
+                            "description": "enable RX VLAN acceleration",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "txvlan": {
+                            "description": "enable TX VLAN acceleration",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "ntuple": {
+                            "description": "enable Rx ntuple filters and actions",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "rxhash": {
+                            "description": "enable receive hashing offload",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        }
+                    }
+                },
+                "change": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "device settings",
+                    "properties": {
+                        "speed": {
+                            "description": "speed in Mbps",
+                            "type": "integer"
+                        },
+                        "duplex": {
+                            "description": "full or half duplex mode",
+                            "type": "string",
+                            "enum": [
+                                "half",
+                                "full"
+                            ]
+                        },
+                        "port": {
+                            "description": "device port selection",
+                            "type": "string",
+                            "enum": [
+                                "tp",
+                                "aui",
+                                "bnc",
+                                "mii"
+                            ]
+                        },
+                        "mdix": {
+                            "description": "MDI-X mode for port",
+                            "type": [
+                                "boolean",
+                                "string"
+                            ],
+                            "enum": [
+                                "auto",
+                                "on",
+                                "off",
+                                true,
+                                false
+                            ]
+                        },
+                        "autoneg": {
+                            "description": "enable autonegotation",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "advertise": {
+                            "description": "speed and duplex advertised by autonegotation",
+                            "type": "integer"
+                        },
+                        "phyad": {
+                            "description": "PHY address",
+                            "type": "integer"
+                        },
+                        "xcvr": {
+                            "description": "transceiver type",
+                            "type": "string",
+                            "enum": [
+                                "internal",
+                                "external"
+                            ]
+                        },
+                        "wol": {
+                            "description": "Wake-on-LAN options",
+                            "type": "string",
+                            "pattern": "^[pumbagsfd]+$"
+                        },
+                        "sopass": {
+                            "description": "SecureOn™ password",
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}$"
+                        },
+                        "msglvl": {
+                            "description": "driver message flags",
+                            "oneOf": [
+                                {
+                                    "description": "driver message flags by number",
+                                    "type": "integer"
+                                },
+                                {
+                                    "description": "driver message flags by name",
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "description": "flag name",
+                                            "type": "string",
+                                            "enum": [
+                                                "drv",
+                                                "probe",
+                                                "link",
+                                                "timer",
+                                                "ifdown",
+                                                "ifup",
+                                                "rx_err",
+                                                "tx_err",
+                                                "tx_queued",
+                                                "intr",
+                                                "tx_done",
+                                                "rx_status",
+                                                "pktdata",
+                                                "hw",
+                                                "wol"
+                                            ]
+                                        },
+                                        {
+                                            "description": "enable flag",
+                                            "$ref": "#/$defs/iface-ethtool_onoff"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "channels": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "number of channels",
+                    "properties": {
+                        "rx": {
+                            "description": "number of channels with only receive queues",
+                            "type": "integer"
+                        },
+                        "tx": {
+                            "description": "number of channels with only transmit queues",
+                            "type": "integer"
+                        },
+                        "other": {
+                            "description": "number of channels used only for other purposes",
+                            "type": "integer"
+                        },
+                        "combined": {
+                            "description": "number of multi-purpose channels",
+                            "type": "integer"
+                        }
+                    }
+                },
+                "eee": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Energy-Efficient Ethernet (according to the IEEE 802.3az specifications)",
+                    "properties": {
+                        "eee": {
+                            "description": "enable EEE support",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "tx-lpi": {
+                            "description": "assert Tx LPI",
+                            "$ref": "#/$defs/iface-ethtool_onoff"
+                        },
+                        "advertise": {
+                            "description": "sets the speed for which EEE should be enabled (see also `change.advertise`)",
+                            "type": "integer"
+                        },
+                        "tx-timer": {
+                            "description": "amount of idle time prior asserting Tx LPI (in microseconds)",
+                            "type": "integer"
+                        }
+                    }
+                },
+                "phy-tunable": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "PHY tunable parameters",
+                    "properties": {
+                        "downshift": {
+                            "description": "enable downshift",
+                            "oneOf": [
+                                {
+                                    "description": "enable downshift",
+                                    "$ref": "#/$defs/iface-ethtool_onoff"
+                                },
+                                {
+                                    "type": "array",
+                                    "minItems": 3,
+                                    "maxItems": 3,
+                                    "items": [
+                                        {
+                                            "description": "enable downshift",
+                                            "$ref": "#/$defs/iface-ethtool_onoff"
+                                        },
+                                        {
+                                            "description": "*REQUIRED*",
+                                            "type": "string",
+                                            "enum": [
+                                                "count"
+                                            ]
+                                        },
+                                        {
+                                            "description": "PHY downshift re-tries count",
+                                            "type": "integer"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "fast-link-down": {
+                            "description": "enable Fast Link Down",
+                            "oneOf": [
+                                {
+                                    "description": "enable Fast Link Down",
+                                    "$ref": "#/$defs/iface-ethtool_onoff"
+                                },
+                                {
+                                    "type": "array",
+                                    "minItems": 3,
+                                    "maxItems": 3,
+                                    "items": [
+                                        {
+                                            "description": "enable Fast Link Down",
+                                            "$ref": "#/$defs/iface-ethtool_onoff"
+                                        },
+                                        {
+                                            "description": "*REQUIRED*",
+                                            "type": "string",
+                                            "enum": [
+                                                "msec"
+                                            ]
+                                        },
+                                        {
+                                            "description": "period after which the link is reported as down",
+                                            "type": "integer"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "energy-detect-power-down": {
+                            "description": "enable Energy Detect Power Down (EDPD)",
+                            "oneOf": [
+                                {
+                                    "description": "enable EDPD",
+                                    "$ref": "#/$defs/iface-ethtool_onoff"
+                                },
+                                {
+                                    "type": "array",
+                                    "minItems": 3,
+                                    "maxItems": 3,
+                                    "items": [
+                                        {
+                                            "description": "enable EDPD",
+                                            "$ref": "#/$defs/iface-ethtool_onoff"
+                                        },
+                                        {
+                                            "description": "*REQUIRED*",
+                                            "type": "string",
+                                            "enum": [
+                                                "msec"
+                                            ]
+                                        },
+                                        {
+                                            "description": "wake-up interval for Tx pulses",
+                                            "type": "integer"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "priv-flags": {
+                    "type": "object",
+                    "description": "private flags"
+                },
+                "fec": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Forward Error Correction",
+                    "properties": {
+                        "encoding": {
+                            "description": "FEC encoding",
+                            "type": [
+                                "string",
+                                "array"
+                            ],
+                            "enum": [
+                                "auto",
+                                "off",
+                                "RS",
+                                "BaseR",
+                                "LLRS"
+                            ],
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "auto",
+                                    "RS",
+                                    "BaseR",
+                                    "LLRS"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "iface-link_address": {
             "type": "string",
             "description": "link mac address (xx:xx:xx:xx:xx:xx)",
@@ -209,9 +718,10 @@
         "iface-link_master": {
             "type": [
                 "integer",
-                "string"
+                "string",
+                "null"
             ],
-            "description": "specifies a master device name or index"
+            "description": "specifies a master device name or index, use *null* to remove the master"
         },
         "iface-link_master-netns": {
             "type": [
@@ -1058,6 +1568,14 @@
                         "type": "boolean",
                         "default": false
                     },
+                    "clear_tc": {
+                        "description": "implicit remove all tc qdiscs",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "ethtool": {
+                        "$ref": "#/$defs/iface-ethtool"
+                    },
                     "link": {
                         "description": "implicit link settings for matching interfaces",
                         "type": "object",
@@ -1071,9 +1589,6 @@
                             },
                             "master": {
                                 "$ref": "#/$defs/iface-link_master"
-                            },
-                            "master_netns": {
-                                "$ref": "#/$defs/iface-link_master-netns"
                             },
                             "mtu": {
                                 "$ref": "#/$defs/iface-link_mtu"
@@ -1268,7 +1783,8 @@
             "items": {
                 "type": "object",
                 "required": [
-                    "name"
+                    "name",
+                    "link"
                 ],
                 "additionalProperties": false,
                 "properties": {
@@ -1372,7 +1888,9 @@
                         "items": {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": ["lladdr"],
+                            "required": [
+                                "lladdr"
+                            ],
                             "properties": {
                                 "lladdr": {
                                     "description": "destination link layer address",
@@ -1439,47 +1957,14 @@
                         }
                     },
                     "vrrp": {
-                        "description": "interface depending on vrrp status",
-                        "type": "object",
-                        "required": [
-                            "name",
-                            "type",
-                            "states"
-                        ],
-                        "additionalProperties": false,
-                        "properties": {
-                            "name": {
-                                "description": "related vrrp INSTANCE or GROUP name",
-                                "type": "string"
-                            },
-                            "type": {
-                                "description": "failover type",
-                                "type": "string",
-                                "enum": [
-                                    "instance",
-                                    "group"
-                                ]
-                            },
-                            "states": {
-                                "description": "states at which the interface should be configured",
-                                "type": "array",
-                                "items": [
-                                    {
-                                        "type": "string",
-                                        "enum": [
-                                            "unknown",
-                                            "fault",
-                                            "backup",
-                                            "master"
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
+                        "$ref": "#/$defs/condition-vrrp"
                     },
                     "link": {
                         "description": "link settings of the interface",
                         "type": "object",
+                        "required": [
+                            "kind"
+                        ],
                         "oneOf": [
                             {
                                 "description": "Intermediate Functional Block device",
@@ -1503,9 +1988,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -1543,9 +2025,6 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
-                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -1578,9 +2057,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -1615,9 +2091,6 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
-                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -1650,9 +2123,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -1687,9 +2157,6 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
-                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -1722,9 +2189,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -1763,9 +2227,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -1876,9 +2337,6 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
-                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -1914,9 +2372,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -1954,9 +2409,6 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
-                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -1990,9 +2442,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2221,9 +2670,6 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
-                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2286,9 +2732,6 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
-                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2326,9 +2769,6 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
-                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2365,14 +2805,18 @@
                                     "peer": {
                                         "$ref": "#/$defs/iface-link_link"
                                     },
+                                    "peer_netns": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "description": "specifies the peer's netns name or null if the peer isn't in a netns namespace"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2409,9 +2853,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2475,9 +2916,6 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
-                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2488,17 +2926,154 @@
                                         "$ref": "#/$defs/iface-link_ifalias"
                                     },
                                     "vxlan_id": {
-                                        "type": [
-                                            "integer"
-                                        ],
+                                        "type": "integer",
                                         "minimum": 0,
                                         "maximum": 16777215,
                                         "description": "specifies the VNI"
                                     },
+                                    "vxlan_ageing": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 4294967296,
+                                        "description": "specifies the lifetime in seconds of FDB entries learnt by the kernel (0: none)",
+                                        "default": 300
+                                    },
+                                    "vxlan_df": {
+                                        "enum": [
+                                            0,
+                                            "unset",
+                                            1,
+                                            "set",
+                                            2,
+                                            "inherit"
+                                        ],
+                                        "default": "unset",
+                                        "description": "specifies the usage of the DF bit in outgoing packets with IPv4 headers"
+                                    },
+                                    "vxlan_label": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1048575,
+                                        "description": "specifies a fixed flowlabel"
+                                    },
+                                    "vxlan_learning": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "description": "specifies if unknown source link layer addresses and IP addresses are entered into the VXLAN device fdb",
+                                        "default": 1
+                                    },
+                                    "vxlan_limit": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 4294967296,
+                                        "description": "specifies the maximum number of FDB entries (0: none)",
+                                        "default": 0
+                                    },
+                                    "vxlan_proxy": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "description": "specifies if ARP proxy is turned on",
+                                        "default": 0
+                                    },
+                                    "vxlan_rsc": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "description": "specifies if route short circuit is turned on",
+                                        "default": 0
+                                    },
+                                    "vxlan_l2miss": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "description": "specifies if netlink LLADDR miss notifications are generated",
+                                        "default": 0
+                                    },
+                                    "vxlan_l3miss": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "description": "specifies if netlink IP ADDR miss notifications are generated",
+                                        "default": 0
+                                    },
+                                    "vxlan_udp_csum": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "description": "specifies if UDP checksum is calculated for tx packets over IPv4",
+                                        "default": 1
+                                    },
                                     "vxlan_link": {
                                         "$ref": "#/$defs/iface-link_tun-dev"
+                                    },
+                                    "vxlan_local": {
+                                        "type": "string",
+                                        "description": "tunnel source ip address",
+                                        "oneOf": [
+                                            {
+                                                "format": "ipv4"
+                                            },
+                                            {
+                                                "format": "ipv6"
+                                            }
+                                        ]
+                                    },
+                                    "vxlan_group": {
+                                        "type": "string",
+                                        "description": "remote unicast destination or multicast group IPv4 address",
+                                        "format": "ipv4"
+                                    },
+                                    "vxlan_group6": {
+                                        "type": "string",
+                                        "description": "remote unicast destination or multicast group IPv6 address",
+                                        "format": "ipv6"
+                                    },
+                                    "vxlan_tos": {
+                                        "type": "integer",
+                                        "description": "specifies the TOS value to use in outgoing packets (0: inherit)",
+                                        "minimum": 0,
+                                        "maximum": 255,
+                                        "default": 0
+                                    },
+                                    "vxlan_ttl": {
+                                        "type": "integer",
+                                        "description": "specifies the TTL value to use in outgoing packets (0: auto)",
+                                        "minimum": 0,
+                                        "maximum": 255,
+                                        "default": 0
+                                    },
+                                    "vxlan_ttl_inherit": {
+                                        "type": "boolean",
+                                        "description": "control whether TTL is propagated",
+                                        "default": false
                                     }
-                                }
+                                },
+                                "anyOf": [
+                                    {
+                                        "oneOf": [
+                                            {
+                                                "required": [
+                                                    "vxlan_group"
+                                                ]
+                                            },
+                                            {
+                                                "required": [
+                                                    "vxlan_group6"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "not": {
+                                            "required": [
+                                                "vxlan_group",
+                                                "vxlan_group6"
+                                            ]
+                                        }
+                                    }
+                                ]
                             },
                             {
                                 "description": "IPIP interface",
@@ -2527,9 +3102,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2572,9 +3144,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2624,9 +3193,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2680,9 +3246,6 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
-                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2730,9 +3293,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2784,9 +3344,6 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
-                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2835,9 +3392,6 @@
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
                                     },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
-                                    },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
                                     },
@@ -2875,9 +3429,6 @@
                                     },
                                     "master": {
                                         "$ref": "#/$defs/iface-link_master"
-                                    },
-                                    "master_netns": {
-                                        "$ref": "#/$defs/iface-link_master-netns"
                                     },
                                     "mtu": {
                                         "$ref": "#/$defs/iface-link_mtu"
@@ -2945,474 +3496,7 @@
                         }
                     },
                     "ethtool": {
-                        "description": "network driver and hardware settings via [ethtool(8)](https://man7.org/linux/man-pages/man8/ethtool.8.html)",
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                            "pause": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "description": "pause parameters",
-                                "properties": {
-                                    "autoneg": {
-                                        "description": "enable pause autonegotiation",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "rx": {
-                                        "description": "enable Rx pause",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "tx": {
-                                        "description": "enable Tx pause",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    }
-                                }
-                            },
-                            "coalesce": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "description": "interrupt coalescing",
-                                "properties": {
-                                    "adaptive-rx": {
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "adaptive-tx": {
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "rx-usecs": {
-                                        "type": "integer"
-                                    },
-                                    "rx-frames": {
-                                        "type": "integer"
-                                    },
-                                    "rx-usecs-irq": {
-                                        "type": "integer"
-                                    },
-                                    "rx-frames-irq": {
-                                        "type": "integer"
-                                    },
-                                    "tx-usecs": {
-                                        "type": "integer"
-                                    },
-                                    "tx-frames": {
-                                        "type": "integer"
-                                    },
-                                    "tx-usecs-irq": {
-                                        "type": "integer"
-                                    },
-                                    "tx-frames-irq": {
-                                        "type": "integer"
-                                    },
-                                    "stats-block-usecs": {
-                                        "type": "integer"
-                                    },
-                                    "pkt-rate-low": {
-                                        "type": "integer"
-                                    },
-                                    "rx-usecs-low": {
-                                        "type": "integer"
-                                    },
-                                    "rx-frames-low": {
-                                        "type": "integer"
-                                    },
-                                    "tx-usecs-low": {
-                                        "type": "integer"
-                                    },
-                                    "tx-frames-low": {
-                                        "type": "integer"
-                                    },
-                                    "pkt-rate-high": {
-                                        "type": "integer"
-                                    },
-                                    "rx-usecs-high": {
-                                        "type": "integer"
-                                    },
-                                    "rx-frames-high": {
-                                        "type": "integer"
-                                    },
-                                    "tx-usecs-high": {
-                                        "type": "integer"
-                                    },
-                                    "tx-frames-high": {
-                                        "type": "integer"
-                                    },
-                                    "sample-interval": {
-                                        "type": "integer"
-                                    }
-                                }
-                            },
-                            "ring": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "description": "rx/tx ring parameters",
-                                "properties": {
-                                    "rx": {
-                                        "description": "number of ring entries for the Rx ring",
-                                        "type": "integer"
-                                    },
-                                    "rx-mmini": {
-                                        "description": "number of ring entries for the Rx Mini ring",
-                                        "type": "integer"
-                                    },
-                                    "rx-jumbo": {
-                                        "description": "number of ring entries for the Rx Jumbo ring",
-                                        "type": "integer"
-                                    },
-                                    "tx": {
-                                        "description": "number of ring entries for the Tx ring",
-                                        "type": "integer"
-                                    }
-                                }
-                            },
-                            "features": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "description": "offload parameters and other features",
-                                "properties": {
-                                    "rx": {
-                                        "description": "enable RX checksumming",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "tx": {
-                                        "description": "enable TX checksumming",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "sg": {
-                                        "description": "enable scatter-gather",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "tso": {
-                                        "description": "enable TCP segmentation offload",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "ufo": {
-                                        "description": "enable UDP fragmentation offload",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "gso": {
-                                        "description": "enable generic segmentation offload",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "gro": {
-                                        "description": "enable generic receive offload",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "lro": {
-                                        "description": "enable large receive offload",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "rxvlan": {
-                                        "description": "enable RX VLAN acceleration",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "txvlan": {
-                                        "description": "enable TX VLAN acceleration",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "ntuple": {
-                                        "description": "enable Rx ntuple filters and actions",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "rxhash": {
-                                        "description": "enable receive hashing offload",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    }
-                                }
-                            },
-                            "change": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "description": "device settings",
-                                "properties": {
-                                    "speed": {
-                                        "description": "speed in Mbps",
-                                        "type": "integer"
-                                    },
-                                    "duplex": {
-                                        "description": "full or half duplex mode",
-                                        "type": "string",
-                                        "enum": [
-                                            "half",
-                                            "full"
-                                        ]
-                                    },
-                                    "port": {
-                                        "description": "device port selection",
-                                        "type": "string",
-                                        "enum": [
-                                            "tp",
-                                            "aui",
-                                            "bnc",
-                                            "mii"
-                                        ]
-                                    },
-                                    "mdix": {
-                                        "description": "MDI-X mode for port",
-                                        "type": [
-                                            "boolean",
-                                            "string"
-                                        ],
-                                        "enum": [
-                                            "auto",
-                                            "on",
-                                            "off",
-                                            true,
-                                            false
-                                        ]
-                                    },
-                                    "autoneg": {
-                                        "description": "enable autonegotation",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "advertise": {
-                                        "description": "speed and duplex advertised by autonegotation",
-                                        "type": "integer"
-                                    },
-                                    "phyad": {
-                                        "description": "PHY address",
-                                        "type": "integer"
-                                    },
-                                    "xcvr": {
-                                        "description": "transceiver type",
-                                        "type": "string",
-                                        "enum": [
-                                            "internal",
-                                            "external"
-                                        ]
-                                    },
-                                    "wol": {
-                                        "description": "Wake-on-LAN options",
-                                        "type": "string",
-                                        "pattern": "^[pumbagsfd]+$"
-                                    },
-                                    "sopass": {
-                                        "description": "SecureOn™ password",
-                                        "type": "string",
-                                        "pattern": "^[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}$"
-                                    },
-                                    "msglvl": {
-                                        "description": "driver message flags",
-                                        "oneOf": [
-                                            {
-                                                "description": "driver message flags by number",
-                                                "type": "integer"
-                                            },
-                                            {
-                                                "description": "driver message flags by name",
-                                                "type": "array",
-                                                "items": [
-                                                    {
-                                                        "description": "flag name",
-                                                        "type": "string",
-                                                        "enum": [
-                                                            "drv",
-                                                            "probe",
-                                                            "link",
-                                                            "timer",
-                                                            "ifdown",
-                                                            "ifup",
-                                                            "rx_err",
-                                                            "tx_err",
-                                                            "tx_queued",
-                                                            "intr",
-                                                            "tx_done",
-                                                            "rx_status",
-                                                            "pktdata",
-                                                            "hw",
-                                                            "wol"
-                                                        ]
-                                                    },
-                                                    {
-                                                        "description": "enable flag",
-                                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "channels": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "description": "number of channels",
-                                "properties": {
-                                    "rx": {
-                                        "description": "number of channels with only receive queues",
-                                        "type": "integer"
-                                    },
-                                    "tx": {
-                                        "description": "number of channels with only transmit queues",
-                                        "type": "integer"
-                                    },
-                                    "other": {
-                                        "description": "number of channels used only for other purposes",
-                                        "type": "integer"
-                                    },
-                                    "combined": {
-                                        "description": "number of multi-purpose channels",
-                                        "type": "integer"
-                                    }
-                                }
-                            },
-                            "eee": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "description": "Energy-Efficient Ethernet (according to the IEEE 802.3az specifications)",
-                                "properties": {
-                                    "eee": {
-                                        "description": "enable EEE support",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "tx-lpi": {
-                                        "description": "assert Tx LPI",
-                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                    },
-                                    "advertise": {
-                                        "description": "sets the speed for which EEE should be enabled (see also `change.advertise`)",
-                                        "type": "integer"
-                                    },
-                                    "tx-timer": {
-                                        "description": "amount of idle time prior asserting Tx LPI (in microseconds)",
-                                        "type": "integer"
-                                    }
-                                }
-                            },
-                            "phy-tunable": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "description": "PHY tunable parameters",
-                                "properties": {
-                                    "downshift": {
-                                        "description": "enable downshift",
-                                        "oneOf": [
-                                            {
-                                                "description": "enable downshift",
-                                                "$ref": "#/$defs/iface-ethtool_onoff"
-                                            },
-                                            {
-                                                "type": "array",
-                                                "minItems": 3,
-                                                "maxItems": 3,
-                                                "items": [
-                                                    {
-                                                        "description": "enable downshift",
-                                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                                    },
-                                                    {
-                                                        "description": "*REQUIRED*",
-                                                        "type": "string",
-                                                        "enum": [
-                                                            "count"
-                                                        ]
-                                                    },
-                                                    {
-                                                        "description": "PHY downshift re-tries count",
-                                                        "type": "integer"
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    },
-                                    "fast-link-down": {
-                                        "description": "enable Fast Link Down",
-                                        "oneOf": [
-                                            {
-                                                "description": "enable Fast Link Down",
-                                                "$ref": "#/$defs/iface-ethtool_onoff"
-                                            },
-                                            {
-                                                "type": "array",
-                                                "minItems": 3,
-                                                "maxItems": 3,
-                                                "items": [
-                                                    {
-                                                        "description": "enable Fast Link Down",
-                                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                                    },
-                                                    {
-                                                        "description": "*REQUIRED*",
-                                                        "type": "string",
-                                                        "enum": [
-                                                            "msec"
-                                                        ]
-                                                    },
-                                                    {
-                                                        "description": "period after which the link is reported as down",
-                                                        "type": "integer"
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    },
-                                    "energy-detect-power-down": {
-                                        "description": "enable Energy Detect Power Down (EDPD)",
-                                        "oneOf": [
-                                            {
-                                                "description": "enable EDPD",
-                                                "$ref": "#/$defs/iface-ethtool_onoff"
-                                            },
-                                            {
-                                                "type": "array",
-                                                "minItems": 3,
-                                                "maxItems": 3,
-                                                "items": [
-                                                    {
-                                                        "description": "enable EDPD",
-                                                        "$ref": "#/$defs/iface-ethtool_onoff"
-                                                    },
-                                                    {
-                                                        "description": "*REQUIRED*",
-                                                        "type": "string",
-                                                        "enum": [
-                                                            "msec"
-                                                        ]
-                                                    },
-                                                    {
-                                                        "description": "wake-up interval for Tx pulses",
-                                                        "type": "integer"
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "priv-flags": {
-                                "type": "object",
-                                "description": "private flags"
-                            },
-                            "fec": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "description": "Forward Error Correction",
-                                "properties": {
-                                    "encoding": {
-                                        "description": "FEC encoding",
-                                        "type": [
-                                            "string",
-                                            "array"
-                                        ],
-                                        "enum": [
-                                            "auto",
-                                            "off",
-                                            "RS",
-                                            "BaseR",
-                                            "LLRS"
-                                        ],
-                                        "items": {
-                                            "type": "string",
-                                            "enum": [
-                                                "auto",
-                                                "RS",
-                                                "BaseR",
-                                                "LLRS"
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        "$ref": "#/$defs/iface-ethtool"
                     },
                     "cshaper": {
                         "description": "simple shaper setup based on the [cake](https://man7.org/linux/man-pages/man8/tc-cake.8.html) queue discipline; replaces any tc settings",
@@ -3917,6 +4001,9 @@
                                     }
                                 ]
                             },
+                            "vrrp": {
+                                "$ref": "#/$defs/condition-vrrp"
+                            },
                             "src": {
                                 "description": "the source address to prefer",
                                 "type": "string",
@@ -4025,6 +4112,9 @@
                                     "string"
                                 ],
                                 "description": "select the ip protocol to match"
+                            },
+                            "vrrp": {
+                                "$ref": "#/$defs/condition-vrrp"
                             }
                         }
                     }

@@ -42,7 +42,142 @@
   </header>
 
   <div class="post-content">
-    <h1 id="ifstate-1101---2023-11-13">ifstate 1.10.1 - 2023-11-13</h1>
+    <h1 id="ifstate-1119---2024-05-09">ifstate 1.11.9 - 2024-05-09</h1>
+
+<p>Fixes:</p>
+<ul>
+  <li>addresses: reassign ipv6 addresses when IFA_F_DADFAILED flag is set (closes <a href="https://codeberg.org/liske/ifstate/issues/42">#42</a>)</li>
+  <li>link: add most missing vxlan attributes (closes <a href="https://codeberg.org/liske/ifstate/issues/43">#43</a>)</li>
+  <li>routing: improve handling for routes with broken dev setting (closes <a href="https://codeberg.org/liske/ifstate/issues/40">#40</a>)</li>
+  <li>routing: fix exception when removing ip rules (closes <a href="https://codeberg.org/liske/ifstate/issues/39">#39</a>)</li>
+  <li>schema: interfaces needs to have link settings (closes <a href="https://codeberg.org/liske/ifstate/issues/41">#41</a>)</li>
+  <li>schema: require a kind setting in interfaces.link</li>
+</ul>
+
+<h1 id="ifstate-1118---2024-03-19">ifstate 1.11.8 - 2024-03-19</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>netns: fail when run from inside a netns if namespaces to be configured</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: drop master_netns option as it is not supported by the linux kernel</li>
+  <li>link: fix netns related temporary link name generation</li>
+  <li>link: fix racy netlink exceptions in IPRoute.get_links() for missing links</li>
+  <li>wireguard: handle endpoint lookup errors gracefully</li>
+</ul>
+
+<h1 id="ifstate-1117---2024-02-10">ifstate 1.11.7 - 2024-02-10</h1>
+
+<p>Fixes:</p>
+<ul>
+  <li>netns: fix vrrp race condition due to concurrent netlink socket access</li>
+  <li>wireguard: fix vrrp race condition due to concurrent netlink socket access</li>
+</ul>
+
+<h1 id="ifstate-1116---2024-01-09">ifstate 1.11.6 - 2024-01-09</h1>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: set master before applying brport settings (regression from fixing <a href="https://codeberg.org/liske/ifstate/issues/35">#35</a>)</li>
+</ul>
+
+<h1 id="ifstate-1115---2024-01-06">ifstate 1.11.5 - 2024-01-06</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>vrrp: reduce logging severity for skipped interfaces in vrrp actions to debug</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: make veth links netns aware (fixes <a href="https://codeberg.org/liske/ifstate/issues/34">#34</a>)
+      (reported by @magic_rb)</li>
+  <li>link: fix creating virtual links with master attribute (closes <a href="https://codeberg.org/liske/ifstate/issues/35">#35</a>)</li>
+  <li>link: fix false positive error when removing veth links (closes <a href="https://codeberg.org/liske/ifstate/issues/36">#36</a>)</li>
+  <li>vrrp-fifo: fix exception in worker process if WireGuard is used (closes <a href="https://codeberg.org/liske/ifstate/issues/37">#37</a>)</li>
+</ul>
+
+<h1 id="ifstate-1114---2023-12-18">ifstate 1.11.4 - 2023-12-18</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>show: do not dump lo interfaces</li>
+  <li>tc: add missing defaults cleanup option for tc settings (closes <a href="https://codeberg.org/liske/ifstate/issues/32">#32</a>)</li>
+  <li>vrrp-fifo: improve handling of multiple instances/groups, apply config on reload</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: add missing copy of vrrp options to cshaper ifb devices (closes <a href="https://codeberg.org/liske/ifstate/issues/31">#31</a>)</li>
+  <li>tc: fix false positive exceptions when cleaning qdiscs (closes <a href="https://codeberg.org/liske/ifstate/issues/33">#33</a>)</li>
+  <li>netns: fix process forks for every NetNS on every vrrp-fifo state change</li>
+</ul>
+
+<h1 id="ifstate-1113---2023-12-06">ifstate 1.11.3 - 2023-12-06</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>routing: add support for new iproute2 6.5+ rt_* files directory (/usr/lib/iproute2)</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>cli: fix broken show commands</li>
+</ul>
+
+<h1 id="ifstate-1112---2023-11-25">ifstate 1.11.2 - 2023-11-25</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>vrrp-fifo: track pids and send SIGHUP for reloading vrrp-fifo runners during apply</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>do not use /run/ifstate as a state directory since it may collide with the state file of ifupdown*</li>
+  <li>vrrp-fifo: fix using outdated LinkRegistry breaking most vrrp setups</li>
+</ul>
+
+<p>This release fixes yet another regression (ifstate 1.9.0+) breaking the vrrp-fifo implementation for
+interfaces not existing on start-up of the vrrp-fifo action.</p>
+
+<h1 id="ifstate-1111---2023-11-24">ifstate 1.11.1 - 2023-11-24</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>logging: add logging.exception to some exception handlers</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>vrrp-fifo: fix TypeError exceptions on state changes breaking vrrp</li>
+  <li>routing: fix vrrp routing setup for netns (regression by <a href="https://codeberg.org/liske/ifstate/commit/6feb5ba">6feb5ba</a>)</li>
+</ul>
+
+<p>This release fixes a regression (ifstate 1.9.0+) breaking the vrrp-fifo implementation due to an
+internal exception.</p>
+
+<h1 id="ifstate-1110---2023-11-19">ifstate 1.11.0 - 2023-11-19</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>ethtool: allow default settings for ethtool</li>
+  <li>link: allow unsetting the master attribute</li>
+  <li>link: improve attr state debug logging</li>
+  <li>routing: add vrrp conditions for routing item</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>ethtool: fix broken speed and duplex advertise</li>
+  <li>ethtool: fix ‘change’ settings not working at all</li>
+  <li>link: fix logging a change for orphan physical links which are already down</li>
+</ul>
+
+<h1 id="ifstate-1101---2023-11-13">ifstate 1.10.1 - 2023-11-13</h1>
 
 <p>Changes:</p>
 <ul>
