@@ -90,7 +90,7 @@ class RTLookup():
         return self.str2id[key]
 
     def lookup_str(self, key):
-        return self.id2str.get(key, key)
+        return self.id2str.get(key, str(key))
 
 
 class RTLookups():
