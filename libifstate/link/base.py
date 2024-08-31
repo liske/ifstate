@@ -246,14 +246,16 @@ class Link(ABC):
             return ret
 
         info = self.iface.get_attr('IFLA_LINKINFO')
-        if not info is None:
-            ret = info.get_attr(nla)
+        op = getattr(info, 'get_attr', None)
+        if callable(op):
+            ret = op(nla)
             if not ret is None:
                 return ret
 
-            info = info.get_attr('IFLA_INFO_DATA')
-            if not info is None:
-                ret = info.get_attr(nla)
+            info = op('IFLA_INFO_DATA')
+            op = getattr(info, 'get_attr', None)
+            if callable(op):
+                ret = op(nla)
                 if not ret is None:
                     return ret
 
