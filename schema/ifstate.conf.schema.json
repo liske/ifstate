@@ -2761,6 +2761,10 @@
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
                                     },
+                                    "permaddr": {
+                                        "description": "select interface by permanent address [ethtool -P]",
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
                                     "state": {
                                         "$ref": "#/$defs/iface-link_state"
                                     },
