@@ -106,3 +106,7 @@ class ParserParseError(Exception):
 
 class RouteDuplicate(Exception):
     pass
+
+class NetnsUnknown(Exception):
+    def __init__(self, netns):
+        self.args = (None, "netns '{}' is unknown".format(netns))

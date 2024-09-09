@@ -1,5 +1,5 @@
 from libifstate.util import logger, IfStateLogging, LinkDependency
-from libifstate.exception import ExceptionCollector, LinkTypeUnknown, netlinkerror_classes
+from libifstate.exception import ExceptionCollector, LinkTypeUnknown, NetnsUnknown, netlinkerror_classes
 from libifstate.brport import BRPort
 from libifstate.routing import RTLookups
 from abc import ABC, abstractmethod
@@ -390,6 +390,9 @@ class Link(ABC):
         if self.bind_netns is None:
             return self.ifstate.root_netns
 
+        if not self.bind_netns in self.ifstate.namespaces:
+            raise NetnsUnknown(self.bind_netns)
+
         return self.ifstate.namespaces.get(self.bind_netns)
 
     def bind_needs_recreate(self, item):
@@ -397,13 +400,6 @@ class Link(ABC):
             return False
 
         bind_netns = self.get_bind_netns()
-        if bind_netns is None:
-            logger.warning('bind_netns "%s" is unknown',
-                        self.bind_netns,
-                        extra={
-                            'iface': self.settings['ifname'],
-                            'netns': self.netns})
-            return False
 
         fn = self.get_bind_fn(item.netns.netns, item.index)
         try:
@@ -470,11 +466,15 @@ class Link(ABC):
         item = self.search_link_registry()
 
         # check if bind_netns option requires a recreate
-        if item is not None and self.bind_needs_recreate(item):
-            self.idx = item.index
-            self.recreate(do_apply, sysctl, excpts)
+        try:
+            if item is not None and self.bind_needs_recreate(item):
+                self.idx = item.index
+                self.recreate(do_apply, sysctl, excpts)
 
-            self.settings = osettings
+                self.settings = osettings
+                return excpts
+        except NetnsUnknown as ex:
+            excpts.add('apply', ex)
             return excpts
 
         # move interface into netns if required
@@ -536,7 +536,12 @@ class Link(ABC):
         logger.log_add('link', oper)
 
         settings = copy.deepcopy(self.settings)
-        bind_netns = self.get_bind_netns()
+        try:
+            bind_netns = self.get_bind_netns()
+        except NetnsUnknown as ex:
+            excpts.add(oper, ex)
+            return excpts
+
         if bind_netns is not None and bind_netns.netns != self.netns.netns:
             logger.debug("handle link binding", extra={
                 'iface': self.settings['ifname'],

@@ -1,6 +1,6 @@
 from libifstate.util import logger
 from libifstate.link.base import Link
-from libifstate.exception import LinkCannotAdd
+from libifstate.exception import LinkCannotAdd, NetnsUnknown
 
 class VethLink(Link):
     def __init__(self, ifstate, netns, name, link, ethtool, vrrp, brport):
@@ -18,7 +18,11 @@ class VethLink(Link):
         '''
         result = super().create(do_apply, sysctl, excpts, oper)
 
-        bind_netns = self.get_bind_netns()
+        try:
+            bind_netns = self.get_bind_netns()
+        except NetnsUnknown as ex:
+            excpts.add(oper, ex)
+            return excpts
         peer_link = next(iter(bind_netns.ipr.get_links(ifname=self.settings['peer'])), None)
         self.ifstate.link_registry.add_link(bind_netns, peer_link)
 
