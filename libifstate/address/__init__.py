@@ -47,7 +47,7 @@ class Addresses():
                         break
 
         for ip, addr in ipr_addr.items():
-            if addr in addr_renew or not any(ip in net for net in ignore):
+            if ip in addr_renew or not any(ip in net for net in ignore):
                 if not ign_dynamic or ipr_addr[ip]['flags'] & IFA_F_PERMANENT == IFA_F_PERMANENT:
                     logger.log_del('addresses', '- {}'.format(ip.with_prefixlen))
                     try:
