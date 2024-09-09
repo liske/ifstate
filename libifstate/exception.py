@@ -104,5 +104,5 @@ class ParserParseError(Exception):
     def exit_code(self):
         return 2
 
-class RouteDupblicate(Exception):
+class RouteDuplicate(Exception):
     pass

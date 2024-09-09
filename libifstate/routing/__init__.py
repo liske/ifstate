@@ -1,5 +1,5 @@
 from libifstate.util import logger, IfStateLogging
-from libifstate.exception import RouteDupblicate, netlinkerror_classes
+from libifstate.exception import RouteDuplicate, netlinkerror_classes
 from ipaddress import ip_address, ip_network, IPv6Network
 from pyroute2.netlink.rtnl.fibmsg import FR_ACT_VALUES
 from pyroute2.netlink.rtnl import rt_type
