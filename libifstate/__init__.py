@@ -1,4 +1,4 @@
-from libifstate.exception import LinkDuplicate
+from libifstate.exception import LinkDuplicate, NetnsUnknown
 from libifstate.link.base import ethtool_path, Link
 from libifstate.address import Addresses
 from libifstate.fdb import FDB
@@ -519,7 +519,11 @@ class IfState():
                 if link_dep.netns is None:
                     self._apply_iface(do_apply, self.root_netns, link_dep, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
                 else:
-                    self._apply_iface(do_apply, self.namespaces[link_dep.netns], link_dep, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
+                    if link_dep.netns not in self.namespaces:
+                        logger.warning("add link {} failed: netns '{}' is unknown".format(link_dep.ifname, link_dep.netns))
+                        return
+                    else:
+                        self._apply_iface(do_apply, self.namespaces[link_dep.netns], link_dep, by_vrrp, vrrp_type, vrrp_name, vrrp_state)
 
         # configure routing
         logger.info("")
