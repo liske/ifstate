@@ -99,6 +99,7 @@ class Link(ABC):
         'ip6gre',
         'ip6gretap',
         'geneve',
+        'sit',
         'wireguard',
         'xfrm',
     ]

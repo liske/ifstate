@@ -3181,6 +3181,9 @@
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
                                     },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
+                                    },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"
                                     },
