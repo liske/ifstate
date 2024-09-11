@@ -2744,6 +2744,51 @@
                                 }
                             },
                             {
+                                "description": "DSA interface",
+                                "required": [
+                                    "kind",
+                                    "link"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "kind": {
+                                        "const": "dsa",
+                                        "description": "link type"
+                                    },
+                                    "address": {
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
+                                    },
+                                    "permaddr": {
+                                        "description": "select interface by permanent address [ethtool -P]",
+                                        "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "link": {
+                                        "$ref": "#/$defs/iface-link_link"
+                                    },
+                                    "link_netns": {
+                                        "$ref": "#/$defs/iface-link_link-netns"
+                                    }
+                                }
+                            },
+                            {
                                 "description": "Dummy network interface",
                                 "required": [
                                     "kind"
@@ -3135,6 +3180,9 @@
                                     },
                                     "address": {
                                         "$ref": "#/$defs/iface-link_address"
+                                    },
+                                    "bind_netns": {
+                                        "$ref": "#/$defs/iface-link_bind-netns"
                                     },
                                     "group": {
                                         "$ref": "#/$defs/iface-link_group"

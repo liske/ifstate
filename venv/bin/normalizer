@@ -1,4 +1,4 @@
-#!/home/thomas/src/ifstate/venv/bin/python
+#!/home/thomas/src/ifstate/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

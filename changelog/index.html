@@ -42,7 +42,26 @@
   </header>
 
   <div class="post-content">
-    <h1 id="ifstate-1119---2024-05-09">ifstate 1.11.9 - 2024-05-09</h1>
+    <h1 id="ifstate-1120---2024-09-12">ifstate 1.12.0 - 2024-09-12</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>link: add missing support for Distributed Switch Architecture (DSA) interfaces (<a href="https://codeberg.org/liske/ifstate/issues/47">#47</a>)</li>
+  <li>link: add missing bind_netns support for sit tunnels (<a href="https://codeberg.org/liske/ifstate/issues/56">#56</a>)</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>addresses: replace even ignored ip addresses with wrong prefix lengths (<a href="https://codeberg.org/liske/ifstate/issues/53">#53</a>)</li>
+  <li>addresses: fix ip address renew handling for DAD and pfx len issues</li>
+  <li>link: handle ifaces gracefully if IFLA_LINKINFO or IFLA_INFO_DATA is not a dict (<a href="https://codeberg.org/liske/ifstate/issues/47">#47</a>)</li>
+  <li>link: fix fatal exception if link_netns references a unknown netns (<a href="https://codeberg.org/liske/ifstate/issues/54">#54</a>)</li>
+  <li>logging: disable syslog handler if /dev/log is not a unix domain socket</li>
+  <li>netns: handle unknown netns for binds gracefully (<a href="https://codeberg.org/liske/ifstate/issues/54">#54</a>)</li>
+  <li>routing: ensure that table string lookups always returns strings (<a href="https://codeberg.org/liske/ifstate/issues/48">#48</a>)</li>
+</ul>
+
+<h1 id="ifstate-1119---2024-05-09">ifstate 1.11.9 - 2024-05-09</h1>
 
 <p>Fixes:</p>
 <ul>

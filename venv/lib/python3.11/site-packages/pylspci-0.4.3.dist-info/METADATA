@@ -1,0 +1,45 @@
+Metadata-Version: 2.1
+Name: pylspci
+Version: 0.4.3
+Summary: Simple parser for lspci -mmnn.
+Home-page: https://tildegit.org/lucidiot/pylspci
+Author: Lucidiot
+License: GNU General Public License 3
+Project-URL: Homepage, https://tildegit.org/lucidiot/pylspci
+Project-URL: Changelog, https://tildegit.org/lucidiot/pylspci/releases
+Project-URL: Documentation, https://lucidiot.tildepages.org/pylspci/
+Project-URL: Issue tracker, https://tildegit.org/lucidiot/pylspci/issues
+Keywords: lspci parser
+Classifier: Development Status :: 4 - Beta
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Natural Language :: English
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: System :: Hardware
+Classifier: Topic :: Utilities
+Classifier: Typing :: Typed
+Requires-Python: >=3.5
+Description-Content-Type: text/x-rst
+License-File: LICENSE
+Requires-Dist: cached-property (>=1.5.1)
+Provides-Extra: dev
+Requires-Dist: doc8 (>=0.8.0) ; extra == 'dev'
+Requires-Dist: Sphinx (>=1.8.1) ; extra == 'dev'
+Requires-Dist: coverage (>=4.5) ; extra == 'dev'
+Requires-Dist: pre-commit (>=2.9.2) ; extra == 'dev'
+
+pylspci
+=======
+
+A Python parser for the ``lspci`` command from the pciutils_ package.
+`Browse documentation`_
+
+.. _pciutils: http://mj.ucw.cz/sw/pciutils/
+.. _Browse documentation: https://lucidiot.tildepages.org/pylspci/

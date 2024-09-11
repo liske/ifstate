@@ -21,10 +21,10 @@ libifstate/bpf/__init__.py
 libifstate/bpf/ctypes.py
 libifstate/bpf/map.py
 libifstate/brport/__init__.py
-libifstate/dhcp/__init__.py
 libifstate/fdb/__init__.py
 libifstate/link/__init__.py
 libifstate/link/base.py
+libifstate/link/dsa.py
 libifstate/link/physical.py
 libifstate/link/tun.py
 libifstate/link/veth.py
