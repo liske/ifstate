@@ -9,6 +9,9 @@ the provided *JSON Schema*. It is possible to include values from external files
 
   
 
+- ifstate 1.12
+  - [schema description](schema/1.12/)
+  - [ifstate.conf.schema.json](schema/1.12/ifstate.conf.schema.json)
 - ifstate 1.11
   - [schema description](schema/1.11/)
   - [ifstate.conf.schema.json](schema/1.11/ifstate.conf.schema.json)

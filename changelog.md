@@ -4,6 +4,21 @@ layout: page
 permalink: changelog/
 ---
 
+# ifstate 1.12.0 - 2024-09-12
+
+Changes:
+- link: add missing support for Distributed Switch Architecture (DSA) interfaces ([#47](https://codeberg.org/liske/ifstate/issues/47))
+- link: add missing bind_netns support for sit tunnels ([#56](https://codeberg.org/liske/ifstate/issues/56))
+
+Fixes:
+- addresses: replace even ignored ip addresses with wrong prefix lengths ([#53](https://codeberg.org/liske/ifstate/issues/53))
+- addresses: fix ip address renew handling for DAD and pfx len issues
+- link: handle ifaces gracefully if IFLA_LINKINFO or IFLA_INFO_DATA is not a dict ([#47](https://codeberg.org/liske/ifstate/issues/47))
+- link: fix fatal exception if link_netns references a unknown netns ([#54](https://codeberg.org/liske/ifstate/issues/54))
+- logging: disable syslog handler if /dev/log is not a unix domain socket
+- netns: handle unknown netns for binds gracefully ([#54](https://codeberg.org/liske/ifstate/issues/54))
+- routing: ensure that table string lookups always returns strings ([#48](https://codeberg.org/liske/ifstate/issues/48))
+
 # ifstate 1.11.9 - 2024-05-09
 
 Fixes:
