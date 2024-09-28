@@ -1,4 +1,4 @@
-from libifstate.util import logger, IfStateLogging, LinkDependency
+from libifstate.util import logger, format_ether_address, IfStateLogging, LinkDependency
 from libifstate.exception import ExceptionCollector, LinkTypeUnknown, NetnsUnknown, netlinkerror_classes
 from libifstate.brport import BRPort
 from libifstate.routing import RTLookups
@@ -149,14 +149,14 @@ class Link(ABC):
             })
 
         if 'permaddr' in self.settings:
-            self.settings['permaddr'] = self.settings['permaddr'].lower()
+            self.settings['permaddr'] = format_ether_address(self.settings['permaddr'])
             self.link_registry_search_args.append({
                 'kind': self.settings['kind'],
                 'permaddr': self.settings['permaddr'],
             })
 
         if 'address' in self.settings and self.settings['kind'] == 'physical':
-            self.settings['address'] = self.settings['address'].lower()
+            self.settings['address'] = format_ether_address(self.settings['address'])
             self.link_registry_search_args.append({
                 'kind': self.settings['kind'],
                 'address': self.settings['address'],

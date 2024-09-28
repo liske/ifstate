@@ -19,6 +19,7 @@ except ModuleNotFoundError:
 
 import socket
 import fcntl
+import re
 import struct
 import array
 import struct
@@ -44,6 +45,8 @@ STRUCT_DRVINFO = struct.Struct(
 ETHTOOL_GPERMADDR = 0x00000020  # Get permanent hardware address
 L2_ADDRLENGTH = 6  # L2 address length
 
+REGEX_ETHER_BYTE = re.compile('[a-f0-9]{2}')
+
 root_ipr = typing.NewType("IPRouteExt", IPRoute)
 
 def filter_ifla_dump(showall, ifla, defaults, prefix="IFLA"):
@@ -57,6 +60,19 @@ def filter_ifla_dump(showall, ifla, defaults, prefix="IFLA"):
                 dump[key] = current_value
 
     return dump
+
+def format_ether_address(address):
+    """
+    Formats a ether address string canonical. Accepted formats:
+
+      xx:xx:xx:xx:xx:xx
+      xx-xx-xx-xx-xx-xx
+      xxxx.xxxx.xxxx
+
+    The hex digits may be lower and upper case.
+    """
+
+    return ':'.join(REGEX_ETHER_BYTE.findall(address.lower()))
 
 class IPRouteExt(IPRoute):
     def __init__(self, *args, **kwargs):
