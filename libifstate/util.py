@@ -1,6 +1,6 @@
 import libifstate.exception
 from libifstate.log import logger, IfStateLogging
-from pyroute2 import IPRoute, NetNS, netns
+from pyroute2 import IPRoute, IW, NetNS, netns
 
 from pyroute2.netlink.rtnl.tcmsg import tcmsg
 from pyroute2.netlink.rtnl import RTM_DELTFILTER, RTM_NEWNSID
@@ -361,3 +361,4 @@ class LinkDependency:
 
 
 root_ipr = IPRouteExt()
+root_iw = IW()

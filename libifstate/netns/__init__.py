@@ -1,4 +1,4 @@
-from libifstate.util import logger, IfStateLogging, IPRouteExt, NetNSExt, root_ipr
+from libifstate.util import logger, IfStateLogging, IPRouteExt, NetNSExt, root_ipr, root_iw
 from libifstate.sysctl import Sysctl
 
 import atexit
@@ -13,6 +13,7 @@ import subprocess
 netns_name_map = {}
 netns_name_root = None
 netns_nsid_map = {}
+iw_ifindex_phy_map = {}
 findmnt_cmd = shutil.which('findmnt')
 
 if findmnt_cmd is None:
@@ -48,14 +49,27 @@ class NetNameSpace():
 
         if name is None:
             self.ipr = root_ipr
+            self.iw = root_iw
             self.mount = b''
         else:
             self.ipr = NetNSExt(name)
             netns_name_map[name] = self.ipr
+
+            # check for wireless phys
+            pyroute2.netns.pushns(name)
+            try:
+                self.iw = pyroute2.IW()
+            finally:
+                pyroute2.netns.popns()
+
             if findmnt_cmd is None:
                 self.mount = name.encode("utf-8")
             else:
                 self.mount = subprocess.check_output([findmnt_cmd, '-f', '-J', "/run/netns/{}".format(name)])
+
+        for ifname, ifdict in self.iw.get_interfaces_dict().items():
+            # ifIndex => phyIndex
+            iw_ifindex_phy_map[ifdict[0]] = ifdict[3]
 
     def __deepcopy__(self, memo):
         '''
@@ -235,6 +249,10 @@ class LinkRegistryItem():
             self.attributes['businfo'] = self.netns.ipr.get_businfo(self.attributes['ifname'])
             self.attributes['permaddr'] = link.get_attr('IFLA_PERM_ADDRESS')
 
+        # add iw phy for wireless interfaces
+        if link['index'] in iw_ifindex_phy_map:
+            self.attributes['wiphy'] = iw_ifindex_phy_map[link['index']]
+
         self.attributes['netns'] =self.netns.netns
 
     def __ipr_link(self, command, **kwargs):
@@ -272,7 +290,14 @@ class LinkRegistryItem():
             # ToDo
             self.update_ifname( self.registry.get_random_name('__netns__') )
 
-        self.__ipr_link('set', index=self.attributes['index'], net_ns_fd=netns_name)
+        if self.attributes.get('wiphy') is not None:
+            # move phy instead of iface for wireless devices
+            if netns.netns is None:
+                self.netns.iw.set_wiphy_netns_by_pid(self.attributes['wiphy'], 1)
+            else:
+                self.netns.iw.set_wiphy_netns_by_pid(self.attributes['wiphy'], netns.ipr.child)
+        else:
+            self.__ipr_link('set', index=self.attributes['index'], net_ns_fd=netns_name)
         self.netns = netns
         self.attributes['index'] = next(iter(self.netns.ipr.link_lookup(ifname=self.attributes['ifname'])), None)
 
