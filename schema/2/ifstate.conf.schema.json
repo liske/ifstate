@@ -1517,198 +1517,203 @@
     "additionalProperties": false,
     "properties": {
         "parameters": {
-            "cshaper": {
-                "description": "cshaper templates",
-                "type": "object",
-                "patternProperties": {
-                    "": {
-                        "description": "cshaper profile",
+            "description": "adjust the implicit behaviour of ifstate",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "cshaper": {
+                    "description": "cshaper templates",
+                    "type": "object",
+                    "patternProperties": {
+                        "": {
+                            "description": "cshaper profile",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                                "egress_qdisc",
+                                "ingress_qdisc",
+                                "ingress_ifname"
+                            ],
+                            "properties": {
+                                "egress_qdisc": {
+                                    "$ref": "#/$defs/tc-cake"
+                                },
+                                "ingress_qdisc": {
+                                    "$ref": "#/$defs/tc-cake"
+                                },
+                                "ingress_ifname": {
+                                    "description": "build a ifb ifname using a regex on the ifname",
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "search",
+                                        "replace"
+                                    ],
+                                    "properties": {
+                                        "search": {
+                                            "description": "pattern to search",
+                                            "type": "string"
+                                        },
+                                        "replace": {
+                                            "description": "replace pattern by string",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": [
+                        "default"
+                    ]
+                },
+                "defaults": {
+                    "description": "default settings for configured interfaces",
+                    "type": "array",
+                    "items": {
+                        "description": "first matching entry will be used, settings will be overriden by explicit configured interface settings",
                         "type": "object",
-                        "additionalProperties": false,
                         "required": [
-                            "egress_qdisc",
-                            "ingress_qdisc",
-                            "ingress_ifname"
+                            "match"
                         ],
+                        "additionalProperties": false,
                         "properties": {
-                            "egress_qdisc": {
-                                "$ref": "#/$defs/tc-cake"
+                            "match": {
+                                "description": "apply default settings for interfaces  matching any list item (OR)",
+                                "type": "array",
+                                "items": {
+                                    "description": "all conditions that must match (AND)",
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "ifname": {
+                                            "description": "regex to match interface name",
+                                            "examples": [
+                                                "^eth\\d+$"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "kind": {
+                                            "description": "regex to match link type",
+                                            "examples": [
+                                                "^physical$",
+                                                "^(physical|vlan)$"
+                                            ],
+                                            "type": "string"
+                                        }
+                                    }
+                                }
                             },
-                            "ingress_qdisc": {
-                                "$ref": "#/$defs/tc-cake"
+                            "clear_addresses": {
+                                "description": "implicit remove all ip addresses",
+                                "type": "boolean",
+                                "default": false
                             },
-                            "ingress_ifname": {
-                                "description": "build a ifb ifname using a regex on the ifname",
+                            "clear_fdb": {
+                                "description": "implicit remove all permanent fdb entries",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "clear_neighbours": {
+                                "description": "implicit remove all permanent ip neighbours",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "clear_tc": {
+                                "description": "implicit remove all tc qdiscs",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "ethtool": {
+                                "$ref": "#/$defs/iface-ethtool"
+                            },
+                            "link": {
+                                "description": "implicit link settings for matching interfaces",
                                 "type": "object",
                                 "additionalProperties": false,
-                                "required": [
-                                    "search",
-                                    "replace"
-                                ],
                                 "properties": {
-                                    "search": {
-                                        "description": "pattern to search",
-                                        "type": "string"
+                                    "group": {
+                                        "$ref": "#/$defs/iface-link_group"
                                     },
-                                    "replace": {
-                                        "description": "replace pattern by string",
-                                        "type": "string"
+                                    "state": {
+                                        "$ref": "#/$defs/iface-link_state"
+                                    },
+                                    "master": {
+                                        "$ref": "#/$defs/iface-link_master"
+                                    },
+                                    "mtu": {
+                                        "$ref": "#/$defs/iface-link_mtu"
+                                    },
+                                    "txqlen": {
+                                        "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "ifalias": {
+                                        "$ref": "#/$defs/iface-link_ifalias"
+                                    },
+                                    "link": {
+                                        "$ref": "#/$defs/iface-link_link"
+                                    },
+                                    "link_netns": {
+                                        "$ref": "#/$defs/iface-link_link-netns"
                                     }
                                 }
                             }
                         }
                     }
                 },
-                "required": [
-                    "default"
-                ]
-            },
-            "defaults": {
-                "description": "default settings for configured interfaces",
-                "type": "array",
-                "items": {
-                    "description": "first matching entry will be used, settings will be overriden by explicit configured interface settings",
+                "defaults_builtin": {
+                    "$ref": "#/properties/parameters/properties/defaults"
+                },
+                "ignore": {
+                    "description": "ignore patterns to skip interface, ip address or routing objects",
                     "type": "object",
-                    "required": [
-                        "match"
-                    ],
                     "additionalProperties": false,
                     "properties": {
-                        "match": {
-                            "description": "apply default settings for interfaces  matching any list item (OR)",
+                        "ipaddr_builtin": {
+                            "$ref": "#/$defs/ignore-ipaddr"
+                        },
+                        "ipaddr": {
+                            "$ref": "#/$defs/ignore-ipaddr"
+                        },
+                        "ipaddr_dynamic": {
+                            "description": "ignore dynamic assigned ip addresses",
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "ifname_builtin": {
+                            "$ref": "#/$defs/ignore-ifname"
+                        },
+                        "ifname": {
+                            "$ref": "#/$defs/ignore-ifname"
+                        },
+                        "fdb_builtin": {
+                            "$ref": "#/$defs/ignore-fdb"
+                        },
+                        "fdb": {
+                            "$ref": "#/$defs/ignore-fdb"
+                        },
+                        "routes_builtin": {
+                            "$ref": "#/$defs/ignore-routes"
+                        },
+                        "routes": {
+                            "$ref": "#/$defs/ignore-routes"
+                        },
+                        "rules_builtin": {
+                            "$ref": "#/$defs/ignore-rules"
+                        },
+                        "rules": {
+                            "$ref": "#/$defs/ignore-rules"
+                        },
+                        "netns": {
+                            "description": "netns namespaces matching this list of regex will be ignored",
                             "type": "array",
                             "items": {
-                                "description": "all conditions that must match (AND)",
-                                "type": "object",
-                                "additionalProperties": false,
-                                "properties": {
-                                    "ifname": {
-                                        "description": "regex to match interface name",
-                                        "examples": [
-                                            "^eth\\d+$"
-                                        ],
-                                        "type": "string"
-                                    },
-                                    "kind": {
-                                        "description": "regex to match link type",
-                                        "examples": [
-                                            "^physical$",
-                                            "^(physical|vlan)$"
-                                        ],
-                                        "type": "string"
-                                    }
-                                }
+                                "description": "regex to match interface name",
+                                "examples": [
+                                    "^tenant-\\d+"
+                                ],
+                                "type": "string"
                             }
-                        },
-                        "clear_addresses": {
-                            "description": "implicit remove all ip addresses",
-                            "type": "boolean",
-                            "default": false
-                        },
-                        "clear_fdb": {
-                            "description": "implicit remove all permanent fdb entries",
-                            "type": "boolean",
-                            "default": false
-                        },
-                        "clear_neighbours": {
-                            "description": "implicit remove all permanent ip neighbours",
-                            "type": "boolean",
-                            "default": false
-                        },
-                        "clear_tc": {
-                            "description": "implicit remove all tc qdiscs",
-                            "type": "boolean",
-                            "default": false
-                        },
-                        "ethtool": {
-                            "$ref": "#/$defs/iface-ethtool"
-                        },
-                        "link": {
-                            "description": "implicit link settings for matching interfaces",
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "group": {
-                                    "$ref": "#/$defs/iface-link_group"
-                                },
-                                "state": {
-                                    "$ref": "#/$defs/iface-link_state"
-                                },
-                                "master": {
-                                    "$ref": "#/$defs/iface-link_master"
-                                },
-                                "mtu": {
-                                    "$ref": "#/$defs/iface-link_mtu"
-                                },
-                                "txqlen": {
-                                    "$ref": "#/$defs/iface-link_txqlen"
-                                },
-                                "ifalias": {
-                                    "$ref": "#/$defs/iface-link_ifalias"
-                                },
-                                "link": {
-                                    "$ref": "#/$defs/iface-link_link"
-                                },
-                                "link_netns": {
-                                    "$ref": "#/$defs/iface-link_link-netns"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "defaults_builtin": {
-                "$ref": "#/properties/parameters/defaults"
-            },
-            "ignore": {
-                "description": "ignore patterns to skip interface, ip address or routing objects",
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                    "ipaddr_builtin": {
-                        "$ref": "#/$defs/ignore-ipaddr"
-                    },
-                    "ipaddr": {
-                        "$ref": "#/$defs/ignore-ipaddr"
-                    },
-                    "ipaddr_dynamic": {
-                        "description": "ignore dynamic assigned ip addresses",
-                        "type": "boolean",
-                        "default": true
-                    },
-                    "ifname_builtin": {
-                        "$ref": "#/$defs/ignore-ifname"
-                    },
-                    "ifname": {
-                        "$ref": "#/$defs/ignore-ifname"
-                    },
-                    "fdb_builtin": {
-                        "$ref": "#/$defs/ignore-fdb"
-                    },
-                    "fdb": {
-                        "$ref": "#/$defs/ignore-fdb"
-                    },
-                    "routes_builtin": {
-                        "$ref": "#/$defs/ignore-routes"
-                    },
-                    "routes": {
-                        "$ref": "#/$defs/ignore-routes"
-                    },
-                    "rules_builtin": {
-                        "$ref": "#/$defs/ignore-rules"
-                    },
-                    "rules": {
-                        "$ref": "#/$defs/ignore-rules"
-                    },
-                    "netns": {
-                        "description": "netns namespaces matching this list of regex will be ignored",
-                        "type": "array",
-                        "items": {
-                            "description": "regex to match interface name",
-                            "examples": [
-                                "^tenant-\\d+"
-                            ],
-                            "type": "string"
                         }
                     }
                 }
