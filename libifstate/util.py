@@ -189,7 +189,7 @@ class IPRouteExt(IPRoute):
         try:
             return next(iter(self.get_links(*argv, **kwarg)), None)
         except Exception as err:
-            if not isinstance(err, netlinkerror_classes):
+            if not isinstance(err, libifstate.exception.netlinkerror_classes):
                 raise
 
         return None
