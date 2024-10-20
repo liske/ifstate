@@ -13,10 +13,10 @@ Fixes:
 - vrrp: refactor vrrp-fifo, replacing mp.Process with subprocess.Popen
   implementation (#58 #59 #60)
 
-This release contains a rector of the vrrp-fifo implementation used to run
+This release contains a refactor of the vrrp-fifo implementation used to run
 ifstate from keepalived. The previous implementation seems to trigger race
 conditions in the pyroute2 backend sockets when using complex setups with
-multiple netns. I is highly recommended to upgrade if you use the `vrrp-fifo`
+multiple netns. It is highly recommended to upgrade if you use the `vrrp-fifo`
 action.
 
 ## 1.12.0 - 2024-09-12
