@@ -135,7 +135,7 @@ def vrrp_fifo(args_fifo, ifs_config):
 
     try:
         status_pattern = re.compile(
-            r'(group|instance) "([^"]+)" (unknown|fault|backup|master)( \d+)?$', re.IGNORECASE)
+            r'(group|instance) "([^"]+)" (unknown|fault|backup|master|stop)( \d+)?$', re.IGNORECASE)
 
         with open(args_fifo) as fifo:
             logger.debug("entering fifo loop...")
