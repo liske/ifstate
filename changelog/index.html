@@ -59,10 +59,10 @@
 implementation (<a href="https://codeberg.org/liske/ifstate/issues/58">#58</a> #59 #60)</li>
 </ul>
 
-<p>This release contains a rector of the vrrp-fifo implementation used to run
+<p>This release contains a refactor of the vrrp-fifo implementation used to run
 ifstate from keepalived. The previous implementation seems to trigger race
 conditions in the pyroute2 backend sockets when using complex setups with
-multiple netns. I is highly recommended to upgrade if you use the <code class="language-plaintext highlighter-rouge">vrrp-fifo</code>
+multiple netns. It is highly recommended to upgrade if you use the <code class="language-plaintext highlighter-rouge">vrrp-fifo</code>
 action.</p>
 
 <h1 id="ifstate-1120---2024-09-12">ifstate 1.12.0 - 2024-09-12</h1>
