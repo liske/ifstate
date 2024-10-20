@@ -1,51 +1,74 @@
 from libifstate.util import logger, IfStateLogging
 
+import atexit
 from copy import deepcopy
 import logging
 import multiprocessing as mp
+import threading
 import os
 import re
 from setproctitle import setproctitle
 import signal
+import subprocess
+import sys
 
-class VrrpFifoProcess(mp.Process):
+class VrrpFifoProcess():
     '''
     Process for vrrp group/instance configuration.
     '''
-    def __init__(self, vrrp_type, vrrp_name, ifstate, log_level):
-        self.vrrp_type = vrrp_type
-        self.vrrp_name = vrrp_name
-        self.ifstate = ifstate
-        self.log_level = log_level
-        self.queue = mp.Queue()
-        super().__init__(target=self.vrrp_worker, name=f'ifstate-vrrp-fifo|{vrrp_type}.{vrrp_name}', daemon=True)
+    def __init__(self, worker_args):
+        self.worker_args = worker_args
+        self.logger_extra = {'iface': f'{worker_args[-2]} "{worker_args[-1]}"'}
+        self.state_queue = mp.Queue()
+        self.worker_proc = None
+
+        worker_io = threading.Thread(target=self.dequeue)
+        worker_io.start()
 
     def vrrp_update(self, vrrp_state):
-        self.queue.put(vrrp_state)
+        self.state_queue.put(vrrp_state)
 
-    def vrrp_worker(self):
-        instance_title = "vrrp-{}-{}".format(self.vrrp_type, self.vrrp_name)
-        setproctitle("ifstate-{}".format(instance_title))
-        ifslog = IfStateLogging(self.log_level, action=instance_title, log_stderr=False)
-        logger.info('worker spawned')
+    def dequeue(self):
         while True:
-            vrrp_state = self.queue.get()
-            if vrrp_state is None:
-                logger.info('terminating')
+            state = self.state_queue.get()
+
+            # Should we terminate?
+            if state is None:
+                self.worker_proc.stdin.close()
+                self.worker_proc.wait()
                 return
-            else:
-                ifstate = deepcopy(self.ifstate)
-                ifstate.apply(self.vrrp_type, self.vrrp_name, vrrp_state)
+
+            # Restart ifstate vrrp-worker if not alive alive?
+            if self.worker_proc.poll() is not None:
+                logger.warning("worker died", extra=self.logger_extra)
+                self.start()
+
+            logger.info(f'state => {state}', extra=self.logger_extra)
+            self.worker_proc.stdin.write(f'{state}\n')
+            self.worker_proc.stdin.flush()
+        logger.warning("dequeue terminated")
+
+    def start(self):
+        logger.info("spawning worker", extra=self.logger_extra)
+        self.worker_proc = subprocess.Popen(self.worker_args, stdin=subprocess.PIPE, stderr=sys.stderr, text=True)
+
 
 class VrrpStates():
     '''
     Tracks processes and states for vrrp groups/instances.
     '''
-    def __init__(self, ifstate, log_level):
-        self.ifstate = ifstate
-        self.log_level = log_level
+    def __init__(self, ifs_config):
+        self.ifs_config = ifs_config
         self.processes = {}
         self.states = {}
+        self.pid_file = f"/run/libifstate/vrrp/{os.getpid()}.pid"
+        self.cfg_file = f"/run/libifstate/vrrp/{os.getpid()}.cfg"
+        self.worker_args = (
+            sys.argv[0],
+            '-c', self.cfg_file,
+            'vrrp-worker')
+        if logger.level == logging.DEBUG:
+            self.worker_args.append('-v')
 
     def update(self, vrrp_type, vrrp_name, vrrp_state):
         '''
@@ -54,40 +77,61 @@ class VrrpStates():
         '''
         key = (vrrp_type, vrrp_name)
         if not key in self.processes:
-            self.processes[key] = VrrpFifoProcess(vrrp_type, vrrp_name, self.ifstate, self.log_level)
+            worker_args = self.worker_args + key
+            self.processes[key] = VrrpFifoProcess(worker_args)
             self.processes[key].start()
 
         self.states[key] = vrrp_state
         self.processes[key].vrrp_update(vrrp_state)
 
-    def reconfigure(self, ifstate):
+    def reconfigure(self, *argv):
         '''
         Reconfigure all known groups/instances using their last known state by spawning
         new worker Processes.
         '''
-        self.ifstate = ifstate
+
+        # save new config to temp file
+        try:
+            self.ifs_config.load_config()
+            self.ifs_config.dump_config(self.cfg_file)
+        except Exception as ex:
+            logger.error(f'failed to reload config: {ex}')
+            return
+
         for key, state in self.states.items():
+            worker_args = self.worker_args + key
             self.processes[key].vrrp_update(None)
-            self.processes[key] = VrrpFifoProcess(*key, ifstate, self.log_level)
+            self.processes[key] = VrrpFifoProcess(worker_args)
             self.processes[key].start()
             self.processes[key].vrrp_update(self.states[key])
 
-def vrrp_fifo(args_fifo, ifs_config, log_level):
-    vrrp_states = VrrpStates(ifs_config.ifs, log_level)
-    ifs_config.set_callback(vrrp_states.reconfigure)
+    def cleanup_run(self, *argv):
+        """
+        """
+        for file in [self.pid_file, self.cfg_file]:
+            try:
+                os.unlink(file)
+            except OSError as ex:
+                if ex.errno != 2:
+                    logger.warning(f"cannot cleanup {file}: {ex}")
 
-    signal.signal(signal.SIGHUP, ifs_config.sighup_handler)
+def vrrp_fifo(args_fifo, ifs_config):
+    vrrp_states = VrrpStates(ifs_config)
+
+    signal.signal(signal.SIGHUP, vrrp_states.reconfigure)
     signal.signal(signal.SIGPIPE, signal.SIG_IGN)
-    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    signal.signal(signal.SIGTERM, vrrp_states.cleanup_run)
 
-    pid_file = f"/run/libifstate/vrrp/{os.getpid()}.pid"
     try:
         os.makedirs("/run/libifstate/vrrp", exist_ok=True)
 
-        with open(pid_file, "w", encoding="utf-8") as fh:
+        with open(vrrp_states.pid_file, "w", encoding="utf-8") as fh:
             fh.write(args_fifo)
+        atexit.register(vrrp_states.cleanup_run)
+
+        ifs_config.dump_config(vrrp_states.cfg_file)
     except IOError as err:
-        logger.exception(f'failed to write pid file {pid_file}: {err}')
+        logger.exception(f'failed to write pid file {vrrp_states.pid_file}: {err}')
 
     try:
         status_pattern = re.compile(
@@ -107,7 +151,16 @@ def vrrp_fifo(args_fifo, ifs_config, log_level):
                     logger.warning(f'failed to parse fifo input: {line.strip()}')
                 mp.active_children()
     finally:
-        try:
-            os.remove(pid_file)
-        except IOError:
-            pass
+        vrrp_states.cleanup_run()
+
+def vrrp_worker(vrrp_type, vrrp_name, ifs_config):
+    instance_title = "vrrp-{}-{}".format(vrrp_type, vrrp_name)
+    setproctitle("ifstate-{}".format(instance_title))
+
+    logger.info('worker is alive')
+    for state in sys.stdin:
+        vrrp_state = state.strip()
+
+        ifstate = deepcopy(ifs_config.ifs)
+        ifstate.apply(vrrp_type, vrrp_name, vrrp_state)
+    logger.info('terminating')

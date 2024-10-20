@@ -176,3 +176,10 @@ class Parser(ABC):
                 del (cfg["parameters"]["ignore"][k])
 
         return cfg
+
+    @abstractmethod
+    def dump(self, stream):
+        """
+        Dump the parsed configuration into a io stream.
+        """
+        pass

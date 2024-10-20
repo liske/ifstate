@@ -6,7 +6,7 @@ from libifstate.neighbour import Neighbours
 from libifstate.routing import Tables, Rules, RTLookups
 from libifstate.parser import Parser
 from libifstate.tc import TC
-from libifstate.exception import netlinkerror_classes, NetNSNotRoot
+from libifstate.exception import netlinkerror_classes
 import bisect
 import os
 import pyroute2
@@ -120,14 +120,6 @@ class IfState():
 
         self._update(self.root_netns, ifstates)
         if 'namespaces' in ifstates:
-            # require to called from the root netns
-            try:
-                # assume init runs in the root netns
-                if os.readlink('/proc/1/ns/net') != os.readlink(f'/proc/{os.getpid()}/ns/net'):
-                    raise NetNSNotRoot()
-            except OSError as ex:
-                logger.debug(f'root netns test: {ex}')
-                pass
             self.namespaces = {}
             self.new_namespaces = []
             for netns_name, netns_ifstates in ifstates['namespaces'].items():

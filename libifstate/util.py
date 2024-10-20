@@ -24,6 +24,7 @@ import struct
 import array
 import struct
 import typing
+import os
 
 # ethtool helper
 ETHTOOL_GDRVINFO = 0x00000003  # Get driver info
@@ -79,6 +80,23 @@ class IPRouteExt(IPRoute):
         super().__init__(*args, **kwargs)
 
         self.__sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+
+
+    # def fork_before():
+    #     import sys
+    #     print(f"FORK[{os.getpid()}] before", file=sys.stderr)
+
+    # def fork_parent():
+    #     import sys
+    #     print(f"FORK[{os.getpid()}] parent", file=sys.stderr)
+
+    # def fork_child():
+    #     import sys
+    #     print(f"FORK[{os.getpid()}] after", file=sys.stderr)
+
+    # os.register_at_fork(before=fork_before, after_in_parent=fork_parent, after_in_child=fork_child)
+
 
     def del_filter_by_info(self, index=0, handle=0, info=0, parent=0):
         msg = tcmsg()
