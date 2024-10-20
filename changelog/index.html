@@ -42,7 +42,30 @@
   </header>
 
   <div class="post-content">
-    <h1 id="ifstate-1120---2024-09-12">ifstate 1.12.0 - 2024-09-12</h1>
+    <h1 id="ifstate-1130---2024-10-20">ifstate 1.13.0 - 2024-10-20</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>schema: add missing UDP port configuration for VxLAN tunnels</li>
+  <li>vrrp: add support for keepalived’s <code class="language-plaintext highlighter-rouge">stop</code> state</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>link: fix exception handling in get_link wrapper</li>
+  <li>routing: add /usr/share/iproute2 for routing table map lookups (Debian)</li>
+  <li>routing: configure connected routes before static routes (<a href="https://codeberg.org/liske/ifstate/issues/50">#50</a>)</li>
+  <li>vrrp: refactor vrrp-fifo, replacing mp.Process with subprocess.Popen
+implementation (<a href="https://codeberg.org/liske/ifstate/issues/58">#58</a> #59 #60)</li>
+</ul>
+
+<p>This release contains a rector of the vrrp-fifo implementation used to run
+ifstate from keepalived. The previous implementation seems to trigger race
+conditions in the pyroute2 backend sockets when using complex setups with
+multiple netns. I is highly recommended to upgrade if you use the <code class="language-plaintext highlighter-rouge">vrrp-fifo</code>
+action.</p>
+
+<h1 id="ifstate-1120---2024-09-12">ifstate 1.12.0 - 2024-09-12</h1>
 
 <p>Changes:</p>
 <ul>

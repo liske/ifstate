@@ -2,7 +2,7 @@
     "$id": "https://ifstate.net/schema/ifstate.conf.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ifstate.conf",
-    "description": "IfState 1.12 Configuration Schema",
+    "description": "IfState 1.13 Configuration Schema",
     "type": "object",
     "required": [
         "interfaces"
@@ -3014,6 +3014,32 @@
                                         "maximum": 4294967296,
                                         "description": "specifies the maximum number of FDB entries (0: none)",
                                         "default": 0
+                                    },
+                                    "vxlan_port": {
+                                        "description": "specifies the UDP destination port to communicate to the remote VXLAN tunnel endpoint",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 65535
+                                    },
+                                    "vxlan_port_range": {
+                                        "description": "specifies the range of port numbers to use as UDP source ports to communicate to the remote VXLAN tunnel endpoint",
+                                        "required": [
+                                            "low",
+                                            "high"
+                                        ],
+                                        "additionalProperties": false,
+                                        "properties": {
+                                            "low": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "maximum": 65535
+                                            },
+                                            "high": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "maximum": 65535
+                                            }
+                                        }
                                     },
                                     "vxlan_proxy": {
                                         "type": "integer",
