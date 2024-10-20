@@ -61,7 +61,7 @@ class RTLookup():
         self.str2id = {}
         self.id2str = {}
 
-        for basedir in ['/usr/lib/iproute2', '/etc/iproute2']:
+        for basedir in ['/usr/share/iproute2', '/usr/lib/iproute2', '/etc/iproute2']:
             fn = os.path.join(basedir, name)
             try:
                 with open(fn, 'r') as fp:
