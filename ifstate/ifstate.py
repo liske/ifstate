@@ -24,16 +24,18 @@ class Actions():
     SHOWALL = "showall"
     VRRP = "vrrp"
     VRRP_FIFO = "vrrp-fifo"
+    VRRP_WORKER = "vrrp-worker"
     SHELL = "shell"
 
 ACTIONS_HELP = {
-    "CHECK"    : "dry run update the network config",
-    "APPLY"    : "update the network config",
-    "SHOW"     : "show running network config",
-    "SHOWALL"  : "show running network config (more settings)",
-    "VRRP"     : "run as keepalived notify script",
-    "VRRP_FIFO": "run as keepalived notify_fifo_script",
-    "SHELL"    : "launch interactive python shell (pyroute2)",
+    "CHECK"      : "dry run update the network config",
+    "APPLY"      : "update the network config",
+    "SHOW"       : "show running network config",
+    "SHOWALL"    : "show running network config (more settings)",
+    "VRRP"       : "run as keepalived notify script",
+    "VRRP_FIFO"  : "run as keepalived notify_fifo_script",
+    "VRRP_WORKER": "worker process for vrrp-fifo",
+    "SHELL"      : "launch interactive python shell (pyroute2)",
 }
 
 class IfsConfigHandler():
@@ -41,23 +43,22 @@ class IfsConfigHandler():
         self.fn = fn
         self.soft_schema = soft_schema
 
+        # require to be called from the root netns
+        try:
+            # assume init runs in the root netns
+            if os.readlink('/proc/1/ns/net') != os.readlink(f'/proc/{os.getpid()}/ns/net'):
+                logger.error("Must not be run from inside a netns!")
+                raise NetNSNotRoot()
+        except OSError as ex:
+            logger.debug(f'root netns test: {ex}')
+            pass
+
         self.ifs = self.load_config()
         self.cb = None
 
-    def set_callback(self, cb):
-        self.cb = cb
-
-    def sighup_handler(self, signum, frame):
-        logger.info("SIGHUP: reloading configuration")
-        try:
-            self.ifs = self.load_config()
-            self.cb(self.ifs)
-        except:
-            logger.exception("failed to reload configuration")
-
     def load_config(self):
         try:
-            parser = YamlParser(self.fn)
+            self.parser = YamlParser(self.fn)
         except ParserOpenError as ex:
             logger.error(
                 "Config loading from {} failed: {}".format(ex.fn, ex.msg))
@@ -71,10 +72,8 @@ class IfsConfigHandler():
             raise ex
 
         try:
-            ifstates = parser.config()
-
             ifs = IfState()
-            ifs.update(ifstates, self.soft_schema)
+            ifs.update(self.parser.config(), self.soft_schema)
             return ifs
         except ParserValidationError as ex:
             logger.error("Config validation failed for {}".format(ex.detail))
@@ -83,10 +82,14 @@ class IfsConfigHandler():
             logger.error(
                 "Config uses unavailable feature: {}".format(ex.feature))
             raise ex
-        except NetNSNotRoot as ex:
-            logger.error("Must not be run from inside a netns!")
-            raise ex
 
+    def dump_config(self, fn):
+        umask = os.umask(0o077)
+        try:
+            with open(fn, "w") as fh:
+                self.parser.dump(fh)
+        finally:
+            os.umask(umask)        
 
 def shell():
     from ifstate.shell import IfStateConsole
@@ -151,6 +154,12 @@ def main():
     action_parsers[Actions.VRRP_FIFO].add_argument(
         "fifo", type=str, help="named FIFO to read state changes from")
 
+    # Parameters for the vrrp-worker action
+    action_parsers[Actions.VRRP_WORKER].add_argument(
+        "type", type=str.lower, choices=["group", "instance"], help="type of vrrp notification")
+    action_parsers[Actions.VRRP_WORKER].add_argument(
+        "name", type=str, help="name of the vrrp group or instance")
+
     args = parser.parse_args()
     if args.verbose:
         lvl = logging.DEBUG
@@ -181,7 +190,7 @@ def main():
         ifslog.quit()
         exit(0)
 
-    if args.action in [Actions.CHECK, Actions.APPLY, Actions.VRRP, Actions.VRRP_FIFO]:
+    if args.action in [Actions.CHECK, Actions.APPLY, Actions.VRRP, Actions.VRRP_FIFO, Actions.VRRP_WORKER]:
         try:
             ifs_config = IfsConfigHandler(args.config, args.soft_schema)
         except (ParserOpenError,
@@ -203,7 +212,10 @@ def main():
                 exit(ex.exit_code())
         elif args.action == Actions.VRRP_FIFO:
             from ifstate.vrrp import vrrp_fifo
-            vrrp_fifo(args.fifo, ifs_config, lvl)
+            vrrp_fifo(args.fifo, ifs_config)
+        elif args.action == Actions.VRRP_WORKER:
+            from ifstate.vrrp import vrrp_worker
+            vrrp_worker(args.type, args.name, ifs_config)
         else:
             # ignore some well-known signals to prevent interruptions (i.e. due to ssh connection loss)
             signal.signal(signal.SIGHUP, signal.SIG_IGN)

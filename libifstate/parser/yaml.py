@@ -42,3 +42,6 @@ class YamlParser(Parser):
             raise ParserOpenError(ex)
         except yaml.parser.ParserError as ex:
             raise ParserParseError(ex)
+
+    def dump(self, stream):
+        yaml.dump(self.config(), stream)
