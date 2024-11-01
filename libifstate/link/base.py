@@ -117,7 +117,7 @@ class Link(ABC):
         return super().__new__(GenericLink)
         #raise LinkTypeUnknown()
 
-    def __init__(self, ifstate, netns, name, link, ethtool, vrrp, brport):
+    def __init__(self, ifstate, netns, name, link, ethtool, hooks, vrrp, brport):
         self.ifstate = ifstate
         self.netns = netns
         self.cap_create = True
@@ -127,6 +127,7 @@ class Link(ABC):
         }
         self.settings.update(link)
         self.ethtool = None
+        self.hooks = hooks
         self.vrrp = vrrp
         if brport:
             self.brport = BRPort(netns, name, brport)

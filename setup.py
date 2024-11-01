@@ -39,7 +39,10 @@ setup(
     license="GPL3+",
     packages=find_packages(),
     package_data={
-        "libifstate": ["../schema/2/ifstate.conf.schema.json"],
+        "libifstate": [
+            "../schema/2/ifstate.conf.schema.json",
+            "../hooks/wrapper.sh",
+        ],
     },
     install_requires=install_requires(),
     extras_require={

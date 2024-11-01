@@ -1,0 +1,78 @@
+#!/bin/sh
+
+
+DAEMON_VERBOSITY=
+
+if [ "$IFS_VERBOSE" ]; then
+    DAEMON_VERBOSITY="-v"
+fi
+
+WPA_SUP_BIN="/sbin/wpa_supplicant"
+WPA_SUP_PNAME="wpa_supplicant"
+WPA_SUP_PIDFILE="${IFS_RUNDIR}/wpa_supplicant.pid"
+WPA_SUP_CONF="${IFS_ARGS_CONF:=/etc/wpa_supplicant.conf}"
+
+start_wpa () {
+    # save config file checksum
+    sha256sum "$WPA_SUP_CONF" > "${IFS_RUNDIR}/wpa_supplicant.conf.sha256"
+
+    # start wpa_supplicant
+    start-stop-daemon --start --oknodo $DAEMON_VERBOSITY \
+        --name "$WPA_SUP_PNAME" --startas "$WPA_SUP_BIN" --pidfile "$WPA_SUP_PIDFILE" \
+        -- "$WPA_SUP_OPTIONS" "$WPA_SUP_CONF"
+}
+
+stop_wpa () {
+    # stop wpa_supplicant
+    start-stop-daemon --stop --oknodo $DAEMON_VERBOSITY \
+            --exec "$WPA_SUP_BIN" --pidfile "$WPA_SUP_PIDFILE"
+
+    # cleanup pid file
+    if [ -f "$WPA_SUP_PIDFILE" ]; then
+            rm -f "$WPA_SUP_PIDFILE"
+    fi
+}
+
+case "$1" in
+    start)
+        # check if pid file exists
+        if [ -f "$WPA_SUP_PIDFILE" ]; then
+                # check if wpa_supplicant is still running
+                if start-stop-daemon --stop --quiet --signal 0 \
+                        --exec "$WPA_SUP_BIN" --pidfile "$WPA_SUP_PIDFILE"; then
+
+                        # check if wrapper has changed
+                        if diff -q "${IFS_RUNDIR}/wrapper.sh" "${IFS_RUNDIR}/wrapper.sh.old" 2> /dev/null; then
+                            do_start=r
+                        else
+                            do_start=n
+
+                            # reconfigure if config file has changed
+                            if ! sha256sum --check --status "${IFS_RUNDIR}/wpa_supplicant.conf.sha256" 2> /dev/null; then
+                                wpa_cli "-i${IFS_IFNAME}" reconfigure
+                            fi
+                        fi
+                else
+                        rm -f "$WPA_SUP_PIDFILE"
+                        do_start=y
+                fi
+        else
+            do_start=y
+        fi
+
+        # start wpa_supplicant if required
+        if [ "$do_start" != "n" ]; then
+            if [ "$do_start" = "r" ]; then
+                stop_wpa
+            fi
+            start_wpa
+        fi
+
+        ;;
+    stop)
+        stop_wpa
+        ;;
+    *)
+        logger -s -t ifstate-hook -- "unhandled action '$1'"
+        ;;
+esac

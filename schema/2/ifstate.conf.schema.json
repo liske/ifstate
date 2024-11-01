@@ -1664,6 +1664,34 @@
                 "defaults_builtin": {
                     "$ref": "#/properties/parameters/properties/defaults"
                 },
+                "hooks": {
+                    "description": "hooks are executed on interface configuration and can be used to spawn commands like DHCP client, wpa_supplicant or pppd.",
+                    "type": "object",
+                    "patternProperties": {
+                        "": {
+                            "description": "hook properties",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "script": {
+                                    "description": "filename to be executed on interface configuration, the hook name will be used by default",
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "provides": {
+                                    "description": "aliases for dependency tracking",
+                                    "type": "array",
+                                    "default": []
+                                },
+                                "after": {
+                                    "description": "hooks which should to be run before executing this script (hook names and provides)",
+                                    "type": "array",
+                                    "default": []
+                                }
+                            }
+                        }
+                    }
+                },
                 "ignore": {
                     "description": "ignore patterns to skip interface, ip address or routing objects",
                     "type": "object",
@@ -1922,6 +1950,32 @@
                                 }
                             }
                         }
+                    },
+                    "hooks": {
+                        "description": "list of hook names enabled for the interfaces",
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "description": "name of the hook defined in [$.parameters.hooks](#parameters_hooks)`",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "args": {
+                                        "description": "dictonary to be passed to hooks as environment variables",
+                                        "type": "object",
+                                        "default": {}
+                                    }
+                                }
+                            }
+                        ],
+                        "default": []
                     },
                     "vrrp": {
                         "$ref": "#/$defs/condition-vrrp"

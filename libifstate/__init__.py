@@ -2,6 +2,7 @@ from libifstate.exception import LinkDuplicate, NetnsUnknown
 from libifstate.link.base import ethtool_path, Link
 from libifstate.address import Addresses
 from libifstate.fdb import FDB
+from libifstate.hook import Hooks
 from libifstate.neighbour import Neighbours
 from libifstate.routing import Tables, Rules, RTLookups
 from libifstate.parser import Parser
@@ -115,6 +116,9 @@ class IfState():
         # save cshaper profiles
         self.cshaper_profiles = ifstates['parameters']['cshaper']
 
+        # prepare hooks
+        self.hooks = Hooks(ifstates['parameters'].get('hooks', {}))
+
         # build link registry over all named netns
         self.link_registry = LinkRegistry(self.ignore.get('ifname', []), self.root_netns)
 
@@ -184,7 +188,7 @@ class IfState():
                 link.update(ifstate['link'])
             if link:
                 netns.links[name] = Link(self,
-                    netns, name, link, ethtool, ifstate.get('vrrp'), ifstate.get('brport'))
+                    netns, name, link, ethtool, ifstate.get('hooks', []), ifstate.get('vrrp'), ifstate.get('brport'))
             else:
                 netns.links[name] = None
 

@@ -48,6 +48,8 @@ L2_ADDRLENGTH = 6  # L2 address length
 
 REGEX_ETHER_BYTE = re.compile('[a-f0-9]{2}')
 
+RUN_BASE_DIR = '/run/libifstate'
+
 root_ipr = typing.NewType("IPRouteExt", IPRoute)
 
 def filter_ifla_dump(showall, ifla, defaults, prefix="IFLA"):
@@ -75,28 +77,45 @@ def format_ether_address(address):
 
     return ':'.join(REGEX_ETHER_BYTE.findall(address.lower()))
 
+
+def get_run_dir(function, *args):
+    """
+    Returns a deterministic directory under /run/libifstate for saving state
+    informations between ifstate calls. A hierarchy is build from the ifstate
+    function and additional distinguishers (i.e. ifname).
+    
+    The directory will be created if it does not already exists.
+    """
+
+    run_dir = os.path.join(RUN_BASE_DIR, function, *args)
+  
+    os.makedirs(run_dir, mode=0o700, exists_ok=True)
+
+    return run_dir
+
+def get_netns_run_dir(function, netns, *args):
+    """
+    Returns a deterministic directory under /run/libifstate for saving state
+    informations between ifstate calls. A hierarchy is build from the ifstate
+    function, the netns and optional additional distinguishers (i.e. ifname).
+    
+    The directory will be created if it does not already exists.
+    """
+
+    if netns.netns is None:
+        run_dir = os.path.join(RUN_BASE_DIR, function, 'root', *args)
+    else:
+        run_dir = os.path.join(RUN_BASE_DIR, function, 'netns', netns, *args)
+
+    os.makedirs(run_dir, mode=0o700, exists_ok=True)
+
+    return run_dir
+
 class IPRouteExt(IPRoute):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.__sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-
-
-    # def fork_before():
-    #     import sys
-    #     print(f"FORK[{os.getpid()}] before", file=sys.stderr)
-
-    # def fork_parent():
-    #     import sys
-    #     print(f"FORK[{os.getpid()}] parent", file=sys.stderr)
-
-    # def fork_child():
-    #     import sys
-    #     print(f"FORK[{os.getpid()}] after", file=sys.stderr)
-
-    # os.register_at_fork(before=fork_before, after_in_parent=fork_parent, after_in_child=fork_child)
-
 
     def del_filter_by_info(self, index=0, handle=0, info=0, parent=0):
         msg = tcmsg()

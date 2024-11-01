@@ -3,14 +3,14 @@ from libifstate.link.base import Link
 from libifstate.exception import LinkCannotAdd, NetnsUnknown
 
 class VethLink(Link):
-    def __init__(self, ifstate, netns, name, link, ethtool, vrrp, brport):
+    def __init__(self, ifstate, netns, name, link, ethtool, hooks, vrrp, brport):
         # use the bind_netns implementation to create the peer in the
         # target netns
         if 'peer_netns' in link:
             link['bind_netns'] = link['peer_netns']
             del(link['peer_netns'])
 
-        super().__init__(ifstate, netns, name, link, ethtool, vrrp, brport)
+        super().__init__(ifstate, netns, name, link, ethtool, hooks, vrrp, brport)
 
     def create(self, do_apply, sysctl, excpts, oper="add"):
         '''
