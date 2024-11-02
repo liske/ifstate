@@ -1678,6 +1678,15 @@
                                     "type": "string",
                                     "minLength": 1
                                 },
+                                "vrrp": {
+                                    "description": "specify if the activation of this hook should follow the vrrp state for interfaces with a vrrp constraint",
+                                    "type": "string",
+                                    "enum": [
+                                        "follow",
+                                        "ignore"
+                                    ],
+                                    "default": "follow"
+                                },
                                 "provides": {
                                     "description": "aliases for dependency tracking",
                                     "type": "array",
