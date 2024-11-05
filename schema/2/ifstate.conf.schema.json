@@ -1674,7 +1674,7 @@
                             "additionalProperties": false,
                             "properties": {
                                 "script": {
-                                    "description": "filename to be executed on interface configuration, the hook name will be used by default",
+                                    "description": "filename to be executed on interface configuration, the hook name will be used by default; relatives file are based on `/etc/needrestart/hook.d`",
                                     "type": "string",
                                     "minLength": 1
                                 },
