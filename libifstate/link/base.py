@@ -867,5 +867,5 @@ class Link(ABC):
 
 
 class GenericLink(Link):
-    def __init__(self, ifstate, netns, name, link, ethtool, vrrp, brport):
-        super().__init__(ifstate, netns, name, link, ethtool, vrrp, brport)
+    def __init__(self, ifstate, netns, name, link, ethtool, hooks, vrrp, brport):
+        super().__init__(ifstate, netns, name, link, ethtool, hooks, vrrp, brport)
