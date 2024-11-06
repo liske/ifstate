@@ -1,5 +1,9 @@
 #!/bin/sh
 
+if [ -z "$IFS_IFNAME" ] || [ -z "$IFS_RUNDIR" ]; then
+    echo "This script should not be run manually." 1>&2
+    exit 2
+fi
 
 DAEMON_VERBOSITY=
 
@@ -19,7 +23,7 @@ start_wpa () {
     # start wpa_supplicant
     start-stop-daemon --start --oknodo $DAEMON_VERBOSITY \
         --name "$WPA_SUP_PNAME" --startas "$WPA_SUP_BIN" --pidfile "$WPA_SUP_PIDFILE" \
-        -- "$WPA_SUP_OPTIONS" "$WPA_SUP_CONF"
+        -- -s -B -P "$WPA_SUP_PIDFILE" -i "$IFS_IFNAME" -c "$WPA_SUP_CONF"
 }
 
 stop_wpa () {
@@ -43,14 +47,14 @@ case "$1" in
 
                         # check if wrapper has changed
                         if diff -q "${IFS_RUNDIR}/wrapper.sh" "${IFS_RUNDIR}/wrapper.sh.old" 2> /dev/null; then
-                            do_start=r
-                        else
                             do_start=n
 
                             # reconfigure if config file has changed
                             if ! sha256sum --check --status "${IFS_RUNDIR}/wpa_supplicant.conf.sha256" 2> /dev/null; then
-                                wpa_cli "-i${IFS_IFNAME}" reconfigure
+                                wpa_cli "-i$IFS_IFNAME" reconfigure
                             fi
+                        else
+                            do_start=r
                         fi
                 else
                         rm -f "$WPA_SUP_PIDFILE"
@@ -69,6 +73,35 @@ case "$1" in
         fi
 
         ;;
+    check)
+        # check if pid file exists
+        if [ -f "$WPA_SUP_PIDFILE" ]; then
+                # check if wpa_supplicant is still running
+                if start-stop-daemon --stop --quiet --signal 0 \
+                        --exec "$WPA_SUP_BIN" --pidfile "$WPA_SUP_PIDFILE"; then
+
+                        # check if wrapper has changed
+                        if diff -q "${IFS_RUNDIR}/wrapper.sh" "${IFS_RUNDIR}/wrapper.sh.old" 2> /dev/null; then
+                            # reconfigure if config file has changed
+                            if ! sha256sum --check --status "${IFS_RUNDIR}/wpa_supplicant.conf.sha256" 2> /dev/null; then
+                                check_failed=1
+                            else
+                                check_failed=0
+                            fi
+                        else
+                            check_failed=1
+                        fi
+                else
+                        rm -f "$WPA_SUP_PIDFILE"
+                        check_failed=1
+                fi
+        else
+            check_failed=1
+        fi
+
+        exit $check_failed
+        ;;
+
     stop)
         stop_wpa
         ;;
