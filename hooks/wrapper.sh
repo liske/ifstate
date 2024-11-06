@@ -12,8 +12,8 @@ export IFS_NETNS="${netns}"
 # hook arguments
 ${args}
 
-if [ -z "$IFS_NETNS" ]; then
-    exec "$IFS_SCRIPT" $@
+if [ -z "$$IFS_NETNS" ]; then
+    exec "$$IFS_SCRIPT" "$$@"
 else
-    exec ip netns exec "$IFS_NETNS" "$IFS_SCRIPT" $@
+    exec ip netns exec "$$IFS_NETNS" "$$IFS_SCRIPT" "$$@"
 fi

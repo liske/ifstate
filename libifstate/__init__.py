@@ -608,6 +608,9 @@ class IfState():
         if ifname in netns.wireguard:
             netns.wireguard[ifname].apply(do_apply)
 
+        if link.hooks:
+            self.hooks.run(link, do_apply)
+
     def _apply_routing(self, do_apply, netns, by_vrrp, vrrp_type, vrrp_name, vrrp_state):
         if not netns.tables is None:
             netns.tables.apply(self.ignore.get('routes', []), do_apply, by_vrrp, vrrp_type, vrrp_name, vrrp_state)

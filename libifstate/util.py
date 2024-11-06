@@ -89,7 +89,10 @@ def get_run_dir(function, *args):
 
     run_dir = os.path.join(RUN_BASE_DIR, function, *args)
   
-    os.makedirs(run_dir, mode=0o700, exists_ok=True)
+    try:
+        os.makedirs(run_dir, mode=0o700)
+    except FileExistsError:
+        pass
 
     return run_dir
 
@@ -107,7 +110,10 @@ def get_netns_run_dir(function, netns, *args):
     else:
         run_dir = os.path.join(RUN_BASE_DIR, function, 'netns', netns, *args)
 
-    os.makedirs(run_dir, mode=0o700, exists_ok=True)
+    try:
+        os.makedirs(run_dir, mode=0o700)
+    except FileExistsError:
+        pass
 
     return run_dir
 
