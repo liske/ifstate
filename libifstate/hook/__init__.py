@@ -33,11 +33,15 @@ class Hook():
                     'ifname': link.settings.get('ifname'),
                     'index': link.idx,
                     'netns': '',
+                    'vrf': '',
                     'rundir': run_dir,
                 }
 
             if link.netns.netns:
                 template_vars['netns'] = link.netns.netns
+
+            if link.get_if_attr('IFLA_INFO_SLAVE_KIND') == 'vrf':
+                template_vars['vrf'] = link.settings.get('master')
 
             args_list = []
             for k, v in args.items():
