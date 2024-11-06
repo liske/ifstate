@@ -85,6 +85,7 @@ class Link(ABC):
     }
     attr_value_lookup = {
         'group': RTLookups.group,
+        'vrf_table': RTLookups.tables,
     }
     attr_bind_kinds = [
         'ip6tnl',

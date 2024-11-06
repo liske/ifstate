@@ -2318,8 +2318,10 @@
                             {
                                 "description": "Virtual Routing and Forwarding device",
                                 "required": [
-                                    "kind"
+                                    "kind",
+                                    "vrf_table"
                                 ],
+                                "additionalProperties": false,
                                 "properties": {
                                     "kind": {
                                         "const": "vrf",
@@ -2342,6 +2344,15 @@
                                     },
                                     "txqlen": {
                                         "$ref": "#/$defs/iface-link_txqlen"
+                                    },
+                                    "vrf_table": {
+                                        "description": "routing table associated with the VRF device",
+                                        "type": [
+                                            "integer",
+                                            "string"
+                                        ],
+                                        "minimum": 1,
+                                        "maximum": 4294967295
                                     },
                                     "ifalias": {
                                         "$ref": "#/$defs/iface-link_ifalias"
