@@ -219,6 +219,10 @@ class Tables(collections.abc.Mapping):
             via = route.get_attr('RTA_GATEWAY')
             if via:
                 rt['via'] = via
+            else:
+                via = route.get_attr('RTA_VIA')
+                if via and 'addr' in via:
+                    rt['via'] = via['addr']
 
             realm = route.get_attr('RTA_FLOW')
             if realm:
