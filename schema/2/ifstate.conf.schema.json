@@ -3059,15 +3059,13 @@
                                     },
                                     "vxlan_local": {
                                         "type": "string",
-                                        "description": "tunnel source ip address",
-                                        "oneOf": [
-                                            {
-                                                "format": "ipv4"
-                                            },
-                                            {
-                                                "format": "ipv6"
-                                            }
-                                        ]
+                                        "description": "tunnel source IPv4 address",
+                                        "format": "ipv4"
+                                    },
+                                    "vxlan_local6": {
+                                        "type": "string",
+                                        "description": "tunnel source IPv6 address",
+                                        "format": "ipv6"
                                     },
                                     "vxlan_group": {
                                         "type": "string",
@@ -3109,7 +3107,29 @@
                                             },
                                             {
                                                 "required": [
+                                                    "vxlan_local"
+                                                ]
+                                            },
+                                            {
+                                                "required": [
+                                                    "vxlan_local",
+                                                    "vxlan_group"
+                                                ]
+                                            },
+                                            {
+                                                "required": [
                                                     "vxlan_group6"
+                                                ]
+                                            },
+                                            {
+                                                "required": [
+                                                    "vxlan_local6"
+                                                ]
+                                            },
+                                            {
+                                                "required": [
+                                                    "vxlan_group6",
+                                                    "vxlan_local6"
                                                 ]
                                             }
                                         ]
@@ -3118,7 +3138,9 @@
                                         "not": {
                                             "required": [
                                                 "vxlan_group",
-                                                "vxlan_group6"
+                                                "vxlan_group6",
+                                                "vxlan_local",
+                                                "vxlan_local6"
                                             ]
                                         }
                                     }
