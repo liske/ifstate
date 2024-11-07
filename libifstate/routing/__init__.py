@@ -157,7 +157,21 @@ class Tables(collections.abc.Mapping):
             rt['oif'] = route['dev']
 
         if 'via' in route:
-            rt['gateway'] = str(ip_address(route['via']))
+            via = ip_address(route['via'])
+
+            if via.version == dst.version:
+                rt['gateway'] = str(via)
+            else:
+                if via.version == 4:
+                    rt['via'] = {
+                        'family': int(AF_INET),
+                        'addr': str(via),
+                    }
+                else:
+                    rt['via'] = {
+                        'family': int(AF_INET6),
+                        'addr': str(via),
+                    }
 
         if 'src' in route:
             rt['prefsrc'] = route['src']
@@ -280,6 +294,10 @@ class Tables(collections.abc.Mapping):
             if not gateway is None:
                 rt['gateway'] = str(ip_address(gateway))
 
+            via = route.get_attr('RTA_VIA')
+            if not via is None:
+                rt['via'] = via
+
             metric = route.get_attr('RTA_PRIORITY')
             if not metric is None:
                 rt['metric'] = metric
@@ -307,7 +325,7 @@ class Tables(collections.abc.Mapping):
 
             kroutes = self.kernel_routes(table)
 
-            for route in sorted(croutes, key=lambda x: [x.get('via', ''), x['dst']]):
+            for route in sorted(croutes, key=lambda x: [str(x.get('via', '')), x['dst']]):
                 if 'oif' in route and type(route['oif']) == str:
                     oif = next(
                         iter(self.netns.ipr.link_lookup(ifname=route['oif'])), None)
