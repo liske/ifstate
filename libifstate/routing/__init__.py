@@ -325,7 +325,7 @@ class Tables(collections.abc.Mapping):
 
             kroutes = self.kernel_routes(table)
 
-            for route in sorted(croutes, key=lambda x: [str(x.get('via', '')), x['dst']]):
+            for route in sorted(croutes, key=lambda x: [str(x.get('gateway', x.get('via', ''))), x['dst']]):
                 if 'oif' in route and type(route['oif']) == str:
                     oif = next(
                         iter(self.netns.ipr.link_lookup(ifname=route['oif'])), None)
