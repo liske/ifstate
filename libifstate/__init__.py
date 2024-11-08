@@ -48,7 +48,7 @@ import json
 import errno
 import logging
 
-__version__ = "1.13.0"
+__version__ = "1.13.1"
 
 
 class IfState():
