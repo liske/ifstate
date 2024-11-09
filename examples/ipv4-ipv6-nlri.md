@@ -32,10 +32,10 @@ interfaces:
 routing:
   routes:
     - to: 0.0.0.0/0
-      via: fe80::1
+      via: fe80::defa
       dev: eth0
     - to: ::/0
-      via: fe80::1
+      via: fe80::defa
       dev: eth0
 ```
 
