@@ -4,6 +4,26 @@ layout: page
 permalink: changelog/
 ---
 
+# ifstate 1.13.1 - 2024-11-08
+
+Changes:
+- link: add missing vrf_table property for vrf links
+- routing: add RTA_VIA support for show_routes (related to [#69](https://codeberg.org/liske/ifstate/issues/69))
+
+Fixes:
+- vxlan: vxlan_local must not contain ipv6 addresses, add missing vxlan_local6
+  (closes [#67](https://codeberg.org/liske/ifstate/issues/67))
+- routing: fix order of routes for RTA_GATEWAY and RTA_VIA
+  (fixes [#50](https://codeberg.org/liske/ifstate/issues/50), fixes #70)
+- routing: fix route next-hops from other AF than the destination
+  (RTA_GATEWAY vs. RTA_VIA; fixes [#69](https://codeberg.org/liske/ifstate/issues/69))
+
+It was already allowed in the schema to configure routing next-hops from another
+address family than the destination address family. This results in an OSError
+exception terminating ifstate unexpected. This leads to an incomplete network
+configuration. The same exception happened on vxlan links when vxlan_local was
+set to an IPv6 address.
+
 # ifstate 1.13.0 - 2024-10-20
 
 Changes:
