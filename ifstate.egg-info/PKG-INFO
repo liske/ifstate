@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: ifstate
-Version: 1.13.0
+Version: 1.13.1
 Summary: Manage host interface settings in a declarative manner
 Home-page: https://ifstate.net/
 Author: Thomas Liske

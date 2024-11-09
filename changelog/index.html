@@ -42,7 +42,31 @@
   </header>
 
   <div class="post-content">
-    <h1 id="ifstate-1130---2024-10-20">ifstate 1.13.0 - 2024-10-20</h1>
+    <h1 id="ifstate-1131---2024-11-08">ifstate 1.13.1 - 2024-11-08</h1>
+
+<p>Changes:</p>
+<ul>
+  <li>link: add missing vrf_table property for vrf links</li>
+  <li>routing: add RTA_VIA support for show_routes (related to <a href="https://codeberg.org/liske/ifstate/issues/69">#69</a>)</li>
+</ul>
+
+<p>Fixes:</p>
+<ul>
+  <li>vxlan: vxlan_local must not contain ipv6 addresses, add missing vxlan_local6
+(closes <a href="https://codeberg.org/liske/ifstate/issues/67">#67</a>)</li>
+  <li>routing: fix order of routes for RTA_GATEWAY and RTA_VIA
+(fixes <a href="https://codeberg.org/liske/ifstate/issues/50">#50</a>, fixes #70)</li>
+  <li>routing: fix route next-hops from other AF than the destination
+(RTA_GATEWAY vs. RTA_VIA; fixes <a href="https://codeberg.org/liske/ifstate/issues/69">#69</a>)</li>
+</ul>
+
+<p>It was already allowed in the schema to configure routing next-hops from another
+address family than the destination address family. This results in an OSError
+exception terminating ifstate unexpected. This leads to an incomplete network
+configuration. The same exception happened on vxlan links when vxlan_local was
+set to an IPv6 address.</p>
+
+<h1 id="ifstate-1130---2024-10-20">ifstate 1.13.0 - 2024-10-20</h1>
 
 <p>Changes:</p>
 <ul>
