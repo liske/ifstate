@@ -24,6 +24,7 @@ This is a collection of configuration examples for different interface link type
 - [XFRM interfaces with VRF-based multitenant IPsec](xfrm-vrf.html)
 
 ## Routing
+- [IPv4 routes via IPv6 next hop NLRI](ipv4-ipv6-nlri.md)
 - [Policy Based Routing (PBR)](pbr.html)
 - [Virtual Routing and Forwarding (VRF)](vrf.html)
 
