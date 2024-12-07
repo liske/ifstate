@@ -29,6 +29,7 @@ interfaces:
     link: eth0
     vlan_id: 10
     vlan_protocol: 802.1ad
+    state: up
 - name: eth0.10.42
   addresses:
     - 192.0.2.1/24
@@ -36,6 +37,7 @@ interfaces:
     kind: vlan
     link: eth0.10
     vlan_id: 42
+    state: up
 ```
 
 
