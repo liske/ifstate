@@ -1,0 +1,32 @@
+From d919f73cd17df6cfc770ecd7a9f8ef00cc110077 Mon Sep 17 00:00:00 2001
+From: Thomas Liske <thomas@fiasko-nw.net>
+Date: Sat, 7 Dec 2024 17:36:01 +0100
+Subject: [PATCH] exmaples: add missing state options for vlan examples
+
+---
+ examples/vlan-qinq.md | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/examples/vlan-qinq.md b/examples/vlan-qinq.md
+index d98eb29..5e7928b 100644
+--- a/examples/vlan-qinq.md
++++ b/examples/vlan-qinq.md
+@@ -29,6 +29,7 @@ interfaces:
+     link: eth0
+     vlan_id: 10
+     vlan_protocol: 802.1ad
++    state: up
+ - name: eth0.10.42
+   addresses:
+     - 192.0.2.1/24
+@@ -36,6 +37,7 @@ interfaces:
+     kind: vlan
+     link: eth0.10
+     vlan_id: 42
++    state: up
+ ```
+ 
+ 
+-- 
+2.39.5
+
