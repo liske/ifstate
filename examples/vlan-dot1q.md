@@ -30,6 +30,7 @@ interfaces:
     kind: vlan
     link: trunk
     vlan_id: 42
+    state: up
 ```
 
 
